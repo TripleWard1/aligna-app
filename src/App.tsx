@@ -266,7 +266,7 @@ export default function App() {
               padding: '25px',
               borderRadius: '30px',
               boxShadow: '0 15px 35px rgba(0,0,0,0.08)',
-            }}
+            }} 
           >
             <p
               style={{
