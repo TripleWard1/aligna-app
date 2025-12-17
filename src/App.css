@@ -1,13 +1,24 @@
-/* FORÇAR TEXTO PRETO EM TODOS OS CAMPOS */
-input, textarea, select, [contenteditable] {
-  color: #000000 !important;
-  -webkit-text-fill-color: #000000 !important; /* Resolve o problema no iPhone */
-  background-color: #ffffff !important;
-  opacity: 1 !important;
+/* FORÇAR CORES EM TODO O LADO */
+* {
+  -webkit-font-smoothing: antialiased;
 }
 
-/* Garante visibilidade no login */
-.login-input {
-  color: #000000 !important;
-  -webkit-text-fill-color: #000000 !important;
+input, 
+textarea, 
+select, 
+button {
+  color: #000000 !important; /* Texto Preto */
+  background-color: #ffffff !important; /* Fundo Branco */
+  -webkit-text-fill-color: #000000 !important; /* Única forma de vencer o iPhone */
+  opacity: 1 !important;
+  border: 1px solid #ccc !important;
+}
+
+/* Corrigir a imagem de login no telemóvel */
+.login-container img, 
+.login-logo {
+  max-width: 80% !important;
+  height: auto !important;
+  margin: 0 auto !important;
+  display: block !important;
 }
