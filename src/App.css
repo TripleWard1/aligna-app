@@ -1,0 +1,13 @@
+/* FORÇAR TEXTO PRETO EM TODOS OS CAMPOS */
+input, textarea, select, [contenteditable] {
+  color: #000000 !important;
+  -webkit-text-fill-color: #000000 !important; /* Resolve o problema no iPhone */
+  background-color: #ffffff !important;
+  opacity: 1 !important;
+}
+
+/* Garante visibilidade no login */
+.login-input {
+  color: #000000 !important;
+  -webkit-text-fill-color: #000000 !important;
+}
