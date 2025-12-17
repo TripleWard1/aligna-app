@@ -1,21 +1,28 @@
-/* 1. Garante que o texto nos campos é sempre preto, mesmo no telemóvel */
-input, textarea {
-    color: #000000 !important;
-    background-color: #ffffff !important;
-    -webkit-text-fill-color: #000000 !important; /* Específico para iPhone/iOS */
-  }
-  
-  /* 2. Remove o aspeto "cortado" da imagem de login */
-  .login-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    width: 100%;
-    overflow-x: hidden; /* Evita que a página dance para os lados */
-  }
-  
-  .login-container img {
-    max-width: 100%;
-    height: auto;
-    object-fit: contain;
-  }
+/* CORREÇÃO DEFINITIVA PARA INPUTS NO TELEMÓVEL */
+input, 
+textarea, 
+select, 
+input[type="text"], 
+input[type="password"], 
+input[type="number"],
+.input-field {
+  color: #000000 !important; /* Cor do texto preta */
+  background-color: #ffffff !important; /* Fundo branco */
+  -webkit-text-fill-color: #000000 !important; /* Força cor no iOS/Safari */
+  opacity: 1 !important; /* Remove transparências automáticas */
+  appearance: none !important; /* Remove estilos padrão do sistema */
+  -webkit-appearance: none !important;
+}
+
+/* Garante que o texto de ajuda (placeholder) seja visível mas cinza */
+input::placeholder {
+  color: #666666 !important;
+  -webkit-text-fill-color: #666666 !important;
+}
+
+/* Garante que quando clicas no campo, ele não mude para branco */
+input:focus {
+  color: #000000 !important;
+  background-color: #ffffff !important;
+  -webkit-text-fill-color: #000000 !important;
+}
