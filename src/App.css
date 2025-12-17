@@ -1,24 +1,34 @@
-/* FORÇAR CORES EM TODO O LADO */
-* {
-  -webkit-font-smoothing: antialiased;
-}
-
+/* CORREÇÃO PARA TODOS OS CAMPOS DE TEXTO */
 input, 
 textarea, 
 select, 
-button {
-  color: #000000 !important; /* Texto Preto */
-  background-color: #ffffff !important; /* Fundo Branco */
-  -webkit-text-fill-color: #000000 !important; /* Única forma de vencer o iPhone */
+input::placeholder,
+.input-field {
+  /* Cor cinzenta escura idêntica ao "Onde gastou" */
+  color: #555555 !important; 
+  
+  /* Força a cor no iPhone/Safari (essencial para não ficar branco) */
+  -webkit-text-fill-color: #555555 !important; 
+  
+  /* Garante fundo branco/claro para contraste */
+  background-color: #f8f9fa !important; 
+  
+  /* Remove transparências e estilos do sistema */
   opacity: 1 !important;
-  border: 1px solid #ccc !important;
+  appearance: none !important;
+  -webkit-appearance: none !important;
 }
 
-/* Corrigir a imagem de login no telemóvel */
-.login-container img, 
-.login-logo {
-  max-width: 80% !important;
+/* Garante que o texto que escreves (valor real) também fica nesta cor */
+input:not(:placeholder-shown),
+input:focus {
+  color: #333333 !important;
+  -webkit-text-fill-color: #333333 !important;
+}
+
+/* Ajuste da imagem e logo para não ficar cortado no telemóvel */
+.login-container img {
+  max-width: 90% !important;
   height: auto !important;
-  margin: 0 auto !important;
-  display: block !important;
+  object-fit: contain !important;
 }
