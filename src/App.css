@@ -1,0 +1,21 @@
+/* 1. Garante que o texto nos campos é sempre preto, mesmo no telemóvel */
+input, textarea {
+    color: #000000 !important;
+    background-color: #ffffff !important;
+    -webkit-text-fill-color: #000000 !important; /* Específico para iPhone/iOS */
+  }
+  
+  /* 2. Remove o aspeto "cortado" da imagem de login */
+  .login-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    overflow-x: hidden; /* Evita que a página dance para os lados */
+  }
+  
+  .login-container img {
+    max-width: 100%;
+    height: auto;
+    object-fit: contain;
+  }
