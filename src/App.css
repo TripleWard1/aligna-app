@@ -1,34 +1,40 @@
-/* CORREÇÃO PARA TODOS OS CAMPOS DE TEXTO */
+/* RESET TOTAL DE CORES PARA INPUTS */
 input, 
 textarea, 
-select, 
-input::placeholder,
-.input-field {
-  /* Cor cinzenta escura idêntica ao "Onde gastou" */
-  color: #555555 !important; 
+select {
+  /* Força a cor cinza escura legível do 'Onde Gastou' */
+  color: #444444 !important; 
+  -webkit-text-fill-color: #444444 !important; /* Obrigatório para iPhone */
   
-  /* Força a cor no iPhone/Safari (essencial para não ficar branco) */
-  -webkit-text-fill-color: #555555 !important; 
+  /* Força o fundo a ser claro para haver contraste */
+  background-color: #ffffff !important; 
   
-  /* Garante fundo branco/claro para contraste */
-  background-color: #f8f9fa !important; 
-  
-  /* Remove transparências e estilos do sistema */
+  /* Remove estilos automáticos do sistema que mudam a cor */
+  background-image: none !important;
   opacity: 1 !important;
   appearance: none !important;
   -webkit-appearance: none !important;
 }
 
-/* Garante que o texto que escreves (valor real) também fica nesta cor */
-input:not(:placeholder-shown),
-input:focus {
-  color: #333333 !important;
-  -webkit-text-fill-color: #333333 !important;
+/* Quando estás a escrever ou o campo está focado */
+input:focus, 
+textarea:focus {
+  color: #000000 !important;
+  -webkit-text-fill-color: #000000 !important;
+  background-color: #ffffff !important;
+  outline: 2px solid #3b82f6 !important; /* Azul suave para saber onde estás a escrever */
 }
 
-/* Ajuste da imagem e logo para não ficar cortado no telemóvel */
-.login-container img {
-  max-width: 90% !important;
+/* Corrigir os placeholders (o texto de exemplo que desaparece ao escrever) */
+input::placeholder {
+  color: #888888 !important;
+  -webkit-text-fill-color: #888888 !important;
+}
+
+/* Correção para a imagem do perfil/login não fugir do ecrã */
+.login-container img, 
+.profile-section img {
+  max-width: 100% !important;
   height: auto !important;
   object-fit: contain !important;
 }
