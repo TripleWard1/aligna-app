@@ -21,10 +21,7 @@ const AVATARS = ['👤', '👨‍💻', '👩‍💼', '🧥', '🎨', '🚀', '
 const ACC_ICONS = ['👛', '🏦', '🐖', '💳', '💎', '📊', '💰'];
 
 export default function App() {
-  const inputStyle = { 
-    color: '#444444', 
-    WebkitTextFillColor: '#444444', 
-    backgroundColor: '#ffffff' 
+
   };
   const [user, setUser] = useState(localStorage.getItem('f_user') || null);
   const [list, setList] = useState([]);
