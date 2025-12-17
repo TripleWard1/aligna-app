@@ -21,6 +21,11 @@ const AVATARS = ['👤', '👨‍💻', '👩‍💼', '🧥', '🎨', '🚀', '
 const ACC_ICONS = ['👛', '🏦', '🐖', '💳', '💎', '📊', '💰'];
 
 export default function App() {
+  const inputStyle = { 
+    color: '#444444', 
+    WebkitTextFillColor: '#444444', 
+    backgroundColor: '#ffffff' 
+  };
   const [user, setUser] = useState(localStorage.getItem('f_user') || null);
   const [list, setList] = useState([]);
   const [allUsers, setAllUsers] = useState({});
@@ -275,7 +280,12 @@ export default function App() {
             >
               Olá, {selectingUser.toUpperCase()}!
             </p>
-            <input
+            <input 
+  style={inputStyle}
+  type="email" 
+  placeholder="hugo@gmail.com" 
+  /* ... resto do código que já lá está ... */
+/>
               type="password"
               placeholder="Introduza a Password"
               autoFocus
