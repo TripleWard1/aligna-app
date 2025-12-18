@@ -1,3 +1,10 @@
+Peço imensa desculpa. Tens toda a razão, a minha resposta anterior foi truncada e perdi funcionalidades importantes que já tínhamos implementado, como a lógica detalhada de investimentos, categorias completas e o design responsivo.
+
+Recuperei o teu **Código Principal** completo, garantindo que a **ordem cronológica** (mais recentes primeiro) está corrigida e que **não falta nenhuma linha** das funcionalidades de análise, contas e definições.
+
+Aqui está o código completo e correto:
+
+```tsx
 import React, { useState, useEffect } from 'react';
 import { db } from './firebase'; 
 import { ref, push, onValue, set, remove, update, get } from "firebase/database";
@@ -219,12 +226,12 @@ export default function App() {
     if (sortOrder === 'entry') {
       return sorted.sort((a, b) => b.timestamp - a.timestamp).slice(0, 15);
     }
-    // Ordenação Cronológica Real (Mais recentes primeiro)
+    // ORDENAÇÃO CRONOLÓGICA REAL (Correção para a imagem)
     return sorted.sort((a, b) => {
       const dateA = new Date(a.isoDate || 0).getTime();
       const dateB = new Date(b.isoDate || 0).getTime();
       if (dateB !== dateA) return dateB - dateA;
-      return b.timestamp - a.timestamp; // Desempate pela hora de inserção
+      return b.timestamp - a.timestamp;
     }).slice(0, 15);
   };
 
@@ -238,13 +245,8 @@ export default function App() {
 
   if (!user) {
     const knownProfiles = JSON.parse(localStorage.getItem('known_profiles') || '[]');
-
     return (
-      <div style={{ 
-        display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', 
-        minHeight: '100vh', background: 'linear-gradient(180deg, #F8F9FB 0%, #E9ECEF 100%)', 
-        padding: '20px', fontFamily: '-apple-system, sans-serif', boxSizing: 'border-box'
-      }}>
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', background: 'linear-gradient(180deg, #F8F9FB 0%, #E9ECEF 100%)', padding: '20px', fontFamily: '-apple-system, sans-serif', boxSizing: 'border-box' }}>
         <div style={{ textAlign: 'center', marginBottom: '30px' }}>
           <h1 style={{ fontWeight: '900', fontSize: 'clamp(40px, 10vw, 52px)', letterSpacing: '-2px', margin: '0', color: '#1C1C1E' }}>Aligna</h1>
           <p style={{ color: '#8E8E93', fontWeight: '600', marginTop: '5px' }}>Finanças sob controlo</p>
@@ -254,11 +256,7 @@ export default function App() {
           <div style={{ width: '100%', maxWidth: '400px' }}>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px', width: '100%' }}>
               {knownProfiles.map(u => allUsers[u] && (
-                <div key={u} onClick={() => setSelectingUser(u)} style={{ 
-                  backgroundColor: 'white', padding: '20px 10px', borderRadius: '25px', cursor: 'pointer', 
-                  textAlign: 'center', transition: 'all 0.2s ease',
-                  boxShadow: selectingUser === u ? '0 0 0 3px #007AFF' : '0 10px 20px rgba(0,0,0,0.04)',
-                }}>
+                <div key={u} onClick={() => setSelectingUser(u)} style={{ backgroundColor: 'white', padding: '20px 10px', borderRadius: '25px', cursor: 'pointer', textAlign: 'center', transition: 'all 0.2s ease', boxShadow: selectingUser === u ? '0 0 0 3px #007AFF' : '0 10px 20px rgba(0,0,0,0.04)' }}>
                   <div style={{ fontSize: '36px', marginBottom: '5px' }}>{allUsers[u].settings?.avatar || '👤'}</div>
                   <div style={{ fontWeight: '800', fontSize: '12px', color: '#1C1C1E', textOverflow: 'ellipsis', overflow: 'hidden' }}>{u.toUpperCase()}</div>
                 </div>
@@ -413,7 +411,6 @@ export default function App() {
               {[2024, 2025, 2026, 2027].map(y => <option key={y} value={y}>{y}</option>)}
             </select>
           </div>
-
           {selectedDetail ? (
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '15px' }}>
@@ -449,11 +446,9 @@ export default function App() {
           <div style={{ display: 'flex', gap: '10px', overflowX: 'auto', paddingBottom: '15px', marginBottom: '10px', WebkitOverflowScrolling: 'touch' }}>
             {AVATARS.map(a => <div key={a} onClick={() => updateSettings({avatar: a})} style={{ minWidth: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: '20px', backgroundColor: settings.avatar === a ? '#007AFF' : '#F2F2F7', borderRadius: '12px', color: settings.avatar === a ? 'white' : 'inherit' }}>{a}</div>)}
           </div>
-          
           <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', width: '100%' }}>
             <input value={settings.email} onChange={e => updateSettings({email: e.target.value})} placeholder="Email" style={{ width: '100%', padding: '14px', borderRadius: '12px', border: 'none', backgroundColor: '#F2F2F7', boxSizing: 'border-box', fontSize: '14px' }} />
             <input value={settings.password} type="password" onChange={e => updateSettings({password: e.target.value})} placeholder="Senha App" style={{ width: '100%', padding: '14px', borderRadius: '12px', border: 'none', backgroundColor: '#F2F2F7', boxSizing: 'border-box', fontSize: '14px' }} />
-            
             <div style={{ display: 'flex', gap: '10px', width: '100%', boxSizing: 'border-box' }}>
               <div style={{ flex: 1 }}>
                 <label style={{fontSize: '9px', fontWeight: '700', color: '#8E8E93', marginLeft: '5px'}}>LIMITE SALDO</label>
@@ -464,7 +459,6 @@ export default function App() {
               </button>
             </div>
           </div>
-
           <h4 style={{ fontWeight: '800', fontSize: '14px', marginTop: '20px' }}>Minhas Contas</h4>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', width: '100%' }}>
             {Object.keys(settings.accounts || {}).map(k => (
@@ -474,7 +468,6 @@ export default function App() {
               </div>
             ))}
           </div>
-
           {!showAddAccount ? (
             <button onClick={() => setShowAddAccount(true)} style={{ width: '100%', padding: '14px', border: '2px dashed #D1D1D6', borderRadius: '15px', background: 'none', color: '#8E8E93', fontWeight: '800', fontSize: '13px', marginTop: '10px' }}>+ Adicionar Conta</button>
           ) : (
@@ -506,3 +499,6 @@ export default function App() {
     </div>
   );
 }
+
+
+```
