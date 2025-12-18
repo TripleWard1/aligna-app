@@ -483,9 +483,22 @@ const isLowBalance = totalBalance < (settings.lowBalanceLimit || 50);
               
               <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                 <select value={formData.acc} onChange={e => setFormData({...formData, acc: e.target.value})} style={{ width: '100%', padding: '15px', borderRadius: '15px', border: 'none', backgroundColor: '#F8F9FB', fontSize: '14px' }}>{Object.keys(settings.accounts || {}).map(k => <option key={k} value={k}>De: {settings.accounts[k].label}</option>)}</select>
-                <select value={transType === 'transfer' ? formData.toAcc : formData.cat} onChange={e => setFormData({...formData, [transType === 'transfer' ? 'toAcc' : 'cat']: e.target.value})} style={{ width: '100%', padding: '15px', borderRadius: '15px', border: 'none', backgroundColor: '#F8F9FB', fontSize: '14px' }}>
-                  {transType === 'transfer' ? Object.keys(settings.accounts || {}).map(k => <option key={k} value={k}>Para: {settings.accounts[k].label}</option>) : content.categories.map(k => <option key={k} value={k}>{CATEGORIES[k].icon} {CATEGORIES[k].label}</option>)}
-                </select>
+                <select 
+  value={transType === 'transfer' ? formData.toAcc : formData.cat} 
+  onChange={(e) => {
+    if (transType === 'transfer') {
+      setFormData({ ...formData, toAcc: e.target.value });
+    } else {
+      setFormData({ ...formData, cat: e.target.value }); // ISTO CORRIGE A ELETRICIDADE
+    }
+  }} 
+  style={{ width: '100%', padding: '15px', borderRadius: '15px', border: 'none', backgroundColor: '#F8F9FB', fontSize: '14px' }}
+>
+  {transType === 'transfer' 
+    ? Object.keys(settings.accounts || {}).map(k => <option key={k} value={k}>Para: {settings.accounts[k].label}</option>) 
+    : content.categories.map(k => <option key={k} value={k}>{CATEGORIES[k].icon} {CATEGORIES[k].label}</option>)
+  }
+</select>
               </div>
 
               <div style={{display: 'flex', gap: '10px', marginTop: '5px'}}>
