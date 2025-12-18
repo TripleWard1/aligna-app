@@ -552,69 +552,90 @@ const isLowBalance = totalBalance < (settings.lowBalanceLimit || 50);
       )}
 
 {activeTab === 'reports' && (
-        <div style={{ backgroundColor: 'white', padding: '20px', borderRadius: '30px', boxSizing: 'border-box' }}>
-          <h3 style={{ fontWeight: '900', marginBottom: '20px', fontSize: '18px' }}>Análise Mensal</h3>
-          
-          {/* Seletores de Mês e Ano */}
-<div style={{ display: 'flex', gap: '8px', marginBottom: '20px' }}>
-  {/* Seletor de Mês */}
-  <select 
-    value={reportMonth} 
-    onChange={e => setReportMonth(parseInt(e.target.value))} 
-    style={{ flex: 1, padding: '12px', borderRadius: '12px', border: '1px solid #E5E5EA', fontWeight: 'bold', fontSize: '12px' }}
-  >
-    <option value={0}>ANO COMPLETO</option>
-    {Array.from({length: 12}, (_, i) => (
-      <option key={i+1} value={i+1}>
-        {new Date(0, i).toLocaleString('pt', {month: 'long'}).toUpperCase()}
-      </option>
-    ))}
-  </select>
+  <div style={{ backgroundColor: 'white', padding: '20px', borderRadius: '30px', boxSizing: 'border-box' }}>
+    <h3 style={{ fontWeight: '900', marginBottom: '20px', fontSize: '18px' }}>Análise Mensal</h3>
+    
+    {/* 1. Botão de Exportar (Colocado fora do flex dos seletores para não quebrar o layout) */}
+    <button 
+      onClick={exportToPDF}
+      style={{
+        width: '100%',
+        padding: '14px',
+        backgroundColor: '#1C1C1E',
+        color: 'white',
+        border: 'none',
+        borderRadius: '16px',
+        fontWeight: '800',
+        marginBottom: '20px',
+        cursor: 'pointer'
+      }}
+    >
+      📄 Exportar PDF do Mês
+    </button>
 
-  <button 
-  onClick={exportToPDF}
-  style={{
-    width: '100%',
-    padding: '14px',
-    backgroundColor: '#1C1C1E',
-    color: 'white',
-    border: 'none',
-    borderRadius: '16px',
-    fontWeight: '800',
-    marginBottom: '20px',
-    cursor: 'pointer'
-  }}
->
-  📄 Exportar PDF do Mês
-</button>
+    {/* 2. Seletores de Mês e Ano */}
+    <div style={{ display: 'flex', gap: '8px', marginBottom: '20px' }}>
+      <select 
+        value={reportMonth} 
+        onChange={e => setReportMonth(parseInt(e.target.value))} 
+        style={{ flex: 1, padding: '12px', borderRadius: '12px', border: '1px solid #E5E5EA', fontWeight: 'bold', fontSize: '12px' }}
+      >
+        <option value={0}>ANO COMPLETO</option>
+        {Array.from({length: 12}, (_, i) => (
+          <option key={i+1} value={i+1}>
+            {new Date(0, i).toLocaleString('pt', {month: 'long'}).toUpperCase()}
+          </option>
+        ))}
+      </select>
 
-  {/* SELETOR DE ANO (O Menu Dropdown que pediste) */}
-  <select 
-    value={reportYear} 
-    onChange={e => setReportYear(parseInt(e.target.value))} 
-    style={{ width: '100px', padding: '12px', borderRadius: '12px', border: '1px solid #E5E5EA', fontWeight: 'bold', fontSize: '12px' }}
-  >
-    {/* Esta linha impede duplicados e mostra os anos que têm dados + o ano atual */}
-    {[...new Set([...list.map(t => Number(t.year)), new Date().getFullYear()])]
-      .sort((a, b) => b - a)
-      .map(y => <option key={y} value={y}>{y}</option>)
-    }
-  </select>
-</div>
+      <select 
+        value={reportYear} 
+        onChange={e => setReportYear(parseInt(e.target.value))} 
+        style={{ width: '100px', padding: '12px', borderRadius: '12px', border: '1px solid #E5E5EA', fontWeight: 'bold', fontSize: '12px' }}
+      >
+        {[...new Set([...list.map(t => Number(t.year)), new Date().getFullYear()])]
+          .sort((a, b) => b - a)
+          .map(y => <option key={y} value={y}>{y}</option>)
+        }
+      </select>
+    </div>
 
-          {/* Novos Cartões de Resumo */}
-          {!selectedDetail && (
-            <div style={{ display: 'flex', gap: '10px', marginBottom: '25px' }}>
-              <div style={{ flex: 1, backgroundColor: '#F2F2F7', padding: '15px', borderRadius: '20px' }}>
-                <p style={{ margin: 0, fontSize: '10px', fontWeight: '700', color: '#8E8E93' }}>RECEITAS</p>
-                <strong style={{ color: '#34C759', fontSize: '16px' }}>+{monthlyIncome.toFixed(2)}{settings.currency}</strong>
-              </div>
-              <div style={{ flex: 1, backgroundColor: '#F2F2F7', padding: '15px', borderRadius: '20px' }}>
-                <p style={{ margin: 0, fontSize: '10px', fontWeight: '700', color: '#8E8E93' }}>DESPESAS</p>
-                <strong style={{ color: '#FF3B30', fontSize: '16px' }}>-{monthlyExpenses.toFixed(2)}{settings.currency}</strong>
-              </div>
-            </div>
-          )}
+    {/* 3. Resumo de Valores */}
+    {!selectedDetail && (
+      <div style={{ display: 'flex', gap: '10px', marginBottom: '25px' }}>
+        <div style={{ flex: 1, backgroundColor: '#F2F2F7', padding: '15px', borderRadius: '20px' }}>
+          <p style={{ margin: 0, fontSize: '10px', fontWeight: '700', color: '#8E8E93' }}>RECEITAS</p>
+          <strong style={{ color: '#34C759', fontSize: '16px' }}>+{monthlyIncome.toFixed(2)}{settings.currency}</strong>
+        </div>
+        <div style={{ flex: 1, backgroundColor: '#F2F2F7', padding: '15px', borderRadius: '20px' }}>
+          <p style={{ margin: 0, fontSize: '10px', fontWeight: '700', color: '#8E8E93' }}>DESPESAS</p>
+          <strong style={{ color: '#FF3B30', fontSize: '16px' }}>-{monthlyExpenses.toFixed(2)}{settings.currency}</strong>
+        </div>
+      </div>
+    )}
+
+    {/* 4. Lista de Categorias Ordenada */}
+    {Object.keys(totalsByCat)
+      .sort((a, b) => totalsByCat[b] - totalsByCat[a])
+      .map(cat => (
+        <div key={cat} onClick={() => setSelectedDetail(cat)} style={{ marginBottom: '18px', cursor: 'pointer' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px', fontSize: '13px', fontWeight: '800' }}>
+            <span>{CATEGORIES[cat]?.icon} {CATEGORIES[cat]?.label}</span>
+            <span>{totalsByCat[cat].toFixed(2)}{settings.currency}</span>
+          </div>
+          <div style={{ width: '100%', height: '8px', backgroundColor: '#F2F2F7', borderRadius: '10px', overflow: 'hidden' }}>
+            <div style={{ 
+              width: `${Math.min((totalsByCat[cat] / (maxCategoryValue || 1)) * 100, 100)}%`, 
+              height: '100%', 
+              backgroundColor: CATEGORIES[cat]?.color || '#007AFF', 
+              borderRadius: '10px',
+              transition: 'width 0.8s ease'
+            }}></div>
+          </div>
+        </div>
+      ))}
+  </div>
+)}
 
 {selectedDetail ? (
             <div>
