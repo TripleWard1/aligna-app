@@ -217,22 +217,22 @@ export default function App() {
   const getSortedList = () => {
     let sorted = [...list];
     
-    // Se a ordem for por inserção (Recentemente adicionados)
+    // ORDENAÇÃO POR INSERÇÃO (Recentemente adicionados)
     if (sortOrder === 'entry') {
-      return sorted.sort((a, b) => b.timestamp - a.timestamp).slice(0, 15);
+      return sorted.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0)).slice(0, 15);
     }
     
-    // ORDENAÇÃO CRONOLÓGICA REAL (Data selecionada no calendário)
-    // Usamos o isoDate para comparação direta de strings "YYYY-MM-DD" que funciona perfeitamente
+    // ORDENAÇÃO CRONOLÓGICA (Data do Calendário)
     return sorted.sort((a, b) => {
+      // Usamos localeCompare para comparar strings YYYY-MM-DD diretamente
       const dateA = a.isoDate || "0000-00-00";
       const dateB = b.isoDate || "0000-00-00";
       
       if (dateB !== dateA) {
-        return dateB.localeCompare(dateA); // Datas mais recentes (maiores) primeiro
+        return dateB.localeCompare(dateA); // Ordem decrescente (mais recente primeiro)
       }
       
-      // Se a data for igual, desempata pelo timestamp de criação (mais recente primeiro)
+      // Se a data for igual, desempata pelo timestamp (quem foi inserido por último fica em cima)
       return (b.timestamp || 0) - (a.timestamp || 0);
     }).slice(0, 15);
   };
