@@ -418,41 +418,29 @@ const isLowBalance = totalBalance < (settings.lowBalanceLimit || 50);
       {activeTab === 'home' && (
         <>
           <div style={{ 
-  background: isLowBalance 
-    ? 'linear-gradient(135deg, #2C0B0E 0%, #FF3B30 100%)' // Cor avermelhada se estiver baixo
-    : 'linear-gradient(135deg, #1C1C1E 0%, #3A3A3C 100%)', 
-  color: 'white', 
-  padding: '30px 20px', 
-  borderRadius: '30px', 
-  marginBottom: '20px', 
-  boxShadow: isLowBalance ? '0 10px 25px rgba(255,59,48,0.2)' : '0 10px 25px rgba(0,0,0,0.15)',
-  position: 'relative',
-  border: isLowBalance ? '1px solid rgba(255,255,255,0.2)' : 'none'
-}}>
-  <p style={{ margin: 0, opacity: 0.6, fontSize: '11px', fontWeight: '700' }}>
-    SALDO CONSOLIDADO {isLowBalance && '⚠️'}
-  </p>
-  <h1 style={{ 
-    fontSize: 'clamp(32px, 8vw, 42px)', 
-    margin: '8px 0', 
-    fontWeight: '900', 
-    wordBreak: 'break-all',
-    color: isLowBalance ? '#FFD6D6' : 'white' // Texto ligeiramente rosado se baixo
-  }}>
-    {formatValue(totalBalance)}
-  </h1>
-</div>
+            background: isLowBalance 
+              ? 'linear-gradient(135deg, #2C0B0E 0%, #FF3B30 100%)' 
+              : 'linear-gradient(135deg, #1C1C1E 0%, #3A3A3C 100%)', 
+            color: 'white', 
+            padding: '30px 20px', 
+            borderRadius: '30px', 
+            marginBottom: '20px', 
+            boxShadow: isLowBalance ? '0 10px 25px rgba(255,59,48,0.2)' : '0 10px 25px rgba(0,0,0,0.15)',
+            position: 'relative'
+          }}>
+            <p style={{ margin: 0, opacity: 0.6, fontSize: '11px', fontWeight: '700' }}>SALDO CONSOLIDADO {isLowBalance && '⚠️'}</p>
+            <h1 style={{ fontSize: 'clamp(32px, 8vw, 42px)', margin: '8px 0', fontWeight: '900', wordBreak: 'break-all' }}>{formatValue(totalBalance)}</h1>
+          </div>
 
-{/* O BLOCO DAS CONTAS (CARTEIRA) MANTÉM-SE IGUAL ABAIXO: */}
-<div style={{ display: 'flex', gap: '12px', overflowX: 'auto', paddingBottom: '20px', WebkitOverflowScrolling: 'touch' }}>
-  {Object.keys(settings.accounts || {}).map(k => (
-    <div key={k} style={{ minWidth: '120px', backgroundColor: 'white', padding: '15px', borderRadius: '22px', textAlign: 'center', boxShadow: '0 5px 15px rgba(0,0,0,0.03)' }}>
-      <div style={{fontSize: '28px', marginBottom: '5px'}}>{settings.accounts[k].icon}</div>
-      <div style={{fontSize: '10px', color: '#8E8E93', fontWeight: '600', textTransform: 'uppercase'}}>{settings.accounts[k].label}</div>
-      <strong style={{fontSize: '15px'}}>{formatValue(getAccountBalance(k))}</strong>
-    </div>
-  ))}
-</div>
+          <div style={{ display: 'flex', gap: '12px', overflowX: 'auto', paddingBottom: '20px', WebkitOverflowScrolling: 'touch' }}>
+            {Object.keys(settings.accounts || {}).map(k => (
+              <div key={k} style={{ minWidth: '120px', backgroundColor: 'white', padding: '15px', borderRadius: '22px', textAlign: 'center', boxShadow: '0 5px 15px rgba(0,0,0,0.03)' }}>
+                <div style={{fontSize: '28px', marginBottom: '5px'}}>{settings.accounts[k].icon}</div>
+                <div style={{fontSize: '10px', color: '#8E8E93', fontWeight: '600', textTransform: 'uppercase'}}>{settings.accounts[k].label}</div>
+                <strong style={{fontSize: '15px'}}>{formatValue(getAccountBalance(k))}</strong>
+              </div>
+            ))}
+          </div>
 
           <div style={{ backgroundColor: 'white', padding: '20px', borderRadius: '30px', marginBottom: '25px', border: editingId ? '2px solid #007AFF' : 'none' }}>
             <h4 style={{margin: '0 0 15px 0', fontWeight: '800', fontSize: '15px'}}>{editingId ? '📝 Editar Registo' : '➕ Novo Registo'}</h4>
@@ -465,81 +453,96 @@ const isLowBalance = totalBalance < (settings.lowBalanceLimit || 50);
                 ))}
               </div>
               
-              <div style={{ display: 'flex', gap: '8px', alignItems: 'center', backgroundColor: '#F8F9FB', padding: '2px 12px', borderRadius: '15px' }}>
-                <span style={{fontSize: '11px', fontWeight: 'bold', color: '#8E8E93'}}>DATA:</span>
-                <input type="date" value={formData.date} onChange={e => setFormData({...formData, date: e.target.value})} style={{ border: 'none', background: 'none', padding: '12px 0', flex: 1, fontWeight: 'bold', fontSize: '14px', color: '#1C1C1E' }} />
-              </div>
-
+              <input type="date" value={formData.date} onChange={e => setFormData({...formData, date: e.target.value})} style={{ padding: '12px', borderRadius: '15px', border: 'none', backgroundColor: '#F8F9FB', fontWeight: 'bold' }} />
               <input value={formData.desc} onChange={e => setFormData({...formData, desc: e.target.value})} placeholder={content.placeholder} required style={{ width: '100%', boxSizing: 'border-box', padding: '15px', borderRadius: '15px', border: 'none', backgroundColor: '#F8F9FB', fontSize: '15px' }} />
-              
-              {transType === 'investimento' && (
-                <div style={{ display: 'flex', gap: '10px' }}>
-                  <select value={formData.assetType} onChange={e => setFormData({...formData, assetType: e.target.value})} style={{ flex: 1, padding: '15px', borderRadius: '15px', border: 'none', backgroundColor: '#F8F9FB', fontSize: '14px' }}>{ASSET_TYPES.map(t => <option key={t} value={t}>{t}</option>)}</select>
-                  <input value={formData.perf} onChange={e => setFormData({...formData, perf: e.target.value})} placeholder="%" style={{ width: '60px', padding: '15px', borderRadius: '15px', border: 'none', backgroundColor: '#F8F9FB', textAlign: 'center', fontSize: '14px' }} />
-                </div>
-              )}
-
               <input value={formData.val} onChange={e => setFormData({...formData, val: e.target.value})} type="number" step="0.01" placeholder="0.00" required style={{ width: '100%', boxSizing: 'border-box', padding: '15px', borderRadius: '15px', border: 'none', backgroundColor: '#F8F9FB', fontSize: '20px', fontWeight: '900' }} />
               
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                <select value={formData.acc} onChange={e => setFormData({...formData, acc: e.target.value})} style={{ width: '100%', padding: '15px', borderRadius: '15px', border: 'none', backgroundColor: '#F8F9FB', fontSize: '14px' }}>{Object.keys(settings.accounts || {}).map(k => <option key={k} value={k}>De: {settings.accounts[k].label}</option>)}</select>
-                <select 
-  value={transType === 'transfer' ? formData.toAcc : formData.cat} 
-  onChange={(e) => {
-    if (transType === 'transfer') {
-      setFormData({ ...formData, toAcc: e.target.value });
-    } else {
-      setFormData({ ...formData, cat: e.target.value }); // ISTO CORRIGE A ELETRICIDADE
-    }
-  }} 
-  style={{ width: '100%', padding: '15px', borderRadius: '15px', border: 'none', backgroundColor: '#F8F9FB', fontSize: '14px' }}
->
-  {transType === 'transfer' 
-    ? Object.keys(settings.accounts || {}).map(k => <option key={k} value={k}>Para: {settings.accounts[k].label}</option>) 
-    : content.categories.map(k => <option key={k} value={k}>{CATEGORIES[k].icon} {CATEGORIES[k].label}</option>)
-  }
-</select>
-              </div>
+              <select value={formData.acc} onChange={e => setFormData({...formData, acc: e.target.value})} style={{ width: '100%', padding: '15px', borderRadius: '15px', border: 'none', backgroundColor: '#F8F9FB' }}>
+                {Object.keys(settings.accounts || {}).map(k => <option key={k} value={k}>De: {settings.accounts[k].label}</option>)}
+              </select>
 
-              <div style={{display: 'flex', gap: '10px', marginTop: '5px'}}>
-                <button type="submit" style={{ flex: 2, padding: '15px', backgroundColor: editingId ? '#007AFF' : content.color, color: 'white', border: 'none', borderRadius: '15px', fontWeight: '900', fontSize: '15px' }}>{editingId ? 'Confirmar' : 'Adicionar'}</button>
-                {editingId && <button type="button" onClick={() => {setEditingId(null); setFormData({...formData, desc: '', val: ''})}} style={{ flex: 1, backgroundColor: '#E5E5EA', borderRadius: '15px', border: 'none', fontWeight: 'bold', fontSize: '14px'}}>Sair</button>}
-              </div>
+              {/* CORREÇÃO DAS CATEGORIAS AQUI */}
+              <select 
+                value={transType === 'transfer' ? formData.toAcc : formData.cat} 
+                onChange={e => setFormData({...formData, [transType === 'transfer' ? 'toAcc' : 'cat']: e.target.value})} 
+                style={{ width: '100%', padding: '15px', borderRadius: '15px', border: 'none', backgroundColor: '#F8F9FB' }}
+              >
+                {transType === 'transfer' 
+                  ? Object.keys(settings.accounts || {}).map(k => <option key={k} value={k}>Para: {settings.accounts[k].label}</option>) 
+                  : content.categories.map(k => <option key={k} value={k}>{CATEGORIES[k].icon} {CATEGORIES[k].label}</option>)
+                }
+              </select>
+
+              <button type="submit" style={{ width: '100%', padding: '15px', backgroundColor: content.color, color: 'white', border: 'none', borderRadius: '15px', fontWeight: '900' }}>
+                {editingId ? 'Confirmar' : 'Adicionar'}
+              </button>
             </form>
           </div>
+        </>
+      )}
 
-          <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px'}}>
-            <h3 style={{fontWeight: '900', margin: 0, fontSize: '16px'}}>Atividade</h3>
-            <select value={sortOrder} onChange={e => setSortOrder(e.target.value)} style={{ border: 'none', backgroundColor: 'transparent', fontWeight: 'bold', color: '#007AFF', fontSize: '10px'}}>
-              <option value="entry">MAIS RECENTES</option>
-              <option value="date">DATA DO GASTO</option>
+      {activeTab === 'reports' && (
+        <div style={{ backgroundColor: 'white', padding: '20px', borderRadius: '30px', boxSizing: 'border-box' }}>
+          <h3 style={{ fontWeight: '900', marginBottom: '20px', fontSize: '18px' }}>Análise Mensal</h3>
+          
+          <button 
+            onClick={exportToPDF}
+            style={{ width: '100%', padding: '14px', backgroundColor: '#1C1C1E', color: 'white', border: 'none', borderRadius: '16px', fontWeight: '800', marginBottom: '20px' }}
+          >
+            📄 Exportar PDF do Mês
+          </button>
+
+          <div style={{ display: 'flex', gap: '8px', marginBottom: '20px' }}>
+            <select value={reportMonth} onChange={e => setReportMonth(parseInt(e.target.value))} style={{ flex: 1, padding: '12px', borderRadius: '12px', border: '1px solid #E5E5EA' }}>
+              <option value={0}>ANO COMPLETO</option>
+              {Array.from({length: 12}, (_, i) => <option key={i+1} value={i+1}>{new Date(0, i).toLocaleString('pt', {month: 'long'}).toUpperCase()}</option>)}
+            </select>
+            <select value={reportYear} onChange={e => setReportYear(parseInt(e.target.value))} style={{ width: '100px', padding: '12px', borderRadius: '12px', border: '1px solid #E5E5EA' }}>
+              {[...new Set([...list.map(t => Number(t.year)), new Date().getFullYear()])].sort((a,b)=>b-a).map(y => <option key={y} value={y}>{y}</option>)}
             </select>
           </div>
 
-          {getSortedList().map(t => {
-            const isGain = t.type === 'income' || t.type === 'investimento';
-            const isLoss = t.type === 'expense';
-            return (
-              <div key={t.id} style={{ display: 'flex', alignItems: 'center', backgroundColor: 'white', padding: '12px 15px', borderRadius: '22px', marginBottom: '10px' }}>
-                <div style={{ width: '40px', height: '40px', borderRadius: '12px', backgroundColor: '#F8F9FB', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px', marginRight: '12px' }}>{t.type === 'investimento' ? '📈' : (CATEGORIES[t.category]?.icon || '💰')}</div>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <p style={{ margin: 0, fontWeight: '700', fontSize: '13px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{t.description}</p>
-                  <p style={{ margin: 0, color: '#AEAEB2', fontSize: '10px' }}>{t.date} • {settings.accounts[t.account]?.label}</p>
-                </div>
-                <div style={{ textAlign: 'right', marginLeft: '10px' }}>
-                  <p style={{ margin: 0, fontWeight: '800', fontSize: '14px', color: isGain ? '#34C759' : isLoss ? '#FF3B30' : '#1C1C1E' }}>
-                    {isGain ? '+' : isLoss ? '-' : ''}{formatValue(t.amount)}
-                  </p>
-                  <div style={{display: 'flex', gap: '12px', justifyContent: 'flex-end', marginTop: '4px'}}>
-                     <button onClick={() => handleEdit(t)} style={{ border: 'none', background: 'none', fontSize: '12px', padding: 0 }}>✏️</button>
-                     <button onClick={() => { if(window.confirm('Eliminar?')) remove(ref(db, `users/${user}/transactions/${t.id}`)); }} style={{ border: 'none', background: 'none', fontSize: '12px', padding: 0 }}>🗑️</button>
-                  </div>
-                </div>
+          <div style={{ display: 'flex', gap: '10px', marginBottom: '25px' }}>
+            <div style={{ flex: 1, backgroundColor: '#F2F2F7', padding: '15px', borderRadius: '20px' }}>
+              <p style={{ margin: 0, fontSize: '10px', fontWeight: '700' }}>RECEITAS</p>
+              <strong style={{ color: '#34C759' }}>+{monthlyIncome.toFixed(2)}{settings.currency}</strong>
+            </div>
+            <div style={{ flex: 1, backgroundColor: '#F2F2F7', padding: '15px', borderRadius: '20px' }}>
+              <p style={{ margin: 0, fontSize: '10px', fontWeight: '700' }}>DESPESAS</p>
+              <strong style={{ color: '#FF3B30' }}>-{monthlyExpenses.toFixed(2)}{settings.currency}</strong>
+            </div>
+          </div>
+
+          {Object.keys(totalsByCat).sort((a,b) => totalsByCat[b] - totalsByCat[a]).map(cat => (
+            <div key={cat} onClick={() => setSelectedDetail(cat)} style={{ marginBottom: '18px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px', fontSize: '13px', fontWeight: '800' }}>
+                <span>{CATEGORIES[cat]?.icon} {CATEGORIES[cat]?.label}</span>
+                <span>{totalsByCat[cat].toFixed(2)}{settings.currency}</span>
               </div>
-            );
-          })}
-        </>
+              <div style={{ width: '100%', height: '8px', backgroundColor: '#F2F2F7', borderRadius: '10px', overflow: 'hidden' }}>
+                <div style={{ width: `${Math.min((totalsByCat[cat] / (maxCategoryValue || 1)) * 100, 100)}%`, height: '100%', backgroundColor: CATEGORIES[cat]?.color, borderRadius: '10px' }}></div>
+              </div>
+            </div>
+          ))}
+        </div>
       )}
+
+      {activeTab === 'settings' && (
+        <div style={{ backgroundColor: 'white', padding: '20px', borderRadius: '30px' }}>
+          <h3 style={{ fontWeight: '900', marginTop: 0 }}>Definições</h3>
+          <button onClick={() => { localStorage.removeItem('f_user'); window.location.reload(); }} style={{ width: '100%', padding: '15px', color: '#FF3B30', border: 'none', background: 'none', fontWeight: '800' }}>Sair da Conta</button>
+        </div>
+      )}
+
+      {/* Menu Inferior */}
+      <div style={{ position: 'fixed', bottom: '15px', left: '50%', transform: 'translateX(-50%)', width: '92%', maxWidth: '400px', backgroundColor: 'rgba(255,255,255,0.92)', backdropFilter: 'blur(15px)', display: 'flex', justifyContent: 'space-around', padding: '12px 0', borderRadius: '25px', boxShadow: '0 8px 25px rgba(0,0,0,0.1)', zIndex: 1000 }}>
+        <button onClick={() => setActiveTab('home')} style={{ background: 'none', border: 'none', fontSize: '24px', opacity: activeTab === 'home' ? 1 : 0.2 }}>🏠</button>
+        <button onClick={() => setActiveTab('reports')} style={{ background: 'none', border: 'none', fontSize: '24px', opacity: activeTab === 'reports' ? 1 : 0.2 }}>📊</button>
+        <button onClick={() => setActiveTab('settings')} style={{ background: 'none', border: 'none', fontSize: '24px', opacity: activeTab === 'settings' ? 1 : 0.2 }}>⚙️</button>
+      </div>
+    </div>
+  );
+}
 
 {activeTab === 'reports' && (
         <div style={{ backgroundColor: 'white', padding: '20px', borderRadius: '30px', boxSizing: 'border-box' }}>
