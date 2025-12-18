@@ -1,33 +1,24 @@
-/* 1. RESET TOTAL PARA TODOS OS CAMPOS */
+/* FORÇAR PRETO EM ABSOLUTAMENTE TUDO (ESTILO RADICAL) */
+* {
+  color: #000000 !important;
+  -webkit-text-fill-color: #000000 !important; /* Força no iPhone/Safari */
+}
+
+/* GARANTIR QUE AS CAIXAS DE TEXTO TÊM FUNDO BRANCO */
 input, 
 textarea, 
 select, 
-button {
-  /* Força a cor preta no texto que escreves */
-  color: #000000 !important;
-  
-  /* ESTA LINHA É A CHAVE: Vence o modo escuro do iOS/Safari */
-  -webkit-text-fill-color: #000000 !important;
-  
-  /* Garante que o fundo não fica escuro */
+.input-field {
   background-color: #ffffff !important;
   background: #ffffff !important;
-  
-  /* Remove estilos automáticos do sistema que mudam cores */
+  opacity: 1 !important;
   appearance: none !important;
   -webkit-appearance: none !important;
-  opacity: 1 !important;
 }
 
-/* 2. FORÇAR COR NO TEXTO QUE APARECE ENQUANTO NÃO ESCREVES */
+/* COR DOS PONTINHOS DA PASSWORD E PLACEHOLDERS */
 input::placeholder,
-textarea::placeholder {
+input::-webkit-input-placeholder {
   color: #666666 !important;
   -webkit-text-fill-color: #666666 !important;
-}
-
-/* 3. GARANTIR QUE O TEXTO GERAL DO SITE É PRETO */
-body, #root, .app-container, div, p, span {
-  color: #000000 !important;
-  -webkit-text-fill-color: #000000 !important;
 }
