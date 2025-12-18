@@ -96,6 +96,18 @@ export default function App() {
     }
   }, [user]);
 
+  useEffect(() => {
+    if (transType === 'income') {
+      setFormData(prev => ({ ...prev, cat: 'salario' }));
+    } else if (transType === 'expense') {
+      setFormData(prev => ({ ...prev, cat: 'alimentacao' }));
+    } else if (transType === 'investimento') {
+      setFormData(prev => ({ ...prev, cat: 'investimento' }));
+    } else if (transType === 'transfer') {
+      setFormData(prev => ({ ...prev, cat: 'transferencia' }));
+    }
+  }, [transType]);
+
   const updateSettings = (newSet) => {
     const updated = { ...settings, ...newSet };
     setSettings(updated);
@@ -481,7 +493,11 @@ const isLowBalance = totalBalance < (settings.lowBalanceLimit || 50);
                 <select value={formData.acc} onChange={e => setFormData({...formData, acc: e.target.value})} style={{ width: '100%', padding: '15px', borderRadius: '15px', border: 'none', backgroundColor: '#F8F9FB', fontSize: '14px' }}>{Object.keys(settings.accounts || {}).map(k => <option key={k} value={k}>De: {settings.accounts[k].label}</option>)}</select>
                 <select 
   value={transType === 'transfer' ? formData.toAcc : formData.cat} 
-  onChange={(e) => setFormData({ ...formData, cat: e.target.value })}
+  onChange={(e) => {
+    const selectedCat = e.target.value;
+    // Se for receita e o utilizador não escolheu nada, garantimos que não fica 'luz'
+    setFormData({ ...formData, cat: selectedCat });
+  }}
   style={{ width: '100%', padding: '15px', borderRadius: '15px', border: 'none', backgroundColor: '#F8F9FB', fontSize: '14px' }}
 >
   {transType === 'transfer' 
@@ -637,21 +653,7 @@ const isLowBalance = totalBalance < (settings.lowBalanceLimit || 50);
           }) : <p style={{ width: '100%', textAlign: 'center', color: '#AEAEB2', fontSize: '12px' }}>Sem dados históricos</p>}
         </div>
       </div>
-    ) : (
-      Object.keys(totalsByCat || {})
-        .sort((a, b) => totalsByCat[b] - totalsByCat[a])
-        .map(cat => (
-          <div key={cat} onClick={() => setSelectedDetail(cat)} style={{ marginBottom: '18px', cursor: 'pointer' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px', fontSize: '13px', fontWeight: '800' }}>
-              <span>{CATEGORIES[cat]?.icon} {CATEGORIES[cat]?.label || cat}</span>
-              <span>{totalsByCat[cat].toFixed(2)}{settings.currency}</span>
-            </div>
-            <div style={{ width: '100%', height: '8px', backgroundColor: '#F2F2F7', borderRadius: '10px', overflow: 'hidden' }}>
-              <div style={{ width: `${Math.min((totalsByCat[cat] / (maxCategoryValue || 1)) * 100, 100)}%`, height: '100%', backgroundColor: CATEGORIES[cat]?.color || '#007AFF', borderRadius: '10px' }}></div>
-            </div>
-          </div>
-        ))
-    )}
+    ) : null} {/* Alterado aqui para null para não duplicar a lista */}
   </div>
 )}
 
