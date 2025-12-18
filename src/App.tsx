@@ -118,15 +118,20 @@ export default function App() {
 
   const handleTransactionSubmit = async (e) => {
     e.preventDefault();
-    const { desc, val, cat, acc, toAcc, assetType, perf } = e.target.elements;
+    const form = e.target;
+    const { desc, val, cat, acc, toAcc, assetType, perf } = form.elements;
+    
+    let amountValue = parseFloat(val.value);
+    if (isNaN(amountValue)) return;
+
     let autoPerformance = perf ? perf.value : "0";
 
-    // Lógica para detetar preço via Twelve Data se for investimento
+    // Busca de preço automática se for investimento
     if (transType === 'investimento' && desc.value) {
       try {
-        const response = await fetch(`https://api.twelvedata.com/quote?symbol=${desc.value}&apikey=${TWELVE_DATA_KEY}`);
+        const response = await fetch(`https://api.twelvedata.com/quote?symbol=${desc.value.toUpperCase()}&apikey=${TWELVE_DATA_KEY}`);
         const data = await response.json();
-        if (data.percent_change) {
+        if (data && data.percent_change) {
           autoPerformance = parseFloat(data.percent_change).toFixed(2);
         }
       } catch (err) {
@@ -134,16 +139,28 @@ export default function App() {
       }
     }
 
-    push(ref(db, `users/${user}/transactions`), { 
+    const transactionData = { 
       description: desc.value.toUpperCase(), 
-      amount: Math.abs(parseFloat(val.value)), 
+      amount: Math.abs(amountValue), 
       type: transType, 
       category: transType === 'transfer' ? 'transferencia' : (cat ? cat.value : 'investimento'),
-      assetDetails: transType === 'investimento' ? { type: assetType.value, performance: autoPerformance } : null,
-      account: acc.value, toAccount: transType === 'transfer' ? toAcc.value : null, 
-      date: new Date().toLocaleDateString('pt-PT'), timestamp: Date.now() 
-    });
-    e.target.reset();
+      assetDetails: transType === 'investimento' ? { 
+        type: assetType ? assetType.value : 'Outro', 
+        performance: autoPerformance 
+      } : null,
+      account: acc.value, 
+      toAccount: transType === 'transfer' ? toAcc.value : null, 
+      date: new Date().toLocaleDateString('pt-PT'), 
+      timestamp: Date.now() 
+    };
+
+    try {
+      await push(ref(db, `users/${user}/transactions`), transactionData);
+      form.reset();
+      setTransType('expense'); // Volta para despesa após registar
+    } catch (error) {
+      alert("Erro ao gravar: " + error.message);
+    }
   };
 
   if (!user) return (
@@ -263,51 +280,67 @@ export default function App() {
       </div>
 
       <div style={{ backgroundColor: 'white', padding: '30px', borderRadius: '35px', marginBottom: '35px', boxShadow: '0 10px 30px rgba(0,0,0,0.02)' }}>
-        <form onSubmit={handleTransactionSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
-          
-          <div style={{ display: 'flex', backgroundColor: '#F2F2F7', borderRadius: '18px', padding: '6px' }}>
-            <button key="expense" type="button" onClick={() => setTransType('expense')} style={{ flex: 1, padding: '12px', border: 'none', borderRadius: '14px', backgroundColor: transType === 'expense' ? 'white' : 'transparent', fontWeight: '800', fontSize: '14px', cursor: 'pointer' }}>Despesa</button>
-            <button key="income" type="button" onClick={() => setTransType('income')} style={{ flex: 1, padding: '12px', border: 'none', borderRadius: '14px', backgroundColor: transType === 'income' ? 'white' : 'transparent', fontWeight: '800', fontSize: '14px', cursor: 'pointer' }}>Receita</button>
-            <button key="invest" type="button" onClick={() => setTransType('investimento')} style={{ flex: 1, padding: '12px', border: 'none', borderRadius: '14px', backgroundColor: transType === 'investimento' ? 'white' : 'transparent', fontWeight: '800', fontSize: '14px', cursor: 'pointer' }}>Investir</button>
-            <button key="transfer" type="button" onClick={() => setTransType('transfer')} style={{ flex: 1, padding: '12px', border: 'none', borderRadius: '14px', backgroundColor: transType === 'transfer' ? 'white' : 'transparent', fontWeight: '800', fontSize: '14px', cursor: 'pointer' }}>Troca</button>
-          </div>
+      <form onSubmit={handleTransactionSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
+  
+  {/* SELETOR DE TIPO */}
+  <div style={{ display: 'flex', backgroundColor: '#F2F2F7', borderRadius: '18px', padding: '6px' }}>
+    {['expense', 'income', 'investimento', 'transfer'].map((type) => (
+      <button 
+        key={type} 
+        type="button" 
+        onClick={() => setTransType(type)} 
+        style={{ 
+          flex: 1, padding: '12px', border: 'none', borderRadius: '14px', 
+          backgroundColor: transType === type ? 'white' : 'transparent', 
+          fontWeight: '800', fontSize: '13px', cursor: 'pointer',
+          boxShadow: transType === type ? '0 4px 10px rgba(0,0,0,0.05)' : 'none'
+        }}
+      >
+        {type === 'expense' ? 'Despesa' : type === 'income' ? 'Receita' : type === 'investimento' ? 'Investir' : 'Troca'}
+      </button>
+    ))}
+  </div>
 
-          <input name="desc" placeholder={content.placeholder} required style={{ width: '100%', boxSizing: 'border-box', padding: '18px', borderRadius: '18px', border: 'none', backgroundColor: '#F8F9FB', fontSize: '15px' }} />
-          
-          {transType === 'investimento' && (
-            <div style={{ display: 'flex', gap: '10px' }}>
-              <select name="assetType" style={{ flex: 1, padding: '16px', borderRadius: '18px', border: 'none', backgroundColor: '#F8F9FB', fontWeight: '700' }}>
-                {ASSET_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
-              </select>
-              <input name="perf" placeholder="Auto %" style={{ width: '80px', padding: '16px', borderRadius: '18px', border: 'none', backgroundColor: '#F8F9FB', fontWeight: '700', textAlign: 'center' }} />
-            </div>
-          )}
+  {/* DESCRIÇÃO */}
+  <input name="desc" placeholder={content.placeholder} required style={{ width: '100%', boxSizing: 'border-box', padding: '18px', borderRadius: '18px', border: 'none', backgroundColor: '#F8F9FB', fontSize: '15px' }} />
+  
+  {/* CAMPOS DE INVESTIMENTO */}
+  {transType === 'investimento' && (
+    <div style={{ display: 'flex', gap: '10px' }}>
+      <select name="assetType" style={{ flex: 1, padding: '16px', borderRadius: '18px', border: 'none', backgroundColor: '#F8F9FB', fontWeight: '700' }}>
+        {ASSET_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+      </select>
+      <input name="perf" placeholder="Perf. %" style={{ width: '100px', padding: '16px', borderRadius: '18px', border: 'none', backgroundColor: '#F8F9FB', fontWeight: '700', textAlign: 'center' }} />
+    </div>
+  )}
 
-          <div style={{ position: 'relative' }}>
-            <span style={{ position: 'absolute', left: '18px', top: '50%', transform: 'translateY(-50%)', fontWeight: '900', fontSize: '22px', color: (transType === 'expense' || transType === 'transfer') ? '#FF3B30' : '#34C759' }}>
-              {(transType === 'expense' || transType === 'transfer') ? '-' : '+'}
-            </span>
-            <input name="val" type="number" step="0.01" placeholder="0.00€" required style={{ width: '100%', boxSizing: 'border-box', padding: '18px 18px 18px 40px', borderRadius: '18px', border: 'none', backgroundColor: '#F8F9FB', fontSize: '22px', fontWeight: '900' }} />
-          </div>
+  {/* VALOR */}
+  <div style={{ position: 'relative' }}>
+    <span style={{ position: 'absolute', left: '18px', top: '50%', transform: 'translateY(-50%)', fontWeight: '900', fontSize: '22px', color: (transType === 'expense' || transType === 'transfer') ? '#FF3B30' : '#34C759' }}>
+      {(transType === 'expense' || transType === 'transfer') ? '-' : '+'}
+    </span>
+    <input name="val" type="number" step="0.01" placeholder="0.00" required style={{ width: '100%', boxSizing: 'border-box', padding: '18px 18px 18px 40px', borderRadius: '18px', border: 'none', backgroundColor: '#F8F9FB', fontSize: '22px', fontWeight: '900' }} />
+  </div>
 
-          <div style={{ display: 'flex', gap: '12px' }}>
-            <select name="acc" style={{ flex: 1, padding: '16px', borderRadius: '18px', border: 'none', backgroundColor: '#F8F9FB', fontWeight: '700' }}>
-              {Object.keys(settings.accounts || {}).map(k => <option key={k} value={k}>{settings.accounts[k].label}</option>)}
-            </select>
-            
-            <select name={transType === 'transfer' ? "toAcc" : "cat"} style={{ flex: 1, padding: '16px', borderRadius: '18px', border: 'none', backgroundColor: '#F8F9FB', fontWeight: '700' }}>
-              {transType === 'transfer' ? (
-                Object.keys(settings.accounts || {}).map(k => <option key={k} value={k}>Para: {settings.accounts[k].label}</option>)
-              ) : (
-                content.categories.map(k => <option key={k} value={k}>{CATEGORIES[k].icon} {CATEGORIES[k].label}</option>)
-              )}
-            </select>
-          </div>
+  {/* CONTAS E CATEGORIAS */}
+  <div style={{ display: 'flex', gap: '12px' }}>
+    <select name="acc" style={{ flex: 1, padding: '16px', borderRadius: '18px', border: 'none', backgroundColor: '#F8F9FB', fontWeight: '700' }}>
+      {Object.keys(settings.accounts || {}).map(k => <option key={k} value={k}>{settings.accounts[k].label}</option>)}
+    </select>
+    
+    <select name={transType === 'transfer' ? "toAcc" : "cat"} style={{ flex: 1, padding: '16px', borderRadius: '18px', border: 'none', backgroundColor: '#F8F9FB', fontWeight: '700' }}>
+      {transType === 'transfer' ? (
+        Object.keys(settings.accounts || {}).map(k => <option key={k} value={k}>Para: {settings.accounts[k].label}</option>)
+      ) : (
+        content.categories.map(k => <option key={k} value={k}>{CATEGORIES[k].icon} {CATEGORIES[k].label}</option>)
+      )}
+    </select>
+  </div>
 
-          <button type="submit" style={{ padding: '20px', backgroundColor: content.color, color: 'white', border: 'none', borderRadius: '20px', fontWeight: '900', fontSize: '17px', cursor: 'pointer' }}>
-            {transType === 'investimento' ? 'Registar Investimento' : transType === 'transfer' ? 'Confirmar Troca' : 'Adicionar Registo'}
-          </button>
-        </form>
+  <button type="submit" style={{ padding: '20px', backgroundColor: content.color, color: 'white', border: 'none', borderRadius: '20px', fontWeight: '900', fontSize: '17px', cursor: 'pointer' }}>
+    {transType === 'investimento' ? 'Registar Investimento' : transType === 'transfer' ? 'Confirmar Troca' : 'Adicionar Registo'}
+  </button>
+</form>
       </div>
 
       <h3 style={{fontWeight: '900', marginBottom: '20px', fontSize: '20px'}}>Atividade Recente</h3>
