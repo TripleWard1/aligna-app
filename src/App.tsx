@@ -273,10 +273,10 @@ export default function App() {
       }).slice(-6);
   };
 
-  // //Filtro adaptado para mês específico ou Ano Completo
+  // Se reportMonth for 0, significa "Ano Completo"
   const filteredList = list.filter(t => {
-    const [reportMonth, setReportMonth] = useState(new Date().getMonth() + 1);
-const [reportYear, setReportYear] = useState(new Date().getFullYear());
+    const yearMatch = t.year === reportYear;
+    const monthMatch = reportMonth === 0 ? true : t.month === reportMonth;
     return yearMatch && monthMatch;
   });
 
@@ -297,10 +297,6 @@ const [reportYear, setReportYear] = useState(new Date().getFullYear());
   }, {});
 
   const maxCategoryValue = Math.max(...Object.values(totalsByCat).map(Number), 0);
-
-  // --- NOVO: Cálculo da Média Mensal ---
-  const currentMonth = new Date().getMonth() + 1;
-  const divisorMovel = reportMonth === 0 ? (reportYear < new Date().getFullYear() ? 12 : currentMonth) : 1;
 
   // --- FIM DO BLOCO ---
 
@@ -472,34 +468,26 @@ const [reportYear, setReportYear] = useState(new Date().getFullYear());
       )}
 
 {activeTab === 'reports' && (
-        <div style={{ display: 'flex', gap: '8px', marginBottom: '20px' }}>
-        <select 
-          value={reportMonth} 
-          onChange={e => setReportMonth(parseInt(e.target.value))} 
-          style={{ flex: 1, padding: '12px', borderRadius: '12px', border: '1px solid #E5E5EA', fontWeight: 'bold' }}
-        >
-          <option value={0}>ANO COMPLETO</option>
-          {Array.from({length: 12}, (_, i) => (
-            <option key={i+1} value={i+1}>
-              {new Date(0, i).toLocaleString('pt', {month: 'long'}).toUpperCase()}
-            </option>
-          ))}
-        </select>
-      
-        <select 
-          value={reportYear} 
-          onChange={e => setReportYear(parseInt(e.target.value))} 
-          style={{ width: '100px', padding: '12px', borderRadius: '12px', border: '1px solid #E5E5EA', fontWeight: 'bold' }}
-        >
-          {/* Cria uma lista única de anos presentes nas tuas transações */}
-          {[...new Set(list.map(t => t.year)), new Date().getFullYear()]
-            .sort((a, b) => b - a) // Mostra o ano mais recente primeiro
-            .map(year => (
-              <option key={year} value={year}>{year}</option>
-            ))
-          }
-        </select>
-      </div>
+        <div style={{ backgroundColor: 'white', padding: '20px', borderRadius: '30px', boxSizing: 'border-box' }}>
+          <h3 style={{ fontWeight: '900', marginBottom: '20px', fontSize: '18px' }}>Análise Mensal</h3>
+          
+          {/* Seletores de Mês e Ano */}
+          <div style={{ display: 'flex', gap: '8px', marginBottom: '20px' }}>
+          <select 
+  value={reportMonth} 
+  onChange={e => setReportMonth(parseInt(e.target.value))} 
+  style={{ flex: 1, padding: '12px', borderRadius: '12px', border: '1px solid #E5E5EA', fontWeight: 'bold', fontSize: '12px' }}
+>
+  {/* Nova opção para ver o ano inteiro */}
+  <option value={0}>ANO COMPLETO</option>
+  
+  {Array.from({length: 12}, (_, i) => (
+    <option key={i+1} value={i+1}>
+      {new Date(0, i).toLocaleString('pt', {month: 'long'}).toUpperCase()}
+    </option>
+  ))}
+</select>
+          </div>
 
           {/* Novos Cartões de Resumo */}
           {!selectedDetail && (
