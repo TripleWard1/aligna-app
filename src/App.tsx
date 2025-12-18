@@ -561,6 +561,23 @@ const isLowBalance = totalBalance < (settings.lowBalanceLimit || 50);
     ))}
   </select>
 
+  <button 
+  onClick={exportToPDF}
+  style={{
+    width: '100%',
+    padding: '14px',
+    backgroundColor: '#1C1C1E',
+    color: 'white',
+    border: 'none',
+    borderRadius: '16px',
+    fontWeight: '800',
+    marginBottom: '20px',
+    cursor: 'pointer'
+  }}
+>
+  📄 Exportar PDF do Mês
+</button>
+
   {/* SELETOR DE ANO (O Menu Dropdown que pediste) */}
   <select 
     value={reportYear} 
