@@ -1,31 +1,13 @@
-/* FORÇAR COR PRETA EM TODOS OS CAMPOS (INPUTS) */
-input, 
-textarea, 
-select,
-.input-field {
-  /* Cor do texto que escreves */
-  color: #000000 !important; 
-  
-  /* ESTA LINHA É A MAIS IMPORTANTE: Força a cor no iPhone para não ficar branco */
-  -webkit-text-fill-color: #000000 !important; 
-  
-  /* Garante que o fundo é sempre branco para o preto se ler bem */
-  background-color: #ffffff !important; 
-  
-  /* Remove transparências e sombras do sistema */
+/* FORÇA O PRETO NO IPHONE E ANDROID */
+input, textarea, select {
+  color: #000000 !important;
+  -webkit-text-fill-color: #000000 !important; /* Única forma de vencer o modo escuro do iOS */
+  background-color: #ffffff !important;
   opacity: 1 !important;
-  appearance: none !important;
-  -webkit-appearance: none !important;
 }
 
-/* Cor do texto de exemplo (Placeholder) - cinzento para distinguir */
-input::placeholder,
-textarea::placeholder {
+/* Cor do texto de exemplo (Placeholder) */
+input::placeholder {
   color: #666666 !important;
   -webkit-text-fill-color: #666666 !important;
-}
-
-/* Garante que o texto de todo o site também fica preto */
-body, div, span, p {
-  color: #000000 !important;
 }
