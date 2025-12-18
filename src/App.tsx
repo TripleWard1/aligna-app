@@ -273,7 +273,12 @@ export default function App() {
       }).slice(-6);
   };
 
-  const filteredList = list.filter(t => t.month === reportMonth && t.year === reportYear);
+  // Se reportMonth for 0, significa "Ano Completo"
+  const filteredList = list.filter(t => {
+    const yearMatch = t.year === reportYear;
+    const monthMatch = reportMonth === 0 ? true : t.month === reportMonth;
+    return yearMatch && monthMatch;
+  });
 
   const monthlyIncome = filteredList
     .filter(t => t.type === 'income')
@@ -468,12 +473,20 @@ export default function App() {
           
           {/* Seletores de Mês e Ano */}
           <div style={{ display: 'flex', gap: '8px', marginBottom: '20px' }}>
-            <select value={reportMonth} onChange={e => setReportMonth(parseInt(e.target.value))} style={{ flex: 1, padding: '12px', borderRadius: '12px', border: '1px solid #E5E5EA', fontWeight: 'bold', fontSize: '12px' }}>
-              {Array.from({length: 12}, (_, i) => <option key={i+1} value={i+1}>{new Date(0, i).toLocaleString('pt', {month: 'long'}).toUpperCase()}</option>)}
-            </select>
-            <select value={reportYear} onChange={e => setReportYear(parseInt(e.target.value))} style={{ width: '85px', padding: '12px', borderRadius: '12px', border: '1px solid #E5E5EA', fontWeight: 'bold', fontSize: '12px' }}>
-              {[2024, 2025, 2026, 2027].map(y => <option key={y} value={y}>{y}</option>)}
-            </select>
+          <select 
+  value={reportMonth} 
+  onChange={e => setReportMonth(parseInt(e.target.value))} 
+  style={{ flex: 1, padding: '12px', borderRadius: '12px', border: '1px solid #E5E5EA', fontWeight: 'bold', fontSize: '12px' }}
+>
+  {/* Nova opção para ver o ano inteiro */}
+  <option value={0}>ANO COMPLETO</option>
+  
+  {Array.from({length: 12}, (_, i) => (
+    <option key={i+1} value={i+1}>
+      {new Date(0, i).toLocaleString('pt', {month: 'long'}).toUpperCase()}
+    </option>
+  ))}
+</select>
           </div>
 
           {/* Novos Cartões de Resumo */}
