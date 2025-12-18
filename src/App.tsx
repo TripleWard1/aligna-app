@@ -305,13 +305,11 @@ export default function App() {
 
       {activeTab === 'home' && (
         <>
-          {/* Card de Saldo Responsivo */}
           <div style={{ background: 'linear-gradient(135deg, #1C1C1E 0%, #3A3A3C 100%)', color: 'white', padding: '30px 20px', borderRadius: '30px', marginBottom: '20px', boxShadow: '0 10px 25px rgba(0,0,0,0.15)' }}>
             <p style={{ margin: 0, opacity: 0.6, fontSize: '11px', fontWeight: '700' }}>SALDO CONSOLIDADO</p>
             <h1 style={{ fontSize: 'clamp(32px, 8vw, 42px)', margin: '8px 0', fontWeight: '900', wordBreak: 'break-all' }}>{formatValue(totalBalance)}</h1>
           </div>
 
-          {/* Lista de Contas Horizontal */}
           <div style={{ display: 'flex', gap: '12px', overflowX: 'auto', paddingBottom: '20px', WebkitOverflowScrolling: 'touch' }}>
             {Object.keys(settings.accounts || {}).map(k => (
               <div key={k} style={{ minWidth: '120px', backgroundColor: 'white', padding: '15px', borderRadius: '22px', textAlign: 'center', boxShadow: '0 5px 15px rgba(0,0,0,0.03)' }}>
@@ -322,7 +320,6 @@ export default function App() {
             ))}
           </div>
 
-          {/* Formulário Mobile Friendly */}
           <div style={{ backgroundColor: 'white', padding: '20px', borderRadius: '30px', marginBottom: '25px', border: editingId ? '2px solid #007AFF' : 'none' }}>
             <h4 style={{margin: '0 0 15px 0', fontWeight: '800', fontSize: '15px'}}>{editingId ? '📝 Editar Registo' : '➕ Novo Registo'}</h4>
             <form onSubmit={handleTransactionSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
@@ -372,7 +369,6 @@ export default function App() {
             </select>
           </div>
 
-          {/* Lista de Atividade Compacta */}
           {getSortedList().map(t => {
             const isGain = t.type === 'income' || t.type === 'investimento';
             const isLoss = t.type === 'expense';
@@ -445,28 +441,34 @@ export default function App() {
           <div style={{ display: 'flex', gap: '10px', overflowX: 'auto', paddingBottom: '15px', marginBottom: '10px', WebkitOverflowScrolling: 'touch' }}>
             {AVATARS.map(a => <div key={a} onClick={() => updateSettings({avatar: a})} style={{ minWidth: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: '20px', backgroundColor: settings.avatar === a ? '#007AFF' : '#F2F2F7', borderRadius: '12px', color: settings.avatar === a ? 'white' : 'inherit' }}>{a}</div>)}
           </div>
-          <input value={settings.email} onChange={e => updateSettings({email: e.target.value})} placeholder="Email" style={{ width: '100%', padding: '14px', borderRadius: '12px', border: 'none', backgroundColor: '#F2F2F7', marginBottom: '10px', boxSizing: 'border-box', fontSize: '14px' }} />
-          <input value={settings.password} type="password" onChange={e => updateSettings({password: e.target.value})} placeholder="Senha App" style={{ width: '100%', padding: '14px', borderRadius: '12px', border: 'none', backgroundColor: '#F2F2F7', boxSizing: 'border-box', marginBottom: '15px', fontSize: '14px' }} />
           
-          <div style={{ display: 'flex', gap: '10px', marginBottom: '20px', flexWrap: 'wrap' }}>
-            <div style={{ flex: '1 1 120px' }}>
-              <label style={{fontSize: '9px', fontWeight: '700', color: '#8E8E93', marginLeft: '5px'}}>LIMITE SALDO</label>
-              <input type="number" value={settings.lowBalanceLimit} onChange={e => updateSettings({lowBalanceLimit: parseFloat(e.target.value)})} style={{ width: '100%', padding: '14px', borderRadius: '12px', border: 'none', backgroundColor: '#F2F2F7', boxSizing: 'border-box', fontSize: '14px' }} />
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            <input value={settings.email} onChange={e => updateSettings({email: e.target.value})} placeholder="Email" style={{ width: '100%', padding: '14px', borderRadius: '12px', border: 'none', backgroundColor: '#F2F2F7', boxSizing: 'border-box', fontSize: '14px' }} />
+            <input value={settings.password} type="password" onChange={e => updateSettings({password: e.target.value})} placeholder="Senha App" style={{ width: '100%', padding: '14px', borderRadius: '12px', border: 'none', backgroundColor: '#F2F2F7', boxSizing: 'border-box', fontSize: '14px' }} />
+            
+            <div style={{ display: 'flex', gap: '10px', width: '100%', boxSizing: 'border-box' }}>
+              <div style={{ flex: 1 }}>
+                <label style={{fontSize: '9px', fontWeight: '700', color: '#8E8E93', marginLeft: '5px'}}>LIMITE SALDO</label>
+                <input type="number" value={settings.lowBalanceLimit} onChange={e => updateSettings({lowBalanceLimit: parseFloat(e.target.value)})} style={{ width: '100%', padding: '14px', borderRadius: '12px', border: 'none', backgroundColor: '#F2F2F7', boxSizing: 'border-box', fontSize: '14px' }} />
+              </div>
+              <button onClick={() => updateSettings({privacyMode: !settings.privacyMode})} style={{ flex: 1, padding: '14px', borderRadius: '12px', border: 'none', backgroundColor: settings.privacyMode ? '#FF9500' : '#E5E5EA', color: settings.privacyMode ? 'white' : '#1C1C1E', fontWeight: '800', alignSelf: 'flex-end', height: '46px', fontSize: '12px' }}>
+                {settings.privacyMode ? '🕶️ Privado' : '👁️ Público'}
+              </button>
             </div>
-            <button onClick={() => updateSettings({privacyMode: !settings.privacyMode})} style={{ flex: '1 1 120px', padding: '14px', borderRadius: '12px', border: 'none', backgroundColor: settings.privacyMode ? '#FF9500' : '#E5E5EA', color: settings.privacyMode ? 'white' : '#1C1C1E', fontWeight: '800', alignSelf: 'flex-end', height: '46px', fontSize: '12px' }}>
-              {settings.privacyMode ? '🕶️ Privado' : '👁️ Público'}
-            </button>
           </div>
 
-          <h4 style={{ fontWeight: '800', fontSize: '14px' }}>Minhas Contas</h4>
-          {Object.keys(settings.accounts || {}).map(k => (
-            <div key={k} style={{ display: 'flex', justifyContent: 'space-between', padding: '12px', backgroundColor: '#F8F9FB', borderRadius: '12px', marginBottom: '8px', fontSize: '13px' }}>
-              <span>{settings.accounts[k].icon} {settings.accounts[k].label}</span>
-              <button onClick={() => { if(Object.keys(settings.accounts).length > 1) { const na = {...settings.accounts}; delete na[k]; updateSettings({accounts: na}); } }} style={{ border: 'none', color: '#FF3B30', background: 'none', fontWeight: 'bold', fontSize: '11px' }}>Apagar</button>
-            </div>
-          ))}
+          <h4 style={{ fontWeight: '800', fontSize: '14px', marginTop: '20px' }}>Minhas Contas</h4>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            {Object.keys(settings.accounts || {}).map(k => (
+              <div key={k} style={{ display: 'flex', justifyContent: 'space-between', padding: '12px', backgroundColor: '#F8F9FB', borderRadius: '12px', fontSize: '13px' }}>
+                <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{settings.accounts[k].icon} {settings.accounts[k].label}</span>
+                <button onClick={() => { if(Object.keys(settings.accounts).length > 1) { const na = {...settings.accounts}; delete na[k]; updateSettings({accounts: na}); } }} style={{ border: 'none', color: '#FF3B30', background: 'none', fontWeight: 'bold', fontSize: '11px', flexShrink: 0 }}>Apagar</button>
+              </div>
+            ))}
+          </div>
+
           {!showAddAccount ? (
-            <button onClick={() => setShowAddAccount(true)} style={{ width: '100%', padding: '14px', border: '2px dashed #D1D1D6', borderRadius: '15px', background: 'none', color: '#8E8E93', fontWeight: '800', fontSize: '13px' }}>+ Adicionar Conta</button>
+            <button onClick={() => setShowAddAccount(true)} style={{ width: '100%', padding: '14px', border: '2px dashed #D1D1D6', borderRadius: '15px', background: 'none', color: '#8E8E93', fontWeight: '800', fontSize: '13px', marginTop: '10px' }}>+ Adicionar Conta</button>
           ) : (
             <div style={{ marginTop: '10px', padding: '15px', backgroundColor: '#F2F2F7', borderRadius: '20px' }}>
               <input placeholder="Nome da Conta" value={newAccName} onChange={e => setNewAccName(e.target.value)} style={{ width: '100%', padding: '12px', border: 'none', borderRadius: '12px', marginBottom: '10px', boxSizing: 'border-box' }} />
@@ -482,7 +484,6 @@ export default function App() {
         </div>
       )}
 
-      {/* Menu Inferior Fixo e Responsivo */}
       <div style={{ position: 'fixed', bottom: '15px', left: '50%', transform: 'translateX(-50%)', width: '92%', maxWidth: '400px', backgroundColor: 'rgba(255,255,255,0.92)', backdropFilter: 'blur(15px)', WebkitBackdropFilter: 'blur(15px)', display: 'flex', justifyContent: 'space-around', padding: '12px 0', borderRadius: '25px', boxShadow: '0 8px 25px rgba(0,0,0,0.1)', border: '1px solid rgba(255,255,255,0.4)', zIndex: 1000 }}>
         <button onClick={() => {setActiveTab('home'); setSelectedDetail(null);}} style={{ background: 'none', border: 'none', fontSize: '24px', opacity: activeTab === 'home' ? 1 : 0.2, transition: 'opacity 0.2s' }}>🏠</button>
         <button onClick={() => {setActiveTab('reports'); setSelectedDetail(null);}} style={{ background: 'none', border: 'none', fontSize: '24px', opacity: activeTab === 'reports' ? 1 : 0.2, transition: 'opacity 0.2s' }}>📊</button>
