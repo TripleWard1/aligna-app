@@ -297,21 +297,17 @@ const monthlyExpenses = filteredList
   .filter(t => t.type === 'expense')
   .reduce((acc, t) => acc + t.amount, 0);
 
-// Cálculo robusto para somar todos os valores sem limites
+// Cálculo de totais por categoria sem limites
 const totalsByCat = filteredList.reduce((acc, t) => {
   if (t.type === 'expense' || t.type === 'income') {
-    // Garantimos que o valor é tratado como número para evitar erros de soma
-    const val = Number(t.amount) || 0;
-    acc[t.category] = (acc[t.category] || 0) + val;
+    const catName = t.category || 'outros';
+    const amountValue = Number(t.amount) || 0;
+    acc[catName] = (acc[catName] || 0) + amountValue;
   }
   return acc;
 }, {});
 
-// Cálculos adicionais para suporte visual (coloque logo abaixo do bloco acima)
-const monthlyIncome = filteredList
-  .filter(t => t.type === 'income')
-  .reduce((acc, t) => acc + Number(t.amount), 0);
-
+// Referência para a barra de progresso (maior valor gasto no mês)
 const maxCategoryValue = Math.max(...Object.values(totalsByCat).map(Number), 0);
 
   if (!user) {
@@ -572,7 +568,7 @@ const maxCategoryValue = Math.max(...Object.values(totalsByCat).map(Number), 0);
                   <div style={{ width: '100%', height: '8px', backgroundColor: '#F2F2F7', borderRadius: '10px', overflow: 'hidden' }}>
   <div style={{ 
     // Calcula a largura com base no total de receitas do mês para dar noção real de impacto
-    width: `${Math.min((totalsByCat[cat] / (maxCategoryValue || 1)) * 100, 100)}%`, 
+    width: `${Math.min((totalsByCat[cat] / (monthlyIncome || totalsByCat[cat] || 1)) * 100, 100)}%`, 
     height: '100%', 
     backgroundColor: CATEGORIES[cat]?.color, 
     borderRadius: '10px',
