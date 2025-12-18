@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { db } from './firebase'; 
 import { ref, push, onValue, set, remove, update, get } from "firebase/database";
-import jsPDF from 'jspdf';
-import 'jspdf-autotable';
+
 
 const TWELVE_DATA_KEY = "49563e179ee146c5a53279200c654f29";
 
@@ -498,68 +497,63 @@ const isLowBalance = totalBalance < (settings.lowBalanceLimit || 50);
       )}
 
 {activeTab === 'reports' && (
-  <div style={{ backgroundColor: 'white', padding: '20px', borderRadius: '30px', boxSizing: 'border-box' }}>
-    <h3 style={{ fontWeight: '900', marginBottom: '20px', fontSize: '18px' }}>Análise Mensal</h3>
-    
-    {/* Seletores de Mês e Ano */}
-    <div style={{ display: 'flex', gap: '8px', marginBottom: '20px' }}>
-      {/* Seletor de Mês */}
-      <select 
-        value={reportMonth} 
-        onChange={e => setReportMonth(parseInt(e.target.value))} 
-        style={{ flex: 1, padding: '12px', borderRadius: '12px', border: '1px solid #E5E5EA', fontWeight: 'bold', fontSize: '12px' }}
-      >
-        <option value={0}>ANO COMPLETO</option>
-        {Array.from({length: 12}, (_, i) => (
-          <option key={i+1} value={i+1}>
-            {new Date(0, i).toLocaleString('pt', {month: 'long'}).toUpperCase()}
-          </option>
-        ))}
-      </select>
+        <div style={{ backgroundColor: 'white', padding: '20px', borderRadius: '30px', boxSizing: 'border-box' }}>
+          <h3 style={{ fontWeight: '900', marginBottom: '20px', fontSize: '18px' }}>Análise Mensal</h3>
+          
+          {/* Seletores de Mês e Ano */}
+<div style={{ display: 'flex', gap: '8px', marginBottom: '20px' }}>
+  {/* Seletor de Mês */}
+  <select 
+    value={reportMonth} 
+    onChange={e => setReportMonth(parseInt(e.target.value))} 
+    style={{ flex: 1, padding: '12px', borderRadius: '12px', border: '1px solid #E5E5EA', fontWeight: 'bold', fontSize: '12px' }}
+  >
+    <option value={0}>ANO COMPLETO</option>
+    {Array.from({length: 12}, (_, i) => (
+      <option key={i+1} value={i+1}>
+        {new Date(0, i).toLocaleString('pt', {month: 'long'}).toUpperCase()}
+      </option>
+    ))}
+  </select>
 
-      {/* SELETOR DE ANO */}
-      <select 
-        value={reportYear} 
-        onChange={e => setReportYear(parseInt(e.target.value))} 
-        style={{ width: '100px', padding: '12px', borderRadius: '12px', border: '1px solid #E5E5EA', fontWeight: 'bold', fontSize: '12px' }}
-      >
-        {[...new Set([...list.map(t => Number(t.year)), new Date().getFullYear()])]
-          .sort((a, b) => b - a)
-          .map(y => <option key={y} value={y}>{y}</option>)
-        }
-      </select>
-    </div>
+  {/* SELETOR DE ANO (O Menu Dropdown que pediste) */}
+  <select 
+    value={reportYear} 
+    onChange={e => setReportYear(parseInt(e.target.value))} 
+    style={{ width: '100px', padding: '12px', borderRadius: '12px', border: '1px solid #E5E5EA', fontWeight: 'bold', fontSize: '12px' }}
+  >
+    {/* Esta linha impede duplicados e mostra os anos que têm dados + o ano atual */}
+    {[...new Set([...list.map(t => Number(t.year)), new Date().getFullYear()])]
+      .sort((a, b) => b - a)
+      .map(y => <option key={y} value={y}>{y}</option>)
+    }
+  </select>
+</div>
 
-    {/* --- O BOTÃO DE PDF ENTRA AQUI --- */}
-    <button 
-      onClick={exportToPDF}
-      style={{
-        width: '100%',
-        padding: '14px',
-        backgroundColor: '#1C1C1E', // Preto para condizer com o teu estilo
-        color: 'white',
-        border: 'none',
-        borderRadius: '16px',
-        fontWeight: '800',
-        marginBottom: '20px',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        gap: '10px',
-        cursor: 'pointer',
-        fontSize: '12px',
-        textTransform: 'uppercase',
-        letterSpacing: '0.5px'
-      }}
-    >
-      <span>📄</span> Exportar Relatório PDF
-    </button>
-    {/* --------------------------------- */}
+          {/* Novos Cartões de Resumo */}
+          {!selectedDetail && (
+            <div style={{ display: 'flex', gap: '10px', marginBottom: '25px' }}>
+              <div style={{ flex: 1, backgroundColor: '#F2F2F7', padding: '15px', borderRadius: '20px' }}>
+                <p style={{ margin: 0, fontSize: '10px', fontWeight: '700', color: '#8E8E93' }}>RECEITAS</p>
+                <strong style={{ color: '#34C759', fontSize: '16px' }}>+{monthlyIncome.toFixed(2)}{settings.currency}</strong>
+              </div>
+              <div style={{ flex: 1, backgroundColor: '#F2F2F7', padding: '15px', borderRadius: '20px' }}>
+                <p style={{ margin: 0, fontSize: '10px', fontWeight: '700', color: '#8E8E93' }}>DESPESAS</p>
+                <strong style={{ color: '#FF3B30', fontSize: '16px' }}>-{monthlyExpenses.toFixed(2)}{settings.currency}</strong>
+              </div>
+            </div>
+          )}
 
-    {/* Novos Cartões de Resumo */}
-    {!selectedDetail && (
-      <div style={{ display: 'flex', gap: '10px', marginBottom: '25px' }}>
-        {/* ... resto do teu código (Receitas/Despesas) ... */}
+{selectedDetail ? (
+            <div>
+              {/* Cabeçalho com botão voltar */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '25px' }}>
+                <button onClick={() => setSelectedDetail(null)} style={{ background: '#F2F2F7', border: 'none', width: '35px', height: '35px', borderRadius: '50%', fontSize: '16px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>←</button>
+                <div>
+                  <h4 style={{ margin: 0, fontSize: '16px', fontWeight: '900' }}>{CATEGORIES[selectedDetail]?.label}</h4>
+                  <p style={{ margin: 0, fontSize: '11px', color: '#8E8E93', fontWeight: 'bold' }}>EVOLUÇÃO DOS GASTOS</p>
+                </div>
+              </div>
 
               {/* GRÁFICO DE BARRAS EVOLUTIVO */}
               <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', height: '140px', padding: '15px', backgroundColor: '#F8F9FB', borderRadius: '24px', marginBottom: '25px', gap: '10px' }}>
