@@ -299,9 +299,12 @@ export default function App() {
   // ... cálculos anteriores (filteredList, monthlyIncome, etc.)
   const maxCategoryValue = Math.max(...Object.values(totalsByCat).map(Number), 0);
 
-  // --- AQUI ENTRA O PONTO 3 ---
-  const currentMonth = new Date().getMonth() + 1;
-  const currentYear = new Date().getFullYear();
+  // Cálculo do divisor para médias (Ponto 3)
+const currentMonth = new Date().getMonth() + 1;
+const currentYear = new Date().getFullYear();
+const divisorMovel = reportMonth === 0 
+  ? (reportYear < currentYear ? 12 : currentMonth) 
+  : 1;
 
   // Esta lógica decide se divide por 12 ou pelos meses que já passaram de 2026
   const divisorMovel = reportMonth === 0 
@@ -513,16 +516,21 @@ export default function App() {
           {/* Novos Cartões de Resumo */}
           {!selectedDetail && (
             <div style={{ display: 'flex', gap: '10px', marginBottom: '25px' }}>
-              <div style={{ flex: 1, backgroundColor: '#F2F2F7', padding: '15px', borderRadius: '20px' }}>
-                <p style={{ margin: 0, fontSize: '10px', fontWeight: '700', color: '#8E8E93' }}>RECEITAS</p>
-                <strong style={{ color: '#34C759', fontSize: '16px' }}>+{monthlyIncome.toFixed(2)}{settings.currency}</strong>
-              </div>
-              <div style={{ flex: 1, backgroundColor: '#F2F2F7', padding: '15px', borderRadius: '20px' }}>
-                <p style={{ margin: 0, fontSize: '10px', fontWeight: '700', color: '#8E8E93' }}>DESPESAS</p>
-                <strong style={{ color: '#FF3B30', fontSize: '16px' }}>-{monthlyExpenses.toFixed(2)}{settings.currency}</strong>
-              </div>
-            </div>
-          )}
+            <div style={{ flex: 1, backgroundColor: '#F2F2F7', padding: '15px', borderRadius: '20px' }}>
+            <p style={{ margin: 0, fontSize: '10px', fontWeight: '700', color: '#8E8E93' }}>RECEITAS</p>
+            <strong style={{ color: '#34C759', fontSize: '16px' }}>+{monthlyIncome.toFixed(2)}{settings.currency}</strong>
+            
+            {/* ADICIONA ESTA LINHA ABAIXO */}
+            {reportMonth === 0 && <p style={{margin:0, fontSize:'9px', color:'#8E8E93'}}>Média: {(monthlyIncome/divisorMovel).toFixed(2)}{settings.currency}</p>}
+          </div>
+          
+          <div style={{ flex: 1, backgroundColor: '#F2F2F7', padding: '15px', borderRadius: '20px' }}>
+            <p style={{ margin: 0, fontSize: '10px', fontWeight: '700', color: '#8E8E93' }}>DESPESAS</p>
+            <strong style={{ color: '#FF3B30', fontSize: '16px' }}>-{monthlyExpenses.toFixed(2)}{settings.currency}</strong>
+            
+            {/* ADICIONA ESTA LINHA ABAIXO */}
+            {reportMonth === 0 && <p style={{margin:0, fontSize:'9px', color:'#8E8E93'}}>Média: {(monthlyExpenses/divisorMovel).toFixed(2)}{settings.currency}</p>}
+          </div>
 
 {selectedDetail ? (
             <div>
