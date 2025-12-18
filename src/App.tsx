@@ -287,22 +287,23 @@ const isLowBalance = totalBalance < (settings.lowBalanceLimit || 50);
     return yearMatch && monthMatch;
   });
 
-  const monthlyIncome = filteredList
-  .filter(t => t.type === 'income')
-  .reduce((acc, t) => acc + (Number(t.amount) || 0), 0);
+  // Filtro de Despesas (Barra Amarela)
+  const totalsByCat = filteredList.reduce((acc, t) => {
+    if (t.type === 'expense') {
+      const catName = t.category || 'outros';
+      acc[catName] = (acc[catName] || 0) + (Number(t.amount) || 0);
+    }
+    return acc;
+  }, {});
 
-const monthlyExpenses = filteredList
-  .filter(t => t.type === 'expense')
-  .reduce((acc, t) => acc + (Number(t.amount) || 0), 0);
-
-    const totalsByCat = filteredList.reduce((acc, t) => {
-      // Alteração: Somar APENAS se o tipo for despesa ('expense')
-      if (t.type === 'expense') {
-        const catName = t.category || 'outros';
-        acc[catName] = (acc[catName] || 0) + (Number(t.amount) || 0);
-      }
-      return acc;
-    }, {});
+  // Filtro de Receitas (Cartão Verde)
+  const totalsByCatIncome = filteredList.reduce((acc, t) => {
+    if (t.type === 'income') {
+      const catName = t.category || 'salario';
+      acc[catName] = (acc[catName] || 0) + (Number(t.amount) || 0);
+    }
+    return acc;
+  }, {});
 
   const maxCategoryValue = Math.max(...Object.values(totalsByCat).map(Number), 0);
 
@@ -566,18 +567,49 @@ const monthlyExpenses = filteredList
     </div>
 
     {/* Cartões de Resumo */}
-    {!selectedDetail && (
-      <div style={{ display: 'flex', gap: '10px', marginBottom: '25px' }}>
-        <div style={{ flex: 1, backgroundColor: '#F2F2F7', padding: '15px', borderRadius: '20px' }}>
-          <p style={{ margin: 0, fontSize: '10px', fontWeight: '700', color: '#8E8E93' }}>RECEITAS</p>
-          <strong style={{ color: '#34C759', fontSize: '16px' }}>+{(monthlyIncome || 0).toFixed(2)}{settings.currency}</strong>
+    {/* Substitui o mapeamento original por este bloco completo abaixo */}
+{!selectedDetail && (
+  <>
+    {/* Lista de Despesas */}
+    {Object.keys(totalsByCat).length > 0 && (
+      <p style={{ fontSize: '11px', fontWeight: '800', color: '#8E8E93', marginTop: '20px', marginBottom: '10px' }}>DETALHE DE GASTOS</p>
+    )}
+    {Object.keys(totalsByCat).sort((a, b) => totalsByCat[b] - totalsByCat[a]).map(cat => (
+      <div key={cat} onClick={() => setSelectedDetail(cat)} style={{ marginBottom: '18px', cursor: 'pointer' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px', fontSize: '13px', fontWeight: '800' }}>
+          <span>{CATEGORIES[cat]?.icon} {CATEGORIES[cat]?.label}</span>
+          <span>{totalsByCat[cat].toFixed(2)}{settings.currency}</span>
         </div>
-        <div style={{ flex: 1, backgroundColor: '#F2F2F7', padding: '15px', borderRadius: '20px' }}>
-          <p style={{ margin: 0, fontSize: '10px', fontWeight: '700', color: '#8E8E93' }}>DESPESAS</p>
-          <strong style={{ color: '#FF3B30', fontSize: '16px' }}>-{(monthlyExpenses || 0).toFixed(2)}{settings.currency}</strong>
+        <div style={{ width: '100%', height: '8px', backgroundColor: '#F2F2F7', borderRadius: '10px', overflow: 'hidden' }}>
+          <div style={{ 
+            width: `${Math.min((totalsByCat[cat] / (maxCategoryValue || 1)) * 100, 100)}%`, 
+            height: '100%', 
+            backgroundColor: CATEGORIES[cat]?.color, 
+            borderRadius: '10px' 
+          }}></div>
         </div>
       </div>
+    ))}
+
+    {/* Nova Secção: Rendimentos */}
+    {Object.keys(totalsByCatIncome).length > 0 && (
+      <>
+        <p style={{ fontSize: '11px', fontWeight: '800', color: '#8E8E93', marginTop: '30px', marginBottom: '10px' }}>FONTES DE RENDIMENTO</p>
+        {Object.keys(totalsByCatIncome).map(cat => (
+          <div key={cat} style={{ padding: '15px', backgroundColor: '#F2F7F2', borderRadius: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <span style={{ fontSize: '20px' }}>{CATEGORIES[cat]?.icon || '💰'}</span>
+              <span style={{ fontSize: '14px', fontWeight: '800' }}>{CATEGORIES[cat]?.label || 'Receita'}</span>
+            </div>
+            <strong style={{ fontSize: '15px', color: '#34C759' }}>
+              +{totalsByCatIncome[cat].toFixed(2)}{settings.currency}
+            </strong>
+          </div>
+        ))}
+      </>
     )}
+  </>
+)}
 
     {selectedDetail ? (
       <div>
