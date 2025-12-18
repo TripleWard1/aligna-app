@@ -297,9 +297,18 @@ const monthlyExpenses = filteredList
   .filter(t => t.type === 'expense')
   .reduce((acc, t) => acc + t.amount, 0);
 
+// 1. Primeiro, garantimos que o filtro captura todos os dados do mês/ano sem falhas
+const filteredList = list.filter(t => 
+  t.month === reportMonth && 
+  t.year === reportYear
+);
+
+// 2. O novo bloco de soma (totalsByCat)
 const totalsByCat = filteredList.reduce((acc, t) => {
+  // Somamos apenas transações de despesa e receita (ignoramos 'transfer' para não duplicar)
   if (t.type === 'expense' || t.type === 'income') {
-    acc[t.category] = (acc[t.category] || 0) + t.amount;
+    const currentAmount = parseFloat(t.amount) || 0;
+    acc[t.category] = (acc[t.category] || 0) + currentAmount;
   }
   return acc;
 }, {});
