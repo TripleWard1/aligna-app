@@ -216,8 +216,16 @@ export default function App() {
 
   const getSortedList = () => {
     let sorted = [...list];
-    if (sortOrder === 'entry') return sorted.reverse().slice(0, 15);
-    return sorted.sort((a, b) => new Date(b.isoDate || 0) - new Date(a.isoDate || 0)).slice(0, 15);
+    if (sortOrder === 'entry') {
+      return sorted.sort((a, b) => b.timestamp - a.timestamp).slice(0, 15);
+    }
+    // Ordenação Cronológica Real (Mais recentes primeiro)
+    return sorted.sort((a, b) => {
+      const dateA = new Date(a.isoDate || 0).getTime();
+      const dateB = new Date(b.isoDate || 0).getTime();
+      if (dateB !== dateA) return dateB - dateA;
+      return b.timestamp - a.timestamp; // Desempate pela hora de inserção
+    }).slice(0, 15);
   };
 
   const filteredList = list.filter(t => t.month === reportMonth && t.year === reportYear);
@@ -442,7 +450,7 @@ export default function App() {
             {AVATARS.map(a => <div key={a} onClick={() => updateSettings({avatar: a})} style={{ minWidth: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: '20px', backgroundColor: settings.avatar === a ? '#007AFF' : '#F2F2F7', borderRadius: '12px', color: settings.avatar === a ? 'white' : 'inherit' }}>{a}</div>)}
           </div>
           
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', width: '100%' }}>
             <input value={settings.email} onChange={e => updateSettings({email: e.target.value})} placeholder="Email" style={{ width: '100%', padding: '14px', borderRadius: '12px', border: 'none', backgroundColor: '#F2F2F7', boxSizing: 'border-box', fontSize: '14px' }} />
             <input value={settings.password} type="password" onChange={e => updateSettings({password: e.target.value})} placeholder="Senha App" style={{ width: '100%', padding: '14px', borderRadius: '12px', border: 'none', backgroundColor: '#F2F2F7', boxSizing: 'border-box', fontSize: '14px' }} />
             
@@ -458,9 +466,9 @@ export default function App() {
           </div>
 
           <h4 style={{ fontWeight: '800', fontSize: '14px', marginTop: '20px' }}>Minhas Contas</h4>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', width: '100%' }}>
             {Object.keys(settings.accounts || {}).map(k => (
-              <div key={k} style={{ display: 'flex', justifyContent: 'space-between', padding: '12px', backgroundColor: '#F8F9FB', borderRadius: '12px', fontSize: '13px' }}>
+              <div key={k} style={{ display: 'flex', justifyContent: 'space-between', padding: '12px', backgroundColor: '#F8F9FB', borderRadius: '12px', fontSize: '13px', width: '100%', boxSizing: 'border-box' }}>
                 <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{settings.accounts[k].icon} {settings.accounts[k].label}</span>
                 <button onClick={() => { if(Object.keys(settings.accounts).length > 1) { const na = {...settings.accounts}; delete na[k]; updateSettings({accounts: na}); } }} style={{ border: 'none', color: '#FF3B30', background: 'none', fontWeight: 'bold', fontSize: '11px', flexShrink: 0 }}>Apagar</button>
               </div>
@@ -470,7 +478,7 @@ export default function App() {
           {!showAddAccount ? (
             <button onClick={() => setShowAddAccount(true)} style={{ width: '100%', padding: '14px', border: '2px dashed #D1D1D6', borderRadius: '15px', background: 'none', color: '#8E8E93', fontWeight: '800', fontSize: '13px', marginTop: '10px' }}>+ Adicionar Conta</button>
           ) : (
-            <div style={{ marginTop: '10px', padding: '15px', backgroundColor: '#F2F2F7', borderRadius: '20px' }}>
+            <div style={{ marginTop: '10px', padding: '15px', backgroundColor: '#F2F2F7', borderRadius: '20px', width: '100%', boxSizing: 'border-box' }}>
               <input placeholder="Nome da Conta" value={newAccName} onChange={e => setNewAccName(e.target.value)} style={{ width: '100%', padding: '12px', border: 'none', borderRadius: '12px', marginBottom: '10px', boxSizing: 'border-box' }} />
               <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', justifyContent: 'center', marginBottom: '12px' }}>
                 {ACC_ICONS.map(i => (
@@ -484,6 +492,7 @@ export default function App() {
         </div>
       )}
 
+      {/* Menu Inferior */}
       <div style={{ position: 'fixed', bottom: '15px', left: '50%', transform: 'translateX(-50%)', width: '92%', maxWidth: '400px', backgroundColor: 'rgba(255,255,255,0.92)', backdropFilter: 'blur(15px)', WebkitBackdropFilter: 'blur(15px)', display: 'flex', justifyContent: 'space-around', padding: '12px 0', borderRadius: '25px', boxShadow: '0 8px 25px rgba(0,0,0,0.1)', border: '1px solid rgba(255,255,255,0.4)', zIndex: 1000 }}>
         <button onClick={() => {setActiveTab('home'); setSelectedDetail(null);}} style={{ background: 'none', border: 'none', fontSize: '24px', opacity: activeTab === 'home' ? 1 : 0.2, transition: 'opacity 0.2s' }}>🏠</button>
         <button onClick={() => {setActiveTab('reports'); setSelectedDetail(null);}} style={{ background: 'none', border: 'none', fontSize: '24px', opacity: activeTab === 'reports' ? 1 : 0.2, transition: 'opacity 0.2s' }}>📊</button>
