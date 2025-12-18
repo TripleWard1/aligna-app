@@ -174,7 +174,17 @@ export default function App() {
       case 'investimento': return { placeholder: "Ticker (ex: BTC/USD)", categories: ['investimento'], color: '#5AC8FA' };
       case 'income': return { placeholder: "Origem (ex: Salário)", categories: ['salario', 'outros'], color: '#34C759' };
       case 'transfer': return { placeholder: "Motivo da troca", categories: ['transferencia'], color: '#5856D6' };
-      default: return { placeholder: "Onde gastou?", categories: ['alimentacao', 'lazer', 'transporte', 'saude', 'casa', 'luz', 'gas', 'servicos', 'internet', 'outros'], color: '#007AFF' };
+      default: return { 
+        placeholder: "Onde gastou?", 
+        // ADICIONE AS NOVAS CHAVES NESTE ARRAY ABAIXO:
+        categories: [
+          'alimentacao', 'lazer', 'transporte', 'saude', 'casa', 
+          'luz', 'gas', 'servicos', 'internet', 'condominio', 
+          'seguros', 'impostos', 'mecanico', 'estetica', 
+          'passes', 'desporto', 'pets', 'outros'
+        ], 
+        color: '#007AFF' 
+      };
     }
   };
 
