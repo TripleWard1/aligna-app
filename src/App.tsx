@@ -297,16 +297,17 @@ const monthlyExpenses = filteredList
   .filter(t => t.type === 'expense')
   .reduce((acc, t) => acc + t.amount, 0);
 
-// Cálculo de totais por categoria sem limites
+// Esta versão corrige o erro visual e garante a soma total
 const totalsByCat = filteredList.reduce((acc, t) => {
-  if (t.type === 'expense' || t.type === 'income') {
-    const catName = t.category || 'outros';
-    const amountValue = Number(t.amount) || 0;
-    acc[catName] = (acc[catName] || 0) + amountValue;
-  }
+  const cat = t.category || 'outros';
+  const amount = Number(t.amount) || 0;
+  acc[cat] = (acc[cat] || 0) + amount;
   return acc;
-}, {});
+}, {}); // Este {} no fim é fundamental para não dar erro de deployment
 
+// Criamos uma referência para a barra saber qual o maior valor do mês
+const values = Object.values(totalsByCat);
+const maxCategoryValue = values.length > 0 ? Math.max(...values) : 1;
 // Referência para a barra de progresso (maior valor gasto no mês)
 const maxCategoryValue = Math.max(...Object.values(totalsByCat).map(Number), 0);
 
