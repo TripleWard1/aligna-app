@@ -167,6 +167,8 @@ export default function App() {
   };
 
   const totalBalance = Object.keys(settings.accounts || {}).reduce((sum, key) => sum + getAccountBalance(key), 0);
+  // Verifica se o saldo atual é menor que o limite definido nas definições (ou 50€ por defeito)
+const isLowBalance = totalBalance < (settings.lowBalanceLimit || 50);
   const formatValue = (val) => settings.privacyMode ? "••••" : val.toFixed(2) + settings.currency;
 
   const getDynamicContent = () => {
@@ -382,20 +384,42 @@ export default function App() {
 
       {activeTab === 'home' && (
         <>
-          <div style={{ background: 'linear-gradient(135deg, #1C1C1E 0%, #3A3A3C 100%)', color: 'white', padding: '30px 20px', borderRadius: '30px', marginBottom: '20px', boxShadow: '0 10px 25px rgba(0,0,0,0.15)' }}>
-            <p style={{ margin: 0, opacity: 0.6, fontSize: '11px', fontWeight: '700' }}>SALDO CONSOLIDADO</p>
-            <h1 style={{ fontSize: 'clamp(32px, 8vw, 42px)', margin: '8px 0', fontWeight: '900', wordBreak: 'break-all' }}>{formatValue(totalBalance)}</h1>
-          </div>
+          <div style={{ 
+  background: isLowBalance 
+    ? 'linear-gradient(135deg, #2C0B0E 0%, #FF3B30 100%)' // Cor avermelhada se estiver baixo
+    : 'linear-gradient(135deg, #1C1C1E 0%, #3A3A3C 100%)', 
+  color: 'white', 
+  padding: '30px 20px', 
+  borderRadius: '30px', 
+  marginBottom: '20px', 
+  boxShadow: isLowBalance ? '0 10px 25px rgba(255,59,48,0.2)' : '0 10px 25px rgba(0,0,0,0.15)',
+  position: 'relative',
+  border: isLowBalance ? '1px solid rgba(255,255,255,0.2)' : 'none'
+}}>
+  <p style={{ margin: 0, opacity: 0.6, fontSize: '11px', fontWeight: '700' }}>
+    SALDO CONSOLIDADO {isLowBalance && '⚠️'}
+  </p>
+  <h1 style={{ 
+    fontSize: 'clamp(32px, 8vw, 42px)', 
+    margin: '8px 0', 
+    fontWeight: '900', 
+    wordBreak: 'break-all',
+    color: isLowBalance ? '#FFD6D6' : 'white' // Texto ligeiramente rosado se baixo
+  }}>
+    {formatValue(totalBalance)}
+  </h1>
+</div>
 
-          <div style={{ display: 'flex', gap: '12px', overflowX: 'auto', paddingBottom: '20px', WebkitOverflowScrolling: 'touch' }}>
-            {Object.keys(settings.accounts || {}).map(k => (
-              <div key={k} style={{ minWidth: '120px', backgroundColor: 'white', padding: '15px', borderRadius: '22px', textAlign: 'center', boxShadow: '0 5px 15px rgba(0,0,0,0.03)' }}>
-                <div style={{fontSize: '28px', marginBottom: '5px'}}>{settings.accounts[k].icon}</div>
-                <div style={{fontSize: '10px', color: '#8E8E93', fontWeight: '600', textTransform: 'uppercase'}}>{settings.accounts[k].label}</div>
-                <strong style={{fontSize: '15px'}}>{formatValue(getAccountBalance(k))}</strong>
-              </div>
-            ))}
-          </div>
+{/* O BLOCO DAS CONTAS (CARTEIRA) MANTÉM-SE IGUAL ABAIXO: */}
+<div style={{ display: 'flex', gap: '12px', overflowX: 'auto', paddingBottom: '20px', WebkitOverflowScrolling: 'touch' }}>
+  {Object.keys(settings.accounts || {}).map(k => (
+    <div key={k} style={{ minWidth: '120px', backgroundColor: 'white', padding: '15px', borderRadius: '22px', textAlign: 'center', boxShadow: '0 5px 15px rgba(0,0,0,0.03)' }}>
+      <div style={{fontSize: '28px', marginBottom: '5px'}}>{settings.accounts[k].icon}</div>
+      <div style={{fontSize: '10px', color: '#8E8E93', fontWeight: '600', textTransform: 'uppercase'}}>{settings.accounts[k].label}</div>
+      <strong style={{fontSize: '15px'}}>{formatValue(getAccountBalance(k))}</strong>
+    </div>
+  ))}
+</div>
 
           <div style={{ backgroundColor: 'white', padding: '20px', borderRadius: '30px', marginBottom: '25px', border: editingId ? '2px solid #007AFF' : 'none' }}>
             <h4 style={{margin: '0 0 15px 0', fontWeight: '800', fontSize: '15px'}}>{editingId ? '📝 Editar Registo' : '➕ Novo Registo'}</h4>
