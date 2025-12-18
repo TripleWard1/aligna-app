@@ -273,7 +273,7 @@ export default function App() {
       }).slice(-6);
   };
 
-  // Filtro adaptado para mês específico ou Ano Completo
+  // //Filtro adaptado para mês específico ou Ano Completo
   const filteredList = list.filter(t => {
     const yearMatch = t.year === reportYear;
     const monthMatch = reportMonth === 0 ? true : t.month === reportMonth;
@@ -310,18 +310,14 @@ export default function App() {
 
     return (
       <div style={{ 
-        display: 'flex', gap: '10px', marginBottom: '25px' }}>
-  <div style={{ flex: 1, backgroundColor: '#F2F2F7', padding: '15px', borderRadius: '20px' }}>
-    <p style={{ margin: 0, fontSize: '10px', fontWeight: '700', color: '#8E8E93' }}>RECEITAS</p>
-    <strong style={{ color: '#34C759', fontSize: '16px' }}>+{monthlyIncome.toFixed(2)}{settings.currency}</strong>
-    {reportMonth === 0 && <p style={{margin:0, fontSize:'9px', color:'#8E8E93'}}>Média: {(monthlyIncome/divisorMovel).toFixed(2)}€</p>}
-  </div>
-  <div style={{ flex: 1, backgroundColor: '#F2F2F7', padding: '15px', borderRadius: '20px' }}>
-    <p style={{ margin: 0, fontSize: '10px', fontWeight: '700', color: '#8E8E93' }}>DESPESAS</p>
-    <strong style={{ color: '#FF3B30', fontSize: '16px' }}>-{monthlyExpenses.toFixed(2)}{settings.currency}</strong>
-    {reportMonth === 0 && <p style={{margin:0, fontSize:'9px', color:'#8E8E93'}}>Média: {(monthlyExpenses/divisorMovel).toFixed(2)}€</p>}
-  </div>
-</div>
+        display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', 
+        minHeight: '100vh', background: 'linear-gradient(180deg, #F8F9FB 0%, #E9ECEF 100%)', 
+        padding: '20px', fontFamily: '-apple-system, sans-serif', boxSizing: 'border-box'
+      }}>
+        <div style={{ textAlign: 'center', marginBottom: '30px' }}>
+          <h1 style={{ fontWeight: '900', fontSize: 'clamp(40px, 10vw, 52px)', letterSpacing: '-2px', margin: '0', color: '#1C1C1E' }}>Aligna</h1>
+          <p style={{ color: '#8E8E93', fontWeight: '600', marginTop: '5px' }}>Finanças sob controlo</p>
+        </div>
 
         {loginMode === 'profiles' && (
           <div style={{ width: '100%', maxWidth: '400px' }}>
