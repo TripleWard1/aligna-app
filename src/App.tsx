@@ -283,16 +283,25 @@ const isLowBalance = totalBalance < (settings.lowBalanceLimit || 50);
       }).slice(-6);
   };
 
-  // Se reportMonth for 0, significa "Ano Completo"
+  // Filtra a lista pelo mês e ano selecionados
   const filteredList = list.filter(t => {
-    // 1. O ano tem de ser IGUAL ao selecionado no dropdown
-    const yearMatch = Number(t.year) === Number(reportYear);
-    
-    // 2. Se for 0 (Ano Completo), mostra tudo desse ano. Se não, filtra o mês.
-    const monthMatch = reportMonth === 0 ? true : Number(t.month) === Number(reportMonth);
-    
-    return yearMatch && monthMatch;
+    const tDate = new Date(t.date);
+    const m = tDate.getMonth() + 1;
+    const y = tDate.getFullYear();
+    return (reportMonth === 0 || m === reportMonth) && y === reportYear;
   });
+
+  // Calcula os totais por categoria para as despesas
+  const totalsByCat = filteredList.reduce((acc, t) => {
+    if (t.type === 'expense') {
+      acc[t.category] = (acc[t.category] || 0) + t.amount;
+    }
+    return acc;
+  }, {});
+
+  const maxCategoryValue = Math.max(...Object.values(totalsByCat), 0);
+  const monthlyIncome = filteredList.filter(t => t.type === 'income').reduce((acc, t) => acc + t.amount, 0);
+  const monthlyExpenses = filteredList.filter(t => t.type === 'expense').reduce((acc, t) => acc + t.amount, 0);
 
   const monthlyIncome = filteredList
     .filter(t => t.type === 'income')
