@@ -1,14 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { db } from './firebase'; 
 import { ref, push, onValue, set, remove, update, get } from "firebase/database";
-import { jsPDF } from 'jspdf';
-import 'jspdf-autotable';
-import { UserOptions } from 'jspdf-autotable';
-
-// Esta interface impede o erro de "autoTable does not exist" no deploy
-interface jsPDFWithPlugin extends jsPDF {
-  autoTable: (options: UserOptions) => jsPDF;
-}
 
 const TWELVE_DATA_KEY = "49563e179ee146c5a53279200c654f29";
 
@@ -283,25 +275,16 @@ const isLowBalance = totalBalance < (settings.lowBalanceLimit || 50);
       }).slice(-6);
   };
 
-  // Filtra a lista pelo mês e ano selecionados
+  // Se reportMonth for 0, significa "Ano Completo"
   const filteredList = list.filter(t => {
-    const tDate = new Date(t.date);
-    const m = tDate.getMonth() + 1;
-    const y = tDate.getFullYear();
-    return (reportMonth === 0 || m === reportMonth) && y === reportYear;
+    // 1. O ano tem de ser IGUAL ao selecionado no dropdown
+    const yearMatch = Number(t.year) === Number(reportYear);
+    
+    // 2. Se for 0 (Ano Completo), mostra tudo desse ano. Se não, filtra o mês.
+    const monthMatch = reportMonth === 0 ? true : Number(t.month) === Number(reportMonth);
+    
+    return yearMatch && monthMatch;
   });
-
-  // Calcula os totais por categoria para as despesas
-  const totalsByCat = filteredList.reduce((acc, t) => {
-    if (t.type === 'expense') {
-      acc[t.category] = (acc[t.category] || 0) + t.amount;
-    }
-    return acc;
-  }, {});
-
-  const maxCategoryValue = Math.max(...Object.values(totalsByCat), 0);
-  const monthlyIncome = filteredList.filter(t => t.type === 'income').reduce((acc, t) => acc + t.amount, 0);
-  const monthlyExpenses = filteredList.filter(t => t.type === 'expense').reduce((acc, t) => acc + t.amount, 0);
 
   const monthlyIncome = filteredList
     .filter(t => t.type === 'income')
@@ -555,25 +538,7 @@ const isLowBalance = totalBalance < (settings.lowBalanceLimit || 50);
   <div style={{ backgroundColor: 'white', padding: '20px', borderRadius: '30px', boxSizing: 'border-box' }}>
     <h3 style={{ fontWeight: '900', marginBottom: '20px', fontSize: '18px' }}>Análise Mensal</h3>
     
-    {/* 1. Botão de Exportar (Colocado fora do flex dos seletores para não quebrar o layout) */}
-    <button 
-      onClick={exportToPDF}
-      style={{
-        width: '100%',
-        padding: '14px',
-        backgroundColor: '#1C1C1E',
-        color: 'white',
-        border: 'none',
-        borderRadius: '16px',
-        fontWeight: '800',
-        marginBottom: '20px',
-        cursor: 'pointer'
-      }}
-    >
-      📄 Exportar PDF do Mês
-    </button>
-
-    {/* 2. Seletores de Mês e Ano */}
+    {/* Seletores de Mês e Ano Lado a Lado */}
     <div style={{ display: 'flex', gap: '8px', marginBottom: '20px' }}>
       <select 
         value={reportMonth} 
@@ -593,126 +558,70 @@ const isLowBalance = totalBalance < (settings.lowBalanceLimit || 50);
         onChange={e => setReportYear(parseInt(e.target.value))} 
         style={{ width: '100px', padding: '12px', borderRadius: '12px', border: '1px solid #E5E5EA', fontWeight: 'bold', fontSize: '12px' }}
       >
-        {[...new Set([...list.map(t => Number(t.year)), new Date().getFullYear()])]
+        {[...new Set([...list.map(t => Number(t.year || new Date(t.date).getFullYear())), new Date().getFullYear()])]
           .sort((a, b) => b - a)
           .map(y => <option key={y} value={y}>{y}</option>)
         }
       </select>
     </div>
 
-    {/* 3. Resumo de Valores */}
+    {/* Cartões de Resumo */}
     {!selectedDetail && (
       <div style={{ display: 'flex', gap: '10px', marginBottom: '25px' }}>
         <div style={{ flex: 1, backgroundColor: '#F2F2F7', padding: '15px', borderRadius: '20px' }}>
           <p style={{ margin: 0, fontSize: '10px', fontWeight: '700', color: '#8E8E93' }}>RECEITAS</p>
-          <strong style={{ color: '#34C759', fontSize: '16px' }}>+{monthlyIncome.toFixed(2)}{settings.currency}</strong>
+          <strong style={{ color: '#34C759', fontSize: '16px' }}>+{(monthlyIncome || 0).toFixed(2)}{settings.currency}</strong>
         </div>
         <div style={{ flex: 1, backgroundColor: '#F2F2F7', padding: '15px', borderRadius: '20px' }}>
           <p style={{ margin: 0, fontSize: '10px', fontWeight: '700', color: '#8E8E93' }}>DESPESAS</p>
-          <strong style={{ color: '#FF3B30', fontSize: '16px' }}>-{monthlyExpenses.toFixed(2)}{settings.currency}</strong>
+          <strong style={{ color: '#FF3B30', fontSize: '16px' }}>-{(monthlyExpenses || 0).toFixed(2)}{settings.currency}</strong>
         </div>
       </div>
     )}
 
-    {/* 4. Lista de Categorias Ordenada */}
-    {Object.keys(totalsByCat)
-      .sort((a, b) => totalsByCat[b] - totalsByCat[a])
-      .map(cat => (
-        <div key={cat} onClick={() => setSelectedDetail(cat)} style={{ marginBottom: '18px', cursor: 'pointer' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px', fontSize: '13px', fontWeight: '800' }}>
-            <span>{CATEGORIES[cat]?.icon} {CATEGORIES[cat]?.label}</span>
-            <span>{totalsByCat[cat].toFixed(2)}{settings.currency}</span>
-          </div>
-          <div style={{ width: '100%', height: '8px', backgroundColor: '#F2F2F7', borderRadius: '10px', overflow: 'hidden' }}>
-            <div style={{ 
-              width: `${Math.min((totalsByCat[cat] / (maxCategoryValue || 1)) * 100, 100)}%`, 
-              height: '100%', 
-              backgroundColor: CATEGORIES[cat]?.color || '#007AFF', 
-              borderRadius: '10px',
-              transition: 'width 0.8s ease'
-            }}></div>
+    {selectedDetail ? (
+      <div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '25px' }}>
+          <button onClick={() => setSelectedDetail(null)} style={{ background: '#F2F2F7', border: 'none', width: '35px', height: '35px', borderRadius: '50%', fontSize: '16px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>←</button>
+          <div>
+            <h4 style={{ margin: 0, fontSize: '16px', fontWeight: '900' }}>{CATEGORIES[selectedDetail]?.label}</h4>
+            <p style={{ margin: 0, fontSize: '11px', color: '#8E8E93', fontWeight: 'bold' }}>EVOLUÇÃO DOS GASTOS</p>
           </div>
         </div>
-      ))}
+
+        <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', height: '140px', padding: '15px', backgroundColor: '#F8F9FB', borderRadius: '24px', marginBottom: '25px', gap: '10px' }}>
+          {getCategoryHistory(selectedDetail).length > 0 ? getCategoryHistory(selectedDetail).map((data, idx) => {
+            const maxVal = Math.max(...getCategoryHistory(selectedDetail).map(d => d.val));
+            const heightPct = (data.val / (maxVal || 1)) * 100;
+            return (
+              <div key={idx} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', height: '100%' }}>
+                <div style={{ flex: 1, width: '100%', display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}>
+                  <div style={{ width: '100%', maxWidth: '35px', height: `${heightPct}%`, backgroundColor: CATEGORIES[selectedDetail]?.color || '#007AFF', borderRadius: '8px 8px 4px 4px', minHeight: '2px' }}></div>
+                </div>
+                <span style={{ fontSize: '9px', fontWeight: '900', color: '#AEAEB2', marginTop: '10px' }}>{data.date}</span>
+                <span style={{ fontSize: '9px', fontWeight: '900', color: '#1C1C1E' }}>{data.val.toFixed(0)}{settings.currency}</span>
+              </div>
+            );
+          }) : <p style={{ width: '100%', textAlign: 'center', color: '#AEAEB2', fontSize: '12px' }}>Sem dados históricos</p>}
+        </div>
+      </div>
+    ) : (
+      Object.keys(totalsByCat || {})
+        .sort((a, b) => totalsByCat[b] - totalsByCat[a])
+        .map(cat => (
+          <div key={cat} onClick={() => setSelectedDetail(cat)} style={{ marginBottom: '18px', cursor: 'pointer' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px', fontSize: '13px', fontWeight: '800' }}>
+              <span>{CATEGORIES[cat]?.icon} {CATEGORIES[cat]?.label || cat}</span>
+              <span>{totalsByCat[cat].toFixed(2)}{settings.currency}</span>
+            </div>
+            <div style={{ width: '100%', height: '8px', backgroundColor: '#F2F2F7', borderRadius: '10px', overflow: 'hidden' }}>
+              <div style={{ width: `${Math.min((totalsByCat[cat] / (maxCategoryValue || 1)) * 100, 100)}%`, height: '100%', backgroundColor: CATEGORIES[cat]?.color || '#007AFF', borderRadius: '10px' }}></div>
+            </div>
+          </div>
+        ))
+    )}
   </div>
 )}
-
-{selectedDetail ? (
-            <div>
-              {/* Cabeçalho com botão voltar */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '25px' }}>
-                <button onClick={() => setSelectedDetail(null)} style={{ background: '#F2F2F7', border: 'none', width: '35px', height: '35px', borderRadius: '50%', fontSize: '16px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>←</button>
-                <div>
-                  <h4 style={{ margin: 0, fontSize: '16px', fontWeight: '900' }}>{CATEGORIES[selectedDetail]?.label}</h4>
-                  <p style={{ margin: 0, fontSize: '11px', color: '#8E8E93', fontWeight: 'bold' }}>EVOLUÇÃO DOS GASTOS</p>
-                </div>
-              </div>
-
-              {/* GRÁFICO DE BARRAS EVOLUTIVO */}
-              <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', height: '140px', padding: '15px', backgroundColor: '#F8F9FB', borderRadius: '24px', marginBottom: '25px', gap: '10px' }}>
-                {getCategoryHistory(selectedDetail).length > 0 ? getCategoryHistory(selectedDetail).map((data, idx) => {
-                  const maxVal = Math.max(...getCategoryHistory(selectedDetail).map(d => d.val));
-                  const heightPct = (data.val / (maxVal || 1)) * 100;
-                  
-                  return (
-                    <div key={idx} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', height: '100%' }}>
-                      <div style={{ flex: 1, width: '100%', display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}>
-                        <div style={{ 
-                          width: '100%', 
-                          maxWidth: '35px',
-                          height: `${heightPct}%`, 
-                          backgroundColor: CATEGORIES[selectedDetail]?.color || '#007AFF', 
-                          borderRadius: '8px 8px 4px 4px',
-                          transition: 'height 0.6s cubic-bezier(0.4, 0, 0.2, 1)',
-                          minHeight: '2px'
-                        }}></div>
-                      </div>
-                      <span style={{ fontSize: '9px', fontWeight: '900', color: '#AEAEB2', marginTop: '10px' }}>{data.date}</span>
-                      <span style={{ fontSize: '9px', fontWeight: '900', color: '#1C1C1E' }}>{data.val.toFixed(0)}{settings.currency}</span>
-                    </div>
-                  );
-                }) : <p style={{ width: '100%', textAlign: 'center', color: '#AEAEB2', fontSize: '12px' }}>Sem dados históricos</p>}
-              </div>
-
-              {/* LISTA DE ÚLTIMOS REGISTOS */}
-              <p style={{ fontSize: '11px', fontWeight: '800', color: '#8E8E93', marginBottom: '12px', marginLeft: '5px' }}>ÚLTIMOS MOVIMENTOS</p>
-              {list.filter(t => t.category === selectedDetail).slice(-5).reverse().map(t => (
-                <div key={t.id} style={{ padding: '15px', backgroundColor: '#F8F9FB', borderRadius: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                   <div style={{ display: 'flex', flexDirection: 'column' }}>
-                     <span style={{ fontSize: '13px', fontWeight: '700' }}>{t.description}</span>
-                     <span style={{ fontSize: '10px', color: '#AEAEB2' }}>{t.date}</span>
-                   </div>
-                   <strong style={{ fontSize: '14px', color: t.type === 'income' ? '#34C759' : '#1C1C1E' }}>
-                     {t.type === 'income' ? '+' : ''}{t.amount.toFixed(2)}{settings.currency}
-                   </strong>
-                </div>
-              ))}
-            </div>
-          ) : (
-            /* Lista de categorias agora ordenada por valor (do maior para o menor) */
-            Object.keys(totalsByCat)
-              .sort((a, b) => totalsByCat[b] - totalsByCat[a])
-              .map(cat => (
-                <div key={cat} onClick={() => setSelectedDetail(cat)} style={{ marginBottom: '18px', cursor: 'pointer' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px', fontSize: '13px', fontWeight: '800' }}>
-                    <span>{CATEGORIES[cat]?.icon} {CATEGORIES[cat]?.label}</span>
-                    <span>{totalsByCat[cat].toFixed(2)}{settings.currency}</span>
-                  </div>
-                  <div style={{ width: '100%', height: '8px', backgroundColor: '#F2F2F7', borderRadius: '10px', overflow: 'hidden' }}>
-  <div style={{ 
-    // Calcula a largura com base no total de receitas do mês para dar noção real de impacto
-    width: `${Math.min((totalsByCat[cat] / (maxCategoryValue || 1)) * 100, 100)}%`, 
-    height: '100%', 
-    backgroundColor: CATEGORIES[cat]?.color, 
-    borderRadius: '10px',
-    transition: 'width 0.8s ease'
-  }}></div>
-</div>
-                </div>
-              ))
-          )}
-        </div>
-      )}
 
       {activeTab === 'settings' && (
         <div style={{ backgroundColor: 'white', padding: '20px', borderRadius: '30px', boxSizing: 'border-box', overflowX: 'hidden' }}>
