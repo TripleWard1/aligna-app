@@ -373,26 +373,16 @@ const isLowBalance = totalBalance < (settings.lowBalanceLimit || 50);
         `${t.type === 'income' ? '+' : '-'}${t.amount.toFixed(2)}${settings.currency}`
       ]);
     
-      const exportToPDF = () => {
-        try {
-          // Usar (jsPDF as any) garante que o deploy passe mesmo com conflitos de versão
-          const doc = new (jsPDF as any)();
-          
-          // ... resto do código ...
-      
-          // Chamar o autoTable desta forma para máxima compatibilidade
-          (doc as any).autoTable({
-            head: [["Data", "Descricao", "Categoria", "Valor"]],
-            body: tableRows,
-            startY: 35,
-            theme: 'grid'
-          });
-      
-          doc.save(`Relatorio_Aligna.pdf`);
-        } catch (err) {
-          alert("Erro ao gerar PDF. Verifica se as bibliotecas estao instaladas.");
-        }
-      };
+      doc.autoTable({
+        startY: 28,
+        head: [["Data", "Descrição", "Categoria", "Valor"]],
+        body: tableRows,
+        theme: 'grid',
+        headStyles: { fillColor: [28, 28, 30] }
+      });
+    
+      doc.save(`Relatorio_Aligna_${dateStr}.pdf`);
+    };
     // ... resto do código do login
     const knownProfiles = JSON.parse(localStorage.getItem('known_profiles') || '[]');
 
