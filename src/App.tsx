@@ -314,6 +314,32 @@ const isLowBalance = totalBalance < (settings.lowBalanceLimit || 50);
   // --- FIM DO BLOCO ---
 
   if (!user) {
+    const exportToPDF = () => {
+      const doc = new jsPDF() as jsPDFWithPlugin;
+      const dateStr = reportMonth === 0 ? `Ano_${reportYear}` : `${reportMonth}_${reportYear}`;
+    
+      doc.setFontSize(18);
+      doc.text("ALIGNA - Relatório Financeiro", 14, 15);
+      doc.setFontSize(10);
+      doc.text(`Período: ${dateStr} | Utilizador: ${user?.toUpperCase()}`, 14, 22);
+      
+      const tableRows = filteredList.map(t => [
+        t.date,
+        t.description,
+        CATEGORIES[t.category]?.label || t.category,
+        `${t.type === 'income' ? '+' : '-'}${t.amount.toFixed(2)}${settings.currency}`
+      ]);
+    
+      doc.autoTable({
+        startY: 28,
+        head: [["Data", "Descrição", "Categoria", "Valor"]],
+        body: tableRows,
+        theme: 'grid',
+        headStyles: { fillColor: [28, 28, 30] }
+      });
+    
+      doc.save(`Relatorio_Aligna_${dateStr}.pdf`);
+    };
     // ... resto do código do login
     const knownProfiles = JSON.parse(localStorage.getItem('known_profiles') || '[]');
 
