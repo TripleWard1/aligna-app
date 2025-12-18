@@ -478,6 +478,18 @@ export default function App() {
   onChange={e => setReportMonth(parseInt(e.target.value))} 
   style={{ flex: 1, padding: '12px', borderRadius: '12px', border: '1px solid #E5E5EA', fontWeight: 'bold', fontSize: '12px' }}
 >
+  {/* Seletor de Ano Dinâmico */}
+<select 
+  value={reportYear} 
+  onChange={e => setReportYear(parseInt(e.target.value))} 
+  style={{ width: '100px', padding: '12px', borderRadius: '12px', border: '1px solid #E5E5EA', fontWeight: 'bold', fontSize: '12px', marginLeft: '8px' }}
+>
+  {/* Esta lógica cria a lista de anos baseada nos teus dados + o ano atual */}
+  {[...new Set(list.map(t => t.year)), new Date().getFullYear()]
+    .sort((a, b) => b - a)
+    .map(y => <option key={y} value={y}>{y}</option>)
+  }
+</select>
   {/* Nova opção para ver o ano inteiro */}
   <option value={0}>ANO COMPLETO</option>
   
