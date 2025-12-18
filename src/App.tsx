@@ -273,7 +273,7 @@ export default function App() {
       }).slice(-6);
   };
 
-  // Se reportMonth for 0, significa "Ano Completo"
+  // Filtro adaptado para mês específico ou Ano Completo
   const filteredList = list.filter(t => {
     const yearMatch = t.year === reportYear;
     const monthMatch = reportMonth === 0 ? true : t.month === reportMonth;
@@ -298,6 +298,10 @@ export default function App() {
 
   const maxCategoryValue = Math.max(...Object.values(totalsByCat).map(Number), 0);
 
+  // --- NOVO: Cálculo da Média Mensal ---
+  const currentMonth = new Date().getMonth() + 1;
+  const divisorMovel = reportMonth === 0 ? (reportYear < new Date().getFullYear() ? 12 : currentMonth) : 1;
+
   // --- FIM DO BLOCO ---
 
   if (!user) {
@@ -306,14 +310,18 @@ export default function App() {
 
     return (
       <div style={{ 
-        display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', 
-        minHeight: '100vh', background: 'linear-gradient(180deg, #F8F9FB 0%, #E9ECEF 100%)', 
-        padding: '20px', fontFamily: '-apple-system, sans-serif', boxSizing: 'border-box'
-      }}>
-        <div style={{ textAlign: 'center', marginBottom: '30px' }}>
-          <h1 style={{ fontWeight: '900', fontSize: 'clamp(40px, 10vw, 52px)', letterSpacing: '-2px', margin: '0', color: '#1C1C1E' }}>Aligna</h1>
-          <p style={{ color: '#8E8E93', fontWeight: '600', marginTop: '5px' }}>Finanças sob controlo</p>
-        </div>
+        display: 'flex', gap: '10px', marginBottom: '25px' }}>
+  <div style={{ flex: 1, backgroundColor: '#F2F2F7', padding: '15px', borderRadius: '20px' }}>
+    <p style={{ margin: 0, fontSize: '10px', fontWeight: '700', color: '#8E8E93' }}>RECEITAS</p>
+    <strong style={{ color: '#34C759', fontSize: '16px' }}>+{monthlyIncome.toFixed(2)}{settings.currency}</strong>
+    {reportMonth === 0 && <p style={{margin:0, fontSize:'9px', color:'#8E8E93'}}>Média: {(monthlyIncome/divisorMovel).toFixed(2)}€</p>}
+  </div>
+  <div style={{ flex: 1, backgroundColor: '#F2F2F7', padding: '15px', borderRadius: '20px' }}>
+    <p style={{ margin: 0, fontSize: '10px', fontWeight: '700', color: '#8E8E93' }}>DESPESAS</p>
+    <strong style={{ color: '#FF3B30', fontSize: '16px' }}>-{monthlyExpenses.toFixed(2)}{settings.currency}</strong>
+    {reportMonth === 0 && <p style={{margin:0, fontSize:'9px', color:'#8E8E93'}}>Média: {(monthlyExpenses/divisorMovel).toFixed(2)}€</p>}
+  </div>
+</div>
 
         {loginMode === 'profiles' && (
           <div style={{ width: '100%', maxWidth: '400px' }}>
@@ -557,23 +565,30 @@ export default function App() {
           ) : (
             /* Lista de categorias agora ordenada por valor (do maior para o menor) */
             Object.keys(totalsByCat)
-              .sort((a, b) => totalsByCat[b] - totalsByCat[a])
-              .map(cat => (
-                <div key={cat} onClick={() => setSelectedDetail(cat)} style={{ marginBottom: '18px', cursor: 'pointer' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px', fontSize: '13px', fontWeight: '800' }}>
-                    <span>{CATEGORIES[cat]?.icon} {CATEGORIES[cat]?.label}</span>
-                    <span>{totalsByCat[cat].toFixed(2)}{settings.currency}</span>
-                  </div>
-                  <div style={{ width: '100%', height: '8px', backgroundColor: '#F2F2F7', borderRadius: '10px', overflow: 'hidden' }}>
-  <div style={{ 
-    // Calcula a largura com base no total de receitas do mês para dar noção real de impacto
-    width: `${Math.min((totalsByCat[cat] / (maxCategoryValue || 1)) * 100, 100)}%`, 
-    height: '100%', 
-    backgroundColor: CATEGORIES[cat]?.color, 
-    borderRadius: '10px',
-    transition: 'width 0.8s ease'
-  }}></div>
-</div>
+  .sort((a, b) => totalsByCat[b] - totalsByCat[a])
+  .map(cat => (
+    <div key={cat} onClick={() => setSelectedDetail(cat)} style={{ marginBottom: '18px', cursor: 'pointer' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2px', fontSize: '13px', fontWeight: '800' }}>
+        <span>{CATEGORIES[cat]?.icon} {CATEGORIES[cat]?.label}</span>
+        <span>{totalsByCat[cat].toFixed(2)}{settings.currency}</span>
+      </div>
+      {/* Mostra a média mensal da categoria se estiver no modo "Ano Completo" */}
+      {reportMonth === 0 && (
+        <div style={{ fontSize: '10px', color: '#8E8E93', marginBottom: '5px', fontWeight: '600' }}>
+          Média mensal: {(totalsByCat[cat] / divisorMovel).toFixed(2)}{settings.currency}
+        </div>
+      )}
+      <div style={{ width: '100%', height: '8px', backgroundColor: '#F2F2F7', borderRadius: '10px', overflow: 'hidden' }}>
+        <div style={{ 
+          width: `${Math.min((totalsByCat[cat] / (maxCategoryValue || 1)) * 100, 100)}%`, 
+          height: '100%', 
+          backgroundColor: CATEGORIES[cat]?.color, 
+          borderRadius: '10px',
+          transition: 'width 0.8s ease'
+        }}></div>
+      </div>
+    </div>
+  ))}
                 </div>
               ))
           )}
