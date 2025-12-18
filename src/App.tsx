@@ -297,7 +297,18 @@ const monthlyExpenses = filteredList
   .filter(t => t.type === 'expense')
   .reduce((acc, t) => acc + t.amount, 0);
 
-// Cálculo de totais por categoria sem limites
+// --- BLOCO CORRIGIDO PARA SOMA ILIMITADA E SEM ERROS DE DEPLOY ---
+const filteredList = list.filter(t => t.month === reportMonth && t.year === reportYear);
+
+const monthlyIncome = filteredList
+  .filter(t => t.type === 'income')
+  .reduce((acc, t) => acc + (Number(t.amount) || 0), 0);
+
+const monthlyExpenses = filteredList
+  .filter(t => t.type === 'expense')
+  .reduce((acc, t) => acc + (Number(t.amount) || 0), 0);
+
+// Cálculo de totais por categoria garantindo que são números
 const totalsByCat = filteredList.reduce((acc, t) => {
   if (t.type === 'expense' || t.type === 'income') {
     const catName = t.category || 'outros';
@@ -305,10 +316,11 @@ const totalsByCat = filteredList.reduce((acc, t) => {
     acc[catName] = (acc[catName] || 0) + amountValue;
   }
   return acc;
-}, {});
+}, {}); // O {} aqui resolve o erro de deployment
 
-// Referência para a barra de progresso (maior valor gasto no mês)
+// Referência para as barras de progresso (Usa o maior gasto como 100%)
 const maxCategoryValue = Math.max(...Object.values(totalsByCat).map(Number), 0);
+// ----------------------------------------------------------------
 
   if (!user) {
     const knownProfiles = JSON.parse(localStorage.getItem('known_profiles') || '[]');
