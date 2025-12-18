@@ -246,83 +246,57 @@ export default function App() {
 
   const getSortedList = () => {
     let sorted = [...list];
-    
-    // ORDENAÇÃO POR INSERÇÃO (Recentemente adicionados)
     if (sortOrder === 'entry') {
       return sorted.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0)).slice(0, 15);
     }
-    
-    // ORDENAÇÃO CRONOLÓGICA (Data do Calendário)
     return sorted.sort((a, b) => {
-      // Usamos localeCompare para comparar strings YYYY-MM-DD diretamente
       const dateA = a.isoDate || "0000-00-00";
       const dateB = b.isoDate || "0000-00-00";
-      
-      if (dateB !== dateA) {
-        return dateB.localeCompare(dateA); // Ordem decrescente (mais recente primeiro)
-      }
-      
-      // Se a data for igual, desempata pelo timestamp (quem foi inserido por último fica em cima)
-      return (b.timestamp || 0) - (a.timestamp || 0);
+      return dateB.localeCompare(dateA);
     }).slice(0, 15);
   };
-// --- ADICIONAR ESTA FUNÇÃO AQUI ---
-const getCategoryHistory = (catKey) => {
-  const history = {};
-  // Agrupa movimentos da categoria por mês/ano
-  list.filter(t => t.category === catKey).forEach(t => {
-    const label = `${t.month}/${t.year.toString().slice(-2)}`;
-    history[label] = (history[label] || 0) + t.amount;
-  });
-  
-  // Converte para array e ordena cronologicamente para o gráfico
-  return Object.entries(history)
-    .map(([date, val]) => ({ date, val }))
-    .sort((a, b) => {
-      const [mA, yA] = a.date.split('/');
-      const [mB, yB] = b.date.split('/');
-      return new Date(2000 + parseInt(yA), mA - 1) - new Date(2000 + parseInt(yB), mB - 1);
-    })
-    .slice(-6); // Mostra apenas os últimos 6 meses com dados
-};
-// ----------------------------------
-  // Adicione isto logo acima de: if (!user) {
-const filteredList = list.filter(t => t.month === reportMonth && t.year === reportYear);
 
-const monthlyIncome = filteredList
-  .filter(t => t.type === 'income')
-  .reduce((acc, t) => acc + t.amount, 0);
+  // --- COLA ESTE BLOCO ABAIXO EXATAMENTE AQUI ---
 
-const monthlyExpenses = filteredList
-  .filter(t => t.type === 'expense')
-  .reduce((acc, t) => acc + t.amount, 0);
+  const getCategoryHistory = (catKey) => {
+    const history = {};
+    list.filter(t => t.category === catKey).forEach(t => {
+      const label = `${t.month}/${t.year.toString().slice(-2)}`;
+      history[label] = (history[label] || 0) + Number(t.amount);
+    });
+    return Object.entries(history)
+      .map(([date, val]) => ({ date, val }))
+      .sort((a, b) => {
+        const [mA, yA] = a.date.split('/');
+        const [mB, yB] = b.date.split('/');
+        return new Date(2000 + parseInt(yA), mA - 1) - new Date(2000 + parseInt(yB), mB - 1);
+      }).slice(-6);
+  };
 
-// --- BLOCO CORRIGIDO PARA SOMA ILIMITADA E SEM ERROS DE DEPLOY ---
-const filteredList = list.filter(t => t.month === reportMonth && t.year === reportYear);
+  const filteredList = list.filter(t => t.month === reportMonth && t.year === reportYear);
 
-const monthlyIncome = filteredList
-  .filter(t => t.type === 'income')
-  .reduce((acc, t) => acc + (Number(t.amount) || 0), 0);
+  const monthlyIncome = filteredList
+    .filter(t => t.type === 'income')
+    .reduce((acc, t) => acc + (Number(t.amount) || 0), 0);
 
-const monthlyExpenses = filteredList
-  .filter(t => t.type === 'expense')
-  .reduce((acc, t) => acc + (Number(t.amount) || 0), 0);
+  const monthlyExpenses = filteredList
+    .filter(t => t.type === 'expense')
+    .reduce((acc, t) => acc + (Number(t.amount) || 0), 0);
 
-// Cálculo de totais por categoria garantindo que são números
-const totalsByCat = filteredList.reduce((acc, t) => {
-  if (t.type === 'expense' || t.type === 'income') {
-    const catName = t.category || 'outros';
-    const amountValue = Number(t.amount) || 0;
-    acc[catName] = (acc[catName] || 0) + amountValue;
-  }
-  return acc;
-}, {}); // O {} aqui resolve o erro de deployment
+  const totalsByCat = filteredList.reduce((acc, t) => {
+    if (t.type === 'expense' || t.type === 'income') {
+      const catName = t.category || 'outros';
+      acc[catName] = (acc[catName] || 0) + (Number(t.amount) || 0);
+    }
+    return acc;
+  }, {});
 
-// Referência para as barras de progresso (Usa o maior gasto como 100%)
-const maxCategoryValue = Math.max(...Object.values(totalsByCat).map(Number), 0);
-// ----------------------------------------------------------------
+  const maxCategoryValue = Math.max(...Object.values(totalsByCat).map(Number), 0);
+
+  // --- FIM DO BLOCO ---
 
   if (!user) {
+    // ... resto do código do login
     const knownProfiles = JSON.parse(localStorage.getItem('known_profiles') || '[]');
 
     return (
