@@ -28,13 +28,13 @@ export default function App() {
   const [user, setUser] = useState(localStorage.getItem('f_user') || null);
   const [list, setList] = useState([]);
   const [allUsers, setAllUsers] = useState({});
-  const [activeTab, setActiveTab] = useState('home'); // 'home', 'reports', 'settings'
+  const [activeTab, setActiveTab] = useState('home'); 
   const [showAddAccount, setShowAddAccount] = useState(false);
   const [transType, setTransType] = useState('expense');
   const [newAccName, setNewAccName] = useState('');
   const [newAccIcon, setNewAccIcon] = useState('🏦');
   
-  // Filtros de Relatório
+  // Estados para Relatórios
   const [reportMonth, setReportMonth] = useState(new Date().getMonth() + 1);
   const [reportYear, setReportYear] = useState(new Date().getFullYear());
 
@@ -88,13 +88,11 @@ export default function App() {
 
   const handleRegister = () => {
     if (!regName || !regEmail || !regPass) {
-      alert("Por favor, preencha todos os campos.");
-      return;
+      alert("Campos vazios."); return;
     }
     const userId = regName.toLowerCase().trim();
     if (allUsers[userId]) {
-      alert("Este nome de utilizador já existe.");
-      return;
+      alert("Utilizador já existe."); return;
     }
     const initialSettings = { ...settings, email: regEmail, password: regPass, avatar: AVATARS[0] };
     set(ref(db, `users/${userId}/settings`), initialSettings).then(() => {
@@ -125,9 +123,9 @@ export default function App() {
 
   const getDynamicContent = () => {
     switch(transType) {
-      case 'investimento': return { placeholder: "Ticker (ex: AAPL)", categories: ['investimento'], color: '#5AC8FA' };
+      case 'investimento': return { placeholder: "Ticker (ex: QQQ, AAPL, BTC/USD)", categories: ['investimento'], color: '#5AC8FA' };
       case 'income': return { placeholder: "Origem (ex: Salário)", categories: ['salario', 'outros'], color: '#34C759' };
-      case 'transfer': return { placeholder: "Motivo (ex: Poupança)", categories: ['transferencia'], color: '#5856D6' };
+      case 'transfer': return { placeholder: "Motivo da troca", categories: ['transferencia'], color: '#5856D6' };
       default: return { placeholder: "Onde gastou?", categories: ['alimentacao', 'lazer', 'transporte', 'saude', 'casa', 'luz', 'gas', 'servicos', 'internet', 'outros'], color: '#007AFF' };
     }
   };
@@ -136,10 +134,7 @@ export default function App() {
 
   const handleTransactionSubmit = async (e) => {
     e.preventDefault();
-    const form = e.target;
-    const { desc, val, cat, acc, toAcc, assetType, perf } = form.elements;
-    let amountValue = parseFloat(val.value);
-    if (isNaN(amountValue)) return;
+    const { desc, val, cat, acc, toAcc, assetType, perf } = e.target.elements;
     let autoPerformance = perf ? perf.value : "0";
 
     if (transType === 'investimento' && desc.value) {
@@ -150,9 +145,9 @@ export default function App() {
       } catch (err) { console.error(err); }
     }
 
-    const transactionData = { 
+    const tData = { 
       description: desc.value.toUpperCase(), 
-      amount: Math.abs(amountValue), 
+      amount: Math.abs(parseFloat(val.value)), 
       type: transType, 
       category: transType === 'transfer' ? 'transferencia' : (cat ? cat.value : 'investimento'),
       assetDetails: transType === 'investimento' ? { type: assetType.value, performance: autoPerformance } : null,
@@ -164,12 +159,11 @@ export default function App() {
       timestamp: Date.now() 
     };
 
-    await push(ref(db, `users/${user}/transactions`), transactionData);
-    form.reset();
-    setTransType('expense');
+    push(ref(db, `users/${user}/transactions`), tData);
+    e.target.reset();
   };
 
-  // --- LÓGICA DE RELATÓRIOS ---
+  // --- LOGICA DE RELATÓRIOS ---
   const filteredList = list.filter(t => t.month === reportMonth && t.year === reportYear);
   const totalsByCategory = filteredList.reduce((acc, t) => {
     if (t.type === 'expense') {
@@ -185,26 +179,29 @@ export default function App() {
         <h1 style={{ fontWeight: '900', fontSize: '46px', letterSpacing: '-2px' }}>Aligna</h1>
         {!isRegistering ? (
           <>
-            {knownProfiles.map(u => allUsers[u] && (
-              <div key={u} onClick={() => setSelectingUser(u)} style={{ backgroundColor: 'white', padding: '20px', borderRadius: '25px', marginBottom: '10px', width: '200px', textAlign: 'center', cursor: 'pointer' }}>
-                {allUsers[u].settings?.avatar} {u.toUpperCase()}
-              </div>
-            ))}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '20px', width: '100%', maxWidth: '400px', marginTop: '30px' }}>
+              {knownProfiles.map(u => allUsers[u] && (
+                <div key={u} onClick={() => setSelectingUser(u)} style={{ backgroundColor: 'white', padding: '30px 20px', borderRadius: '35px', cursor: 'pointer', textAlign: 'center', boxShadow: selectingUser === u ? '0 0 0 3px #007AFF' : '0 10px 25px rgba(0,0,0,0.04)' }}>
+                  <div style={{ fontSize: '50px' }}>{allUsers[u].settings?.avatar || '👤'}</div>
+                  <div style={{ fontWeight: '800' }}>{u.toUpperCase()}</div>
+                </div>
+              ))}
+            </div>
             {selectingUser && (
-              <div style={{ marginTop: '20px' }}>
-                <input type="password" placeholder="Password" value={loginPass} onChange={e => setLoginPass(e.target.value)} style={{ padding: '10px', borderRadius: '10px', border: '1px solid #ddd' }} />
-                <button onClick={handleEntry} style={{ marginLeft: '10px', padding: '10px', borderRadius: '10px', background: '#1C1C1E', color: 'white' }}>Entrar</button>
+              <div style={{ marginTop: '20px', width: '100%', maxWidth: '380px', backgroundColor: 'white', padding: '25px', borderRadius: '30px' }}>
+                <input type="password" placeholder="Password" autoFocus value={loginPass} onChange={e => setLoginPass(e.target.value)} style={{ width: '100%', padding: '16px', borderRadius: '15px', border: '1px solid #E5E5EA', boxSizing: 'border-box', marginBottom: '10px' }} />
+                <button onClick={handleEntry} style={{ width: '100%', padding: '16px', backgroundColor: '#1C1C1E', color: 'white', border: 'none', borderRadius: '15px', fontWeight: '800' }}>Entrar</button>
               </div>
             )}
-            <button onClick={() => setIsRegistering(true)} style={{ marginTop: '20px', background: 'none', border: 'none', color: '#007AFF' }}>+ Criar Perfil</button>
+            <button onClick={() => setIsRegistering(true)} style={{ marginTop: '20px', background: 'none', border: 'none', color: '#007AFF', fontWeight: '800' }}>+ Criar Perfil</button>
           </>
         ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-            <input placeholder="Nome" value={regName} onChange={e => setRegName(e.target.value)} style={{ padding: '15px', borderRadius: '15px', border: 'none' }} />
-            <input placeholder="Email" value={regEmail} onChange={e => setRegEmail(e.target.value)} style={{ padding: '15px', borderRadius: '15px', border: 'none' }} />
-            <input type="password" placeholder="Password" value={regPass} onChange={e => setRegPass(e.target.value)} style={{ padding: '15px', borderRadius: '15px', border: 'none' }} />
-            <button onClick={handleRegister} style={{ padding: '15px', borderRadius: '15px', background: '#34C759', color: 'white', fontWeight: 'bold' }}>Registar</button>
-            <button onClick={() => setIsRegistering(false)} style={{ background: 'none', border: 'none', color: '#8E8E93' }}>Cancelar</button>
+          <div style={{ width: '100%', maxWidth: '380px', backgroundColor: 'white', padding: '30px', borderRadius: '35px' }}>
+            <input placeholder="Nome" value={regName} onChange={e => setRegName(e.target.value)} style={{ width: '100%', padding: '16px', borderRadius: '15px', border: '1px solid #E5E5EA', marginBottom: '10px', boxSizing: 'border-box' }} />
+            <input placeholder="Email" value={regEmail} onChange={e => setRegEmail(e.target.value)} style={{ width: '100%', padding: '16px', borderRadius: '15px', border: '1px solid #E5E5EA', marginBottom: '10px', boxSizing: 'border-box' }} />
+            <input type="password" placeholder="Password" value={regPass} onChange={e => setRegPass(e.target.value)} style={{ width: '100%', padding: '16px', borderRadius: '15px', border: '1px solid #E5E5EA', marginBottom: '20px', boxSizing: 'border-box' }} />
+            <button onClick={handleRegister} style={{ width: '100%', padding: '16px', backgroundColor: '#34C759', color: 'white', border: 'none', borderRadius: '15px', fontWeight: '800' }}>Confirmar</button>
+            <button onClick={() => setIsRegistering(false)} style={{ width: '100%', background: 'none', border: 'none', color: '#8E8E93', marginTop: '10px' }}>Cancelar</button>
           </div>
         )}
       </div>
@@ -212,109 +209,153 @@ export default function App() {
   }
 
   return (
-    <div style={{ padding: '20px', pb: '100px', maxWidth: '480px', margin: '0 auto', backgroundColor: '#F8F9FB', minHeight: '100vh', fontFamily: '-apple-system, sans-serif' }}>
+    <div style={{ padding: '20px', maxWidth: '480px', margin: '0 auto', backgroundColor: '#F8F9FB', minHeight: '100vh', fontFamily: '-apple-system, sans-serif' }}>
       
-      {/* HEADER */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '30px' }}>
+        <div style={{ width: '60px', height: '60px', borderRadius: '20px', backgroundColor: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '32px', boxShadow: '0 8px 20px rgba(0,0,0,0.05)' }}>{settings.avatar}</div>
         <div>
-          <h2 style={{ fontSize: '24px', margin: 0, fontWeight: '900' }}>{user.toUpperCase()}</h2>
-          <p style={{ margin: 0, fontSize: '13px', color: '#34C759' }}>{activeTab === 'home' ? 'Atividade' : activeTab === 'reports' ? 'Relatórios' : 'Definições'}</p>
+          <h2 style={{ fontSize: '22px', margin: 0, fontWeight: '900' }}>{user.toUpperCase()}</h2>
+          <p style={{margin: 0, fontSize: '13px', color: (totalBalance < settings.lowBalanceLimit ? '#FF3B30' : '#34C759'), fontWeight: '700'}}>
+            ● {totalBalance < settings.lowBalanceLimit ? 'Saldo Baixo!' : 'Online'}
+          </p>
         </div>
-        <div style={{ fontSize: '30px', background: 'white', padding: '10px', borderRadius: '15px' }}>{settings.avatar}</div>
       </div>
 
-      {/* CONTEÚDO POR PÁGINA */}
       {activeTab === 'home' && (
         <>
-          <div style={{ background: 'linear-gradient(135deg, #1C1C1E 0%, #3A3A3C 100%)', color: 'white', padding: '30px', borderRadius: '30px', marginBottom: '20px' }}>
-            <p style={{ margin: 0, opacity: 0.6, fontSize: '12px', fontWeight: 'bold' }}>SALDO TOTAL</p>
-            <h1 style={{ fontSize: '42px', margin: '10px 0', fontWeight: '900' }}>{formatValue(totalBalance)}</h1>
+          <div style={{ background: 'linear-gradient(135deg, #1C1C1E 0%, #3A3A3C 100%)', color: 'white', padding: '40px 30px', borderRadius: '35px', marginBottom: '30px', boxShadow: '0 15px 35px rgba(0,0,0,0.15)' }}>
+            <p style={{ margin: 0, opacity: 0.6, fontSize: '13px', fontWeight: '700' }}>SALDO CONSOLIDADO</p>
+            <h1 style={{ fontSize: '52px', margin: '12px 0', fontWeight: '900' }}>{formatValue(totalBalance)}</h1>
           </div>
 
-          <div style={{ backgroundColor: 'white', padding: '20px', borderRadius: '30px', marginBottom: '20px' }}>
-            <form onSubmit={handleTransactionSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-              <div style={{ display: 'flex', backgroundColor: '#F2F2F7', borderRadius: '12px', padding: '4px' }}>
+          <div style={{ display: 'flex', gap: '15px', overflowX: 'auto', paddingBottom: '30px' }}>
+            {Object.keys(settings.accounts || {}).map(k => (
+              <div key={k} style={{ minWidth: '130px', backgroundColor: 'white', padding: '22px 15px', borderRadius: '28px', textAlign: 'center', boxShadow: '0 8px 20px rgba(0,0,0,0.03)' }}>
+                <div style={{fontSize: '32px', marginBottom: '10px'}}>{settings.accounts[k].icon}</div>
+                <div style={{fontSize: '12px', color: '#8E8E93', fontWeight: '600'}}>{settings.accounts[k].label}</div>
+                <strong style={{fontSize: '17px'}}>{formatValue(getAccountBalance(k))}</strong>
+              </div>
+            ))}
+          </div>
+
+          <div style={{ backgroundColor: 'white', padding: '30px', borderRadius: '35px', marginBottom: '35px' }}>
+            <form onSubmit={handleTransactionSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
+              <div style={{ display: 'flex', backgroundColor: '#F2F2F7', borderRadius: '18px', padding: '6px' }}>
                 {['expense', 'income', 'investimento', 'transfer'].map(t => (
-                  <button key={t} type="button" onClick={() => setTransType(t)} style={{ flex: 1, padding: '8px', border: 'none', borderRadius: '10px', backgroundColor: transType === t ? 'white' : 'transparent', fontWeight: 'bold', fontSize: '11px', cursor: 'pointer' }}>
-                    {t === 'expense' ? 'Gasto' : t === 'income' ? 'Ganho' : t === 'investimento' ? 'Inv.' : 'Troca'}
+                  <button key={t} type="button" onClick={() => setTransType(t)} style={{ flex: 1, padding: '12px', border: 'none', borderRadius: '14px', backgroundColor: transType === t ? 'white' : 'transparent', fontWeight: '800', fontSize: '13px' }}>
+                    {t === 'expense' ? 'Despesa' : t === 'income' ? 'Receita' : t === 'investimento' ? 'Investir' : 'Troca'}
                   </button>
                 ))}
               </div>
-              <input name="desc" placeholder={content.placeholder} required style={{ padding: '15px', borderRadius: '15px', border: 'none', backgroundColor: '#F8F9FB' }} />
-              <input name="val" type="number" step="0.01" placeholder="0.00" required style={{ padding: '15px', borderRadius: '15px', border: 'none', backgroundColor: '#F8F9FB', fontSize: '20px', fontWeight: '900' }} />
-              <div style={{ display: 'flex', gap: '10px' }}>
-                <select name="acc" style={{ flex: 1, padding: '12px', borderRadius: '12px', border: 'none', backgroundColor: '#F8F9FB' }}>
-                  {Object.keys(settings.accounts || {}).map(k => <option key={k} value={k}>{settings.accounts[k].label}</option>)}
-                </select>
-                <select name={transType === 'transfer' ? "toAcc" : "cat"} style={{ flex: 1, padding: '12px', borderRadius: '12px', border: 'none', backgroundColor: '#F8F9FB' }}>
+              <input name="desc" placeholder={content.placeholder} required style={{ width: '100%', boxSizing: 'border-box', padding: '18px', borderRadius: '18px', border: 'none', backgroundColor: '#F8F9FB' }} />
+              {transType === 'investimento' && (
+                <div style={{ display: 'flex', gap: '10px' }}>
+                  <select name="assetType" style={{ flex: 1, padding: '16px', borderRadius: '18px', border: 'none', backgroundColor: '#F8F9FB' }}>{ASSET_TYPES.map(t => <option key={t} value={t}>{t}</option>)}</select>
+                  <input name="perf" placeholder="Auto %" style={{ width: '80px', padding: '16px', borderRadius: '18px', border: 'none', backgroundColor: '#F8F9FB', textAlign: 'center' }} />
+                </div>
+              )}
+              <input name="val" type="number" step="0.01" placeholder="0.00" required style={{ width: '100%', boxSizing: 'border-box', padding: '18px', borderRadius: '18px', border: 'none', backgroundColor: '#F8F9FB', fontSize: '22px', fontWeight: '900' }} />
+              <div style={{ display: 'flex', gap: '12px' }}>
+                <select name="acc" style={{ flex: 1, padding: '16px', borderRadius: '18px', border: 'none', backgroundColor: '#F8F9FB' }}>{Object.keys(settings.accounts || {}).map(k => <option key={k} value={k}>{settings.accounts[k].label}</option>)}</select>
+                <select name={transType === 'transfer' ? "toAcc" : "cat"} style={{ flex: 1, padding: '16px', borderRadius: '18px', border: 'none', backgroundColor: '#F8F9FB' }}>
                   {transType === 'transfer' ? Object.keys(settings.accounts || {}).map(k => <option key={k} value={k}>Para: {settings.accounts[k].label}</option>) : content.categories.map(k => <option key={k} value={k}>{CATEGORIES[k].icon} {CATEGORIES[k].label}</option>)}
                 </select>
               </div>
-              <button type="submit" style={{ padding: '15px', backgroundColor: content.color, color: 'white', border: 'none', borderRadius: '15px', fontWeight: '900' }}>Adicionar</button>
+              <button type="submit" style={{ padding: '20px', backgroundColor: content.color, color: 'white', border: 'none', borderRadius: '20px', fontWeight: '900' }}>Adicionar</button>
             </form>
           </div>
 
-          <h3 style={{ fontWeight: '900' }}>Recentes</h3>
-          {list.slice(-5).reverse().map(t => (
-            <div key={t.id} style={{ display: 'flex', alignItems: 'center', backgroundColor: 'white', padding: '15px', borderRadius: '20px', marginBottom: '10px' }}>
-              <div style={{ width: '40px', height: '40px', borderRadius: '12px', backgroundColor: '#F8F9FB', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px', marginRight: '15px' }}>{CATEGORIES[t.category]?.icon || '💰'}</div>
+          <h3 style={{fontWeight: '900', marginBottom: '20px'}}>Atividade</h3>
+          {list.slice(-10).reverse().map(t => (
+            <div key={t.id} style={{ display: 'flex', alignItems: 'center', backgroundColor: 'white', padding: '18px 20px', borderRadius: '28px', marginBottom: '12px' }}>
+              <div style={{ width: '50px', height: '50px', borderRadius: '16px', backgroundColor: '#F8F9FB', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px', marginRight: '15px' }}>{t.type === 'investimento' ? '📈' : (CATEGORIES[t.category]?.icon || '💰')}</div>
               <div style={{ flex: 1 }}>
-                <p style={{ margin: 0, fontWeight: 'bold', fontSize: '14px' }}>{t.description}</p>
-                <p style={{ margin: 0, color: '#AEAEB2', fontSize: '11px' }}>{t.date}</p>
+                <p style={{ margin: 0, fontWeight: '700', fontSize: '15px' }}>{t.description} {t.assetDetails && <small style={{color: '#007AFF'}}>({t.assetDetails.type})</small>}</p>
+                <p style={{ margin: 0, color: '#AEAEB2', fontSize: '12px' }}>{t.date} • {settings.accounts[t.account]?.label} {t.assetDetails?.performance && `• ${t.assetDetails.performance}%`}</p>
               </div>
-              <p style={{ fontWeight: '900', color: t.type === 'expense' ? '#FF3B30' : '#34C759' }}>{t.type === 'expense' ? '-' : '+'}{formatValue(t.amount)}</p>
+              <div style={{ textAlign: 'right' }}>
+                <p style={{ margin: 0, fontWeight: '800', color: (t.type === 'income' || t.type === 'investimento') ? '#34C759' : t.type === 'expense' ? '#FF3B30' : '#1C1C1E' }}>{formatValue(t.amount)}</p>
+                <button onClick={() => { if(window.confirm('Eliminar?')) remove(ref(db, `users/${user}/transactions/${t.id}`)); }} style={{ border: 'none', background: 'none', fontSize: '14px', cursor: 'pointer' }}>🗑️</button>
+              </div>
             </div>
           ))}
         </>
       )}
 
       {activeTab === 'reports' && (
-        <div style={{ backgroundColor: 'white', padding: '25px', borderRadius: '30px' }}>
-          <h3 style={{ fontWeight: '900', marginTop: 0 }}>Análise de Gastos</h3>
-          <div style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
-            <select value={reportMonth} onChange={e => setReportMonth(parseInt(e.target.value))} style={{ flex: 1, padding: '10px', borderRadius: '10px', border: '1px solid #eee' }}>
-              {Array.from({length: 12}, (_, i) => <option key={i+1} value={i+1}>{new Date(0, i).toLocaleString('pt', {month: 'long'})}</option>)}
-            </select>
-            <select value={reportYear} onChange={e => setReportYear(parseInt(e.target.value))} style={{ padding: '10px', borderRadius: '10px', border: '1px solid #eee' }}>
-              <option value="2025">2025</option><option value="2026">2026</option>
+        <div style={{ backgroundColor: 'white', padding: '30px', borderRadius: '35px' }}>
+          <h3 style={{ fontWeight: '900', marginBottom: '25px' }}>Análise Mensal</h3>
+          <div style={{ display: 'flex', gap: '10px', marginBottom: '30px' }}>
+            <select value={reportMonth} onChange={e => setReportMonth(parseInt(e.target.value))} style={{ flex: 1, padding: '12px', borderRadius: '15px', border: '1px solid #E5E5EA', fontWeight: 'bold' }}>
+              {Array.from({length: 12}, (_, i) => <option key={i+1} value={i+1}>{new Date(0, i).toLocaleString('pt', {month: 'long'}).toUpperCase()}</option>)}
             </select>
           </div>
-
-          {Object.keys(totalsByCategory).length > 0 ? Object.keys(totalsByCategory).map(cat => (
-            <div key={cat} style={{ marginBottom: '15px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px', fontSize: '14px', fontWeight: 'bold' }}>
+          {Object.keys(totalsByCategory).map(cat => (
+            <div key={cat} style={{ marginBottom: '20px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontSize: '14px', fontWeight: '800' }}>
                 <span>{CATEGORIES[cat].icon} {CATEGORIES[cat].label}</span>
                 <span>{totalsByCategory[cat].toFixed(2)}{settings.currency}</span>
               </div>
-              <div style={{ width: '100%', height: '8px', backgroundColor: '#F2F2F7', borderRadius: '10px', overflow: 'hidden' }}>
-                <div style={{ width: `${Math.min((totalsByCategory[cat] / totalBalance) * 100, 100)}%`, height: '100%', backgroundColor: CATEGORIES[cat].color }}></div>
+              <div style={{ width: '100%', height: '10px', backgroundColor: '#F2F2F7', borderRadius: '10px', overflow: 'hidden' }}>
+                <div style={{ width: `${Math.min((totalsByCategory[cat] / (totalBalance || 1)) * 100, 100)}%`, height: '100%', backgroundColor: CATEGORIES[cat].color }}></div>
               </div>
             </div>
-          )) : <p style={{ textAlign: 'center', color: '#8E8E93' }}>Sem despesas este mês.</p>}
+          ))}
         </div>
       )}
 
       {activeTab === 'settings' && (
-        <div style={{ backgroundColor: 'white', padding: '25px', borderRadius: '30px' }}>
-          <h3 style={{ fontWeight: '900', marginTop: 0 }}>Perfil e Contas</h3>
-          <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', mb: '20px' }}>
-            {AVATARS.map(a => <button key={a} onClick={() => updateSettings({avatar: a})} style={{ fontSize: '20px', padding: '10px', borderRadius: '10px', border: settings.avatar === a ? '2px solid #007AFF' : 'none', background: '#F2F2F7' }}>{a}</button>)}
+        <div style={{ backgroundColor: 'white', padding: '30px', borderRadius: '35px' }}>
+          <h3 style={{ fontWeight: '900', marginTop: 0 }}>Definições</h3>
+          <div style={{ display: 'flex', gap: '10px', overflowX: 'auto', paddingBottom: '20px' }}>
+            {AVATARS.map(a => <div key={a} onClick={() => updateSettings({avatar: a})} style={{ minWidth: '45px', height: '45px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: '24px', backgroundColor: settings.avatar === a ? '#007AFF' : '#F2F2F7', borderRadius: '14px', color: settings.avatar === a ? 'white' : 'inherit' }}>{a}</div>)}
           </div>
-          <button onClick={() => updateSettings({privacyMode: !settings.privacyMode})} style={{ width: '100%', padding: '15px', borderRadius: '15px', border: 'none', background: settings.privacyMode ? '#FF9500' : '#E5E5EA', fontWeight: 'bold', margin: '20px 0' }}>
-            {settings.privacyMode ? '🕶️ Modo Privado Ativo' : '👁️ Modo Público'}
-          </button>
-          <button onClick={() => { localStorage.clear(); window.location.reload(); }} style={{ width: '100%', padding: '15px', color: '#FF3B30', border: 'none', background: 'none', fontWeight: 'bold' }}>Sair da Conta</button>
+          <input value={settings.email} onChange={e => updateSettings({email: e.target.value})} placeholder="Email" style={{ width: '100%', padding: '16px', borderRadius: '16px', border: 'none', backgroundColor: '#F2F2F7', marginBottom: '10px', boxSizing: 'border-box' }} />
+          <input value={settings.password} type="password" onChange={e => updateSettings({password: e.target.value})} placeholder="Senha" style={{ width: '100%', padding: '16px', borderRadius: '16px', border: 'none', backgroundColor: '#F2F2F7', boxSizing: 'border-box', marginBottom: '20px' }} />
+          
+          <div style={{ display: 'flex', gap: '10px', marginBottom: '25px' }}>
+            <div style={{ flex: 1 }}>
+              <label style={{fontSize: '11px', fontWeight: '700', color: '#8E8E93'}}>LIMITE SALDO</label>
+              <input type="number" value={settings.lowBalanceLimit} onChange={e => updateSettings({lowBalanceLimit: parseFloat(e.target.value)})} style={{ width: '100%', padding: '16px', borderRadius: '16px', border: 'none', backgroundColor: '#F2F2F7', boxSizing: 'border-box' }} />
+            </div>
+            <button onClick={() => updateSettings({privacyMode: !settings.privacyMode})} style={{ flex: 1, padding: '16px', borderRadius: '16px', border: 'none', backgroundColor: settings.privacyMode ? '#FF9500' : '#E5E5EA', color: settings.privacyMode ? 'white' : '#1C1C1E', fontWeight: '800', marginTop: '18px' }}>
+              {settings.privacyMode ? '🕶️ Privado' : '👁️ Público'}
+            </button>
+          </div>
+
+          <h4 style={{ fontWeight: '800' }}>Minhas Contas</h4>
+          {Object.keys(settings.accounts || {}).map(k => (
+            <div key={k} style={{ display: 'flex', justifyContent: 'space-between', padding: '15px', backgroundColor: '#F8F9FB', borderRadius: '15px', marginBottom: '8px' }}>
+              <span>{settings.accounts[k].icon} {settings.accounts[k].label}</span>
+              <button onClick={() => { if(Object.keys(settings.accounts).length > 1) { const na = {...settings.accounts}; delete na[k]; updateSettings({accounts: na}); } }} style={{ border: 'none', color: '#FF3B30', background: 'none', fontWeight: 'bold' }}>Apagar</button>
+            </div>
+          ))}
+          {!showAddAccount ? (
+            <button onClick={() => setShowAddAccount(true)} style={{ width: '100%', padding: '16px', border: '2px dashed #D1D1D6', borderRadius: '18px', background: 'none', color: '#8E8E93', fontWeight: '800' }}>+ Adicionar Conta</button>
+          ) : (
+            <div style={{ marginTop: '15px', padding: '20px', backgroundColor: '#F2F2F7', borderRadius: '25px' }}>
+              <input placeholder="Nome" value={newAccName} onChange={e => setNewAccName(e.target.value)} style={{ width: '100%', padding: '15px', border: 'none', borderRadius: '15px', marginBottom: '15px', boxSizing: 'border-box' }} />
+              <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', justifyContent: 'center', marginBottom: '15px' }}>
+                {ACC_ICONS.map(i => <button key={i} onClick={() => setNewAccIcon(i)} style={{ width: '45px', height: '45px', border: 'none', borderRadius: '10px', background: newAccIcon === i ? '#007AFF' : 'white', fontSize: '20px' }}>{i}</button>)}
+              </div>
+              <button onClick={() => { if(newAccName) { updateSettings({ accounts: { ...settings.accounts, [newAccName.toLowerCase()]: { label: newAccName, icon: newAccIcon } } }); setNewAccName(''); setShowAddAccount(false); } }} style={{ width: '100%', padding: '16px', backgroundColor: '#007AFF', color: 'white', border: 'none', borderRadius: '16px', fontWeight: 'bold' }}>Salvar</button>
+            </div>
+          )}
+          <button onClick={() => { localStorage.removeItem('f_user'); window.location.reload(); }} style={{ width: '100%', padding: '15px', color: '#FF3B30', border: 'none', background: 'none', fontWeight: '800', marginTop: '20px' }}>Sair</button>
         </div>
       )}
 
       {/* NAVBAR FIXA NO FUNDO */}
-      <div style={{ position: 'fixed', bottom: '20px', left: '50%', transform: 'translateX(-50%)', width: '90%', maxWidth: '400px', backgroundColor: 'rgba(255,255,255,0.9)', backdropFilter: 'blur(10px)', display: 'flex', justifyContent: 'space-around', padding: '15px', borderRadius: '25px', boxShadow: '0 10px 30px rgba(0,0,0,0.1)' }}>
-        <button onClick={() => setActiveTab('home')} style={{ background: 'none', border: 'none', fontSize: '24px', opacity: activeTab === 'home' ? 1 : 0.3 }}>🏠</button>
-        <button onClick={() => setActiveTab('reports')} style={{ background: 'none', border: 'none', fontSize: '24px', opacity: activeTab === 'reports' ? 1 : 0.3 }}>📊</button>
-        <button onClick={() => setActiveTab('settings')} style={{ background: 'none', border: 'none', fontSize: '24px', opacity: activeTab === 'settings' ? 1 : 0.3 }}>⚙️</button>
+      <div style={{ position: 'fixed', bottom: '20px', left: '50%', transform: 'translateX(-50%)', width: '90%', maxWidth: '400px', backgroundColor: 'rgba(255,255,255,0.95)', backdropFilter: 'blur(10px)', display: 'flex', justifyContent: 'space-around', padding: '15px 0', borderRadius: '25px', boxShadow: '0 10px 30px rgba(0,0,0,0.1)', border: '1px solid rgba(255,255,255,0.3)' }}>
+        <button onClick={() => setActiveTab('home')} style={{ background: 'none', border: 'none', fontSize: '26px', opacity: activeTab === 'home' ? 1 : 0.2 }}>🏠</button>
+        <button onClick={() => setActiveTab('reports')} style={{ background: 'none', border: 'none', fontSize: '26px', opacity: activeTab === 'reports' ? 1 : 0.2 }}>📊</button>
+        <button onClick={() => setActiveTab('settings')} style={{ background: 'none', border: 'none', fontSize: '26px', opacity: activeTab === 'settings' ? 1 : 0.2 }}>⚙️</button>
       </div>
 
-      <div style={{ height: '80px' }}></div> {/* Espaçador para a Navbar */}
+      <div style={{ height: '100px' }}></div>
+      <footer style={{ textAlign: 'center', paddingBottom: '40px' }}>
+        <p style={{ fontSize: '10px', color: '#AEAEB2' }}>© 2026 ALIGNA — HUGO BARROS</p>
+      </footer>
     </div>
   );
 }
