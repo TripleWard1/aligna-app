@@ -572,7 +572,7 @@ const maxCategoryValue = Math.max(...Object.values(totalsByCat).map(Number), 0);
                   <div style={{ width: '100%', height: '8px', backgroundColor: '#F2F2F7', borderRadius: '10px', overflow: 'hidden' }}>
   <div style={{ 
     // Calcula a largura com base no total de receitas do mês para dar noção real de impacto
-    width: `${Math.min((totalsByCat[cat] / (monthlyIncome || totalsByCat[cat] || 1)) * 100, 100)}%`, 
+    width: `${Math.min((totalsByCat[cat] / (maxCategoryValue || 1)) * 100, 100)}%`, 
     height: '100%', 
     backgroundColor: CATEGORIES[cat]?.color, 
     borderRadius: '10px',
