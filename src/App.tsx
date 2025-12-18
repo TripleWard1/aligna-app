@@ -262,7 +262,8 @@ const isLowBalance = totalBalance < (settings.lowBalanceLimit || 50);
 
   const getCategoryHistory = (catKey) => {
     const history = {};
-    list.filter(t => t.category === catKey).forEach(t => {
+    // ADICIONADO: .filter(t => t.type === 'expense') para ignorar receitas no gráfico
+    list.filter(t => t.category === catKey && t.type === 'expense').forEach(t => {
       const label = `${t.month}/${t.year.toString().slice(-2)}`;
       history[label] = (history[label] || 0) + Number(t.amount);
     });
