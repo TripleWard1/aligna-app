@@ -287,20 +287,21 @@ const isLowBalance = totalBalance < (settings.lowBalanceLimit || 50);
   });
 
   const monthlyIncome = filteredList
-    .filter(t => t.type === 'income')
-    .reduce((acc, t) => acc + (Number(t.amount) || 0), 0);
+  .filter(t => t.type === 'income')
+  .reduce((acc, t) => acc + (Number(t.amount) || 0), 0);
 
-  const monthlyExpenses = filteredList
-    .filter(t => t.type === 'expense')
-    .reduce((acc, t) => acc + (Number(t.amount) || 0), 0);
+const monthlyExpenses = filteredList
+  .filter(t => t.type === 'expense')
+  .reduce((acc, t) => acc + (Number(t.amount) || 0), 0);
 
-  const totalsByCat = filteredList.reduce((acc, t) => {
-    if (t.type === 'expense' || t.type === 'income') {
-      const catName = t.category || 'outros';
-      acc[catName] = (acc[catName] || 0) + (Number(t.amount) || 0);
-    }
-    return acc;
-  }, {});
+    const totalsByCat = filteredList.reduce((acc, t) => {
+      // Alteração: Somar APENAS se o tipo for despesa ('expense')
+      if (t.type === 'expense') {
+        const catName = t.category || 'outros';
+        acc[catName] = (acc[catName] || 0) + (Number(t.amount) || 0);
+      }
+      return acc;
+    }, {});
 
   const maxCategoryValue = Math.max(...Object.values(totalsByCat).map(Number), 0);
 
@@ -478,18 +479,16 @@ const isLowBalance = totalBalance < (settings.lowBalanceLimit || 50);
                 <select value={formData.acc} onChange={e => setFormData({...formData, acc: e.target.value})} style={{ width: '100%', padding: '15px', borderRadius: '15px', border: 'none', backgroundColor: '#F8F9FB', fontSize: '14px' }}>{Object.keys(settings.accounts || {}).map(k => <option key={k} value={k}>De: {settings.accounts[k].label}</option>)}</select>
                 <select 
   value={transType === 'transfer' ? formData.toAcc : formData.cat} 
-  onChange={(e) => {
-    if (transType === 'transfer') {
-      setFormData({ ...formData, toAcc: e.target.value });
-    } else {
-      setFormData({ ...formData, cat: e.target.value }); // ISTO CORRIGE A ELETRICIDADE
-    }
-  }} 
+  onChange={(e) => setFormData({ ...formData, cat: e.target.value })}
   style={{ width: '100%', padding: '15px', borderRadius: '15px', border: 'none', backgroundColor: '#F8F9FB', fontSize: '14px' }}
 >
   {transType === 'transfer' 
     ? Object.keys(settings.accounts || {}).map(k => <option key={k} value={k}>Para: {settings.accounts[k].label}</option>) 
-    : content.categories.map(k => <option key={k} value={k}>{CATEGORIES[k].icon} {CATEGORIES[k].label}</option>)
+    : content.categories.map(k => (
+        <option key={k} value={k}>
+          {CATEGORIES[k]?.icon} {CATEGORIES[k]?.label}
+        </option>
+      ))
   }
 </select>
               </div>
