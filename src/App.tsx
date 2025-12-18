@@ -4,6 +4,7 @@ import { ref, push, onValue, set, remove, update, get } from "firebase/database"
 
 const TWELVE_DATA_KEY = "49563e179ee146c5a53279200c654f29";
 
+// Objeto CATEGORIES atualizado no seu Código Principal
 const CATEGORIES = {
   alimentacao: { label: 'Alimentação', icon: '🍔', color: '#FF9500' },
   lazer: { label: 'Lazer', icon: '🎬', color: '#AF52DE' },
@@ -14,11 +15,30 @@ const CATEGORIES = {
   gas: { label: 'Gás', icon: '🔥', color: '#5AC8FA' },
   servicos: { label: 'Servicos Casa', icon: '🛠️', color: '#8E8E93' },
   internet: { label: 'Internet/TV', icon: '🌐', color: '#007AFF' },
+  
+  // --- Novas Categorias ---
+  condominio: { label: 'Condomínio', icon: '🏢', color: '#8E8E93' },
+  seguros: { label: 'Seguros', icon: '🛡️', color: '#5856D6' },
+  impostos: { label: 'Impostos/IMI', icon: '🏛️', color: '#FF3B30' },
+  mecanico: { label: 'Mecânico', icon: '🔧', color: '#FF9500' },
+  estetica: { label: 'Beleza/Cuidado', icon: '💅', color: '#AF52DE' },
+  passes: { label: 'Passes/Bilhetes', icon: '🎫', color: '#5AC8FA' },
+  desporto: { label: 'Ginásio/Desp.', icon: '🏋️‍♂️', color: '#34C759' },
+  pets: { label: 'Animais', icon: '🐾', color: '#FFCC00' }, // Sugestão comum
+  
   salario: { label: 'Salário', icon: '💰', color: '#34C759' },
   investimento: { label: 'Investimento', icon: '📈', color: '#5AC8FA' },
   transferencia: { label: 'Transferência', icon: '🔄', color: '#007AFF' },
   outros: { label: 'Outros', icon: '📦', color: '#8E8E93' }
 };
+
+// Lógica de categorias no formulário (default case)
+// Lembre-se de atualizar esta lista no seu método getDynamicContent
+const expenseCategories = [
+  'alimentacao', 'lazer', 'transporte', 'saude', 'casa', 'luz', 'gas', 
+  'servicos', 'internet', 'condominio', 'seguros', 'impostos', 
+  'mecanico', 'estetica', 'passes', 'desporto', 'pets', 'outros'
+];
 
 const ASSET_TYPES = ['ETF', 'Ações', 'Crypto', 'Bonds', 'PPR', 'Outro'];
 const AVATARS = ['👤', '👨‍💻', '👩‍💼', '🧥', '🎨', '🚀', '🐱', '🦁', '⭐'];
