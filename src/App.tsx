@@ -70,6 +70,12 @@ export default function App() {
       return;
     }
     localStorage.setItem('f_user', selectingUser);
+    // Guardar na lista de perfis conhecidos deste navegador
+    const known = JSON.parse(localStorage.getItem('known_profiles') || '[]');
+    if(!known.includes(selectingUser)) {
+        known.push(selectingUser);
+        localStorage.setItem('known_profiles', JSON.stringify(known));
+    }
     setUser(selectingUser);
     setSelectingUser(null);
     setLoginPass('');
@@ -95,6 +101,11 @@ export default function App() {
 
     set(ref(db, `users/${userId}/settings`), initialSettings).then(() => {
       localStorage.setItem('f_user', userId);
+      // Guardar este perfil como conhecido neste dispositivo
+      const known = JSON.parse(localStorage.getItem('known_profiles') || '[]');
+      known.push(userId);
+      localStorage.setItem('known_profiles', JSON.stringify(known));
+      
       setUser(userId);
       setIsRegistering(false);
     });
@@ -193,52 +204,59 @@ export default function App() {
     }
   };
 
-  if (!user) return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', backgroundColor: '#F2F4F7', padding: '20px', fontFamily: '-apple-system, sans-serif' }}>
-      <div style={{ textAlign: 'center', marginBottom: '40px' }}>
-        <h1 style={{ fontWeight: '900', fontSize: '46px', color: '#1C1C1E', margin: 0, letterSpacing: '-2px' }}>Aligna</h1>
-        <p style={{ color: '#8E8E93', fontSize: '15px', fontWeight: '500' }}>{isRegistering ? 'Criar Novo Perfil' : 'Quem está a entrar?'}</p>
-      </div>
-
-      {!isRegistering ? (
-        <>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '20px', width: '100%', maxWidth: '400px' }}>
-            {Object.keys(allUsers).map(u => (
-              <div key={u} onClick={() => { setSelectingUser(u); setLoginPass(''); }} style={{ backgroundColor: 'white', padding: '30px 20px', borderRadius: '35px', cursor: 'pointer', textAlign: 'center', boxShadow: selectingUser === u ? '0 0 0 3px #007AFF' : '0 10px 25px rgba(0,0,0,0.04)', border: '1px solid rgba(0,0,0,0.02)', transition: '0.3s transform' }}>
-                <div style={{ fontSize: '50px', marginBottom: '15px' }}>{allUsers[u].settings?.avatar || '👤'}</div>
-                <div style={{ fontWeight: '800', fontSize: '16px', color: '#1C1C1E' }}>{u.toUpperCase()}</div>
-              </div>
-            ))}
-          </div>
-
-          {selectingUser && (
-            <div style={{ marginTop: '30px', width: '100%', maxWidth: '380px', backgroundColor: 'white', padding: '25px', borderRadius: '30px', boxShadow: '0 15px 35px rgba(0,0,0,0.08)' }}>
-              <p style={{ margin: '0 0 15px', fontWeight: '800', textAlign: 'center' }}>Olá, {selectingUser.toUpperCase()}!</p>
-              <input 
-                type="password" 
-                placeholder="Introduza a Password" 
-                autoFocus
-                value={loginPass}
-                onChange={(e) => setLoginPass(e.target.value)}
-                style={{ width: '100%', padding: '16px', borderRadius: '15px', border: '1px solid #E5E5EA', backgroundColor: '#F8F9FB', fontSize: '16px', boxSizing: 'border-box', marginBottom: '15px' }}
-              />
-              <button onClick={handleEntry} style={{ width: '100%', padding: '16px', backgroundColor: '#1C1C1E', color: 'white', border: 'none', borderRadius: '15px', fontWeight: '800', fontSize: '15px', cursor: 'pointer' }}>Entrar Agora</button>
-            </div>
-          )}
-
-          <button onClick={() => setIsRegistering(true)} style={{ marginTop: '30px', background: 'none', border: 'none', color: '#007AFF', fontWeight: '800', fontSize: '14px', cursor: 'pointer' }}>+ Adicionar Novo Perfil</button>
-        </>
-      ) : (
-        <div style={{ width: '100%', maxWidth: '380px', backgroundColor: 'white', padding: '30px', borderRadius: '35px', boxShadow: '0 15px 35px rgba(0,0,0,0.08)' }}>
-          <input placeholder="Nome de Utilizador" value={regName} onChange={(e) => setRegName(e.target.value)} style={{ width: '100%', padding: '16px', borderRadius: '15px', border: '1px solid #E5E5EA', backgroundColor: '#F8F9FB', fontSize: '16px', boxSizing: 'border-box', marginBottom: '12px' }} />
-          <input placeholder="Teu E-mail" value={regEmail} onChange={(e) => setRegEmail(e.target.value)} style={{ width: '100%', padding: '16px', borderRadius: '15px', border: '1px solid #E5E5EA', backgroundColor: '#F8F9FB', fontSize: '16px', boxSizing: 'border-box', marginBottom: '12px' }} />
-          <input type="password" placeholder="Escolha uma Password" value={regPass} onChange={(e) => setRegPass(e.target.value)} style={{ width: '100%', padding: '16px', borderRadius: '15px', border: '1px solid #E5E5EA', backgroundColor: '#F8F9FB', fontSize: '16px', boxSizing: 'border-box', marginBottom: '20px' }} />
-          <button onClick={handleRegister} style={{ width: '100%', padding: '16px', backgroundColor: '#34C759', color: 'white', border: 'none', borderRadius: '15px', fontWeight: '800', fontSize: '15px', cursor: 'pointer', marginBottom: '10px' }}>Criar Perfil</button>
-          <button onClick={() => setIsRegistering(false)} style={{ width: '100%', background: 'none', border: 'none', color: '#8E8E93', fontWeight: '600', fontSize: '13px', cursor: 'pointer' }}>Cancelar</button>
+  if (!user) {
+    // Lógica para mostrar apenas perfis que já entraram neste navegador
+    const knownProfiles = JSON.parse(localStorage.getItem('known_profiles') || '[]');
+    
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', backgroundColor: '#F2F4F7', padding: '20px', fontFamily: '-apple-system, sans-serif' }}>
+        <div style={{ textAlign: 'center', marginBottom: '40px' }}>
+          <h1 style={{ fontWeight: '900', fontSize: '46px', color: '#1C1C1E', margin: 0, letterSpacing: '-2px' }}>Aligna</h1>
+          <p style={{ color: '#8E8E93', fontSize: '15px', fontWeight: '500' }}>{isRegistering ? 'Criar Novo Perfil' : 'Bem-vindo'}</p>
         </div>
-      )}
-    </div>
-  );
+
+        {!isRegistering ? (
+          <>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '20px', width: '100%', maxWidth: '400px' }}>
+              {knownProfiles.map(u => (
+                allUsers[u] && (
+                <div key={u} onClick={() => { setSelectingUser(u); setLoginPass(''); }} style={{ backgroundColor: 'white', padding: '30px 20px', borderRadius: '35px', cursor: 'pointer', textAlign: 'center', boxShadow: selectingUser === u ? '0 0 0 3px #007AFF' : '0 10px 25px rgba(0,0,0,0.04)', border: '1px solid rgba(0,0,0,0.02)', transition: '0.3s transform' }}>
+                  <div style={{ fontSize: '50px', marginBottom: '15px' }}>{allUsers[u].settings?.avatar || '👤'}</div>
+                  <div style={{ fontWeight: '800', fontSize: '16px', color: '#1C1C1E' }}>{u.toUpperCase()}</div>
+                </div>
+                )
+              ))}
+            </div>
+
+            {selectingUser && (
+              <div style={{ marginTop: '30px', width: '100%', maxWidth: '380px', backgroundColor: 'white', padding: '25px', borderRadius: '30px', boxShadow: '0 15px 35px rgba(0,0,0,0.08)' }}>
+                <p style={{ margin: '0 0 15px', fontWeight: '800', textAlign: 'center' }}>Olá, {selectingUser.toUpperCase()}!</p>
+                <input 
+                  type="password" 
+                  placeholder="Introduza a Password" 
+                  autoFocus
+                  value={loginPass}
+                  onChange={(e) => setLoginPass(e.target.value)}
+                  style={{ width: '100%', padding: '16px', borderRadius: '15px', border: '1px solid #E5E5EA', backgroundColor: '#F8F9FB', fontSize: '16px', boxSizing: 'border-box', marginBottom: '15px' }}
+                />
+                <button onClick={handleEntry} style={{ width: '100%', padding: '16px', backgroundColor: '#1C1C1E', color: 'white', border: 'none', borderRadius: '15px', fontWeight: '800', fontSize: '15px', cursor: 'pointer' }}>Entrar Agora</button>
+              </div>
+            )}
+
+            <button onClick={() => setIsRegistering(true)} style={{ marginTop: '30px', background: 'none', border: 'none', color: '#007AFF', fontWeight: '800', fontSize: '14px', cursor: 'pointer' }}>+ Adicionar Novo Perfil</button>
+          </>
+        ) : (
+          <div style={{ width: '100%', maxWidth: '380px', backgroundColor: 'white', padding: '30px', borderRadius: '35px', boxShadow: '0 15px 35px rgba(0,0,0,0.08)' }}>
+            <input placeholder="Nome de Utilizador" value={regName} onChange={(e) => setRegName(e.target.value)} style={{ width: '100%', padding: '16px', borderRadius: '15px', border: '1px solid #E5E5EA', backgroundColor: '#F8F9FB', fontSize: '16px', boxSizing: 'border-box', marginBottom: '12px' }} />
+            <input placeholder="Teu E-mail" value={regEmail} onChange={(e) => setRegEmail(e.target.value)} style={{ width: '100%', padding: '16px', borderRadius: '15px', border: '1px solid #E5E5EA', backgroundColor: '#F8F9FB', fontSize: '16px', boxSizing: 'border-box', marginBottom: '12px' }} />
+            <input type="password" placeholder="Escolha uma Password" value={regPass} onChange={(e) => setRegPass(e.target.value)} style={{ width: '100%', padding: '16px', borderRadius: '15px', border: '1px solid #E5E5EA', backgroundColor: '#F8F9FB', fontSize: '16px', boxSizing: 'border-box', marginBottom: '20px' }} />
+            <button onClick={handleRegister} style={{ width: '100%', padding: '16px', backgroundColor: '#34C759', color: 'white', border: 'none', borderRadius: '15px', fontWeight: '800', fontSize: '15px', cursor: 'pointer', marginBottom: '10px' }}>Criar Perfil</button>
+            <button onClick={() => setIsRegistering(false)} style={{ width: '100%', background: 'none', border: 'none', color: '#8E8E93', fontWeight: '600', fontSize: '13px', cursor: 'pointer' }}>Cancelar</button>
+          </div>
+        )}
+      </div>
+    );
+  }
 
   return (
     <div style={{ padding: '20px', maxWidth: '480px', margin: '0 auto', backgroundColor: '#F8F9FB', minHeight: '100vh', fontFamily: '-apple-system, sans-serif' }}>
