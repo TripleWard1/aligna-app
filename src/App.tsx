@@ -1,17 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { db } from './firebase'; 
 import { ref, push, onValue, set, remove, update, get } from "firebase/database";
-
-// ADICIONA ESTAS LINHAS ABAIXO (As que faltam para o PDF não dar erro no deploy)
 import { jsPDF } from 'jspdf';
 import 'jspdf-autotable';
 import { UserOptions } from 'jspdf-autotable';
 
-// Esta interface ajuda o TypeScript a entender o plugin de tabelas
 interface jsPDFWithPlugin extends jsPDF {
   autoTable: (options: UserOptions) => jsPDF;
 }
-
 
 const TWELVE_DATA_KEY = "49563e179ee146c5a53279200c654f29";
 
