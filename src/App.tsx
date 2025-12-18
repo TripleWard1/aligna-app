@@ -5,6 +5,7 @@ import { jsPDF } from 'jspdf';
 import 'jspdf-autotable';
 import { UserOptions } from 'jspdf-autotable';
 
+// Esta interface impede o erro de "autoTable does not exist" no deploy
 interface jsPDFWithPlugin extends jsPDF {
   autoTable: (options: UserOptions) => jsPDF;
 }
@@ -51,6 +52,28 @@ const ASSET_TYPES = ['ETF', 'Ações', 'Crypto', 'Bonds', 'PPR', 'Outro'];
 const AVATARS = ['👤', '👨‍💻', '👩‍💼', '🧥', '🎨', '🚀', '🐱', '🦁', '⭐'];
 const ACC_ICONS = ['👛', '🏦', '🐖', '💳', '💎', '📊', '💰'];
 
+const exportToPDF = (data, month, year, user, currency, categories) => {
+  const doc = new jsPDF();
+  const dateStr = month === 0 ? `Ano_${year}` : `${month}_${year}`;
+  
+  doc.text("ALIGNA - Relatório Financeiro", 14, 15);
+  doc.text(`Período: ${dateStr} | Utilizador: ${user}`, 14, 22);
+
+  const tableRows = data.map(t => [
+    t.date,
+    t.description,
+    categories[t.category]?.label || t.category,
+    `${t.amount.toFixed(2)}${currency}`
+  ]);
+
+  (doc as any).autoTable({
+    startY: 28,
+    head: [["Data", "Descrição", "Categoria", "Valor"]],
+    body: tableRows,
+  });
+
+  doc.save(`Relatorio_${dateStr}.pdf`);
+};
 export default function App() {
   const [user, setUser] = useState(localStorage.getItem('f_user') || null);
   const [list, setList] = useState([]);
