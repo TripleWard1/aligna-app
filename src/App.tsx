@@ -52,46 +52,6 @@ const ASSET_TYPES = ['ETF', 'Ações', 'Crypto', 'Bonds', 'PPR', 'Outro'];
 const AVATARS = ['👤', '👨‍💻', '👩‍💼', '🧥', '🎨', '🚀', '🐱', '🦁', '⭐'];
 const ACC_ICONS = ['👛', '🏦', '🐖', '💳', '💎', '📊', '💰'];
 
-const exportToPDF = () => {
-  try {
-    const doc = new jsPDF() as jsPDFWithPlugin;
-    const dateStr = reportMonth === 0 ? `Ano_${reportYear}` : `${reportMonth}_${reportYear}`;
-
-    doc.setFontSize(18);
-    doc.text("ALIGNA - Relatorio Financeiro", 14, 15);
-    
-    doc.setFontSize(10);
-    doc.text(`Periodo: ${dateStr}`, 14, 22);
-    doc.text(`Utilizador: ${user?.toUpperCase()}`, 14, 27);
-
-    // Criar as linhas da tabela com base na lista que já está filtrada no ecrã
-    const tableRows = filteredList.map(t => [
-      t.date,
-      t.description,
-      CATEGORIES[t.category]?.label || t.category,
-      `${t.type === 'income' ? '+' : '-'}${t.amount.toFixed(2)}${settings.currency}`
-    ]);
-
-    if (tableRows.length === 0) {
-      alert("Não existem dados para exportar neste período.");
-      return;
-    }
-
-    doc.autoTable({
-      startY: 35,
-      head: [["Data", "Descricao", "Categoria", "Valor"]],
-      body: tableRows,
-      theme: 'grid',
-      headStyles: { fillColor: [28, 28, 30] },
-      styles: { fontSize: 9 }
-    });
-
-    doc.save(`Relatorio_Aligna_${dateStr}.pdf`);
-  } catch (error) {
-    console.error("Erro ao gerar PDF:", error);
-    alert("Erro ao gerar o PDF. Verifica se a biblioteca jsPDF está instalada.");
-  }
-};
 export default function App() {
   const [user, setUser] = useState(localStorage.getItem('f_user') || null);
   const [list, setList] = useState([]);
@@ -356,9 +316,7 @@ const isLowBalance = totalBalance < (settings.lowBalanceLimit || 50);
 
   if (!user) {
     const exportToPDF = () => {
-      try {
-        // Usar (jsPDF as any) garante que o deploy passe mesmo com conflitos de versão
-        const doc = new (jsPDF as any)();
+      const doc = new jsPDF() as jsPDFWithPlugin;
       const dateStr = reportMonth === 0 ? `Ano_${reportYear}` : `${reportMonth}_${reportYear}`;
     
       doc.setFontSize(18);
