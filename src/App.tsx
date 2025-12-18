@@ -34,9 +34,10 @@ export default function App() {
   const [newAccName, setNewAccName] = useState('');
   const [newAccIcon, setNewAccIcon] = useState('🏦');
   
-  // Estados para Relatórios
+  // Estados para Relatórios e Detalhes
   const [reportMonth, setReportMonth] = useState(new Date().getMonth() + 1);
   const [reportYear, setReportYear] = useState(new Date().getFullYear());
+  const [selectedDetail, setSelectedDetail] = useState(null);
 
   const [selectingUser, setSelectingUser] = useState(null);
   const [loginPass, setLoginPass] = useState('');
@@ -165,8 +166,10 @@ export default function App() {
 
   // --- LOGICA DE RELATÓRIOS ---
   const filteredList = list.filter(t => t.month === reportMonth && t.year === reportYear);
-  const totalsByCategory = filteredList.reduce((acc, t) => {
-    if (t.type === 'expense') {
+  
+  // Agrupar tanto despesas como receitas para os relatórios
+  const totalsByCat = filteredList.reduce((acc, t) => {
+    if (t.type === 'expense' || t.type === 'income') {
       acc[t.category] = (acc[t.category] || 0) + t.amount;
     }
     return acc;
@@ -266,7 +269,7 @@ export default function App() {
           </div>
 
           <h3 style={{fontWeight: '900', marginBottom: '20px'}}>Atividade</h3>
-          {list.slice(-10).reverse().map(t => (
+          {list.slice(-15).reverse().map(t => (
             <div key={t.id} style={{ display: 'flex', alignItems: 'center', backgroundColor: 'white', padding: '18px 20px', borderRadius: '28px', marginBottom: '12px' }}>
               <div style={{ width: '50px', height: '50px', borderRadius: '16px', backgroundColor: '#F8F9FB', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px', marginRight: '15px' }}>{t.type === 'investimento' ? '📈' : (CATEGORIES[t.category]?.icon || '💰')}</div>
               <div style={{ flex: 1 }}>
@@ -274,7 +277,9 @@ export default function App() {
                 <p style={{ margin: 0, color: '#AEAEB2', fontSize: '12px' }}>{t.date} • {settings.accounts[t.account]?.label} {t.assetDetails?.performance && `• ${t.assetDetails.performance}%`}</p>
               </div>
               <div style={{ textAlign: 'right' }}>
-                <p style={{ margin: 0, fontWeight: '800', color: (t.type === 'income' || t.type === 'investimento') ? '#34C759' : t.type === 'expense' ? '#FF3B30' : '#1C1C1E' }}>{formatValue(t.amount)}</p>
+                <p style={{ margin: 0, fontWeight: '800', color: (t.type === 'income' || t.type === 'investimento') ? '#34C759' : t.type === 'expense' ? '#FF3B30' : '#1C1C1E' }}>
+                  {(t.type === 'income' || t.type === 'investimento') ? '+' : t.type === 'expense' ? '-' : ''}{formatValue(t.amount)}
+                </p>
                 <button onClick={() => { if(window.confirm('Eliminar?')) remove(ref(db, `users/${user}/transactions/${t.id}`)); }} style={{ border: 'none', background: 'none', fontSize: '14px', cursor: 'pointer' }}>🗑️</button>
               </div>
             </div>
@@ -285,22 +290,42 @@ export default function App() {
       {activeTab === 'reports' && (
         <div style={{ backgroundColor: 'white', padding: '30px', borderRadius: '35px' }}>
           <h3 style={{ fontWeight: '900', marginBottom: '25px' }}>Análise Mensal</h3>
+          
           <div style={{ display: 'flex', gap: '10px', marginBottom: '30px' }}>
             <select value={reportMonth} onChange={e => setReportMonth(parseInt(e.target.value))} style={{ flex: 1, padding: '12px', borderRadius: '15px', border: '1px solid #E5E5EA', fontWeight: 'bold' }}>
               {Array.from({length: 12}, (_, i) => <option key={i+1} value={i+1}>{new Date(0, i).toLocaleString('pt', {month: 'long'}).toUpperCase()}</option>)}
             </select>
+            <select value={reportYear} onChange={e => setReportYear(parseInt(e.target.value))} style={{ width: '100px', padding: '12px', borderRadius: '15px', border: '1px solid #E5E5EA', fontWeight: 'bold' }}>
+              {[2024, 2025, 2026, 2027].map(y => <option key={y} value={y}>{y}</option>)}
+            </select>
           </div>
-          {Object.keys(totalsByCategory).map(cat => (
-            <div key={cat} style={{ marginBottom: '20px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontSize: '14px', fontWeight: '800' }}>
-                <span>{CATEGORIES[cat].icon} {CATEGORIES[cat].label}</span>
-                <span>{totalsByCategory[cat].toFixed(2)}{settings.currency}</span>
+
+          {selectedDetail ? (
+            <div style={{ animation: 'fadeIn 0.3s' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px' }}>
+                <button onClick={() => setSelectedDetail(null)} style={{ background: 'none', border: 'none', fontSize: '20px' }}>⬅️</button>
+                <h4 style={{ margin: 0 }}>Histórico: {CATEGORIES[selectedDetail]?.label}</h4>
               </div>
-              <div style={{ width: '100%', height: '10px', backgroundColor: '#F2F2F7', borderRadius: '10px', overflow: 'hidden' }}>
-                <div style={{ width: `${Math.min((totalsByCategory[cat] / (totalBalance || 1)) * 100, 100)}%`, height: '100%', backgroundColor: CATEGORIES[cat].color }}></div>
-              </div>
+              {list.filter(t => t.category === selectedDetail).slice(-10).reverse().map(t => (
+                <div key={t.id} style={{ padding: '15px', borderBottom: '1px solid #F2F2F7', display: 'flex', justifyContent: 'space-between' }}>
+                   <span style={{ fontSize: '13px' }}>{t.date} - {t.description}</span>
+                   <strong style={{ color: t.type === 'income' ? '#34C759' : '#FF3B30' }}>{t.type === 'income' ? '+' : '-'}{t.amount.toFixed(2)}{settings.currency}</strong>
+                </div>
+              ))}
             </div>
-          ))}
+          ) : (
+            Object.keys(totalsByCat).map(cat => (
+              <div key={cat} onClick={() => setSelectedDetail(cat)} style={{ marginBottom: '20px', cursor: 'pointer' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontSize: '14px', fontWeight: '800' }}>
+                  <span>{CATEGORIES[cat]?.icon} {CATEGORIES[cat]?.label}</span>
+                  <span>{totalsByCat[cat].toFixed(2)}{settings.currency}</span>
+                </div>
+                <div style={{ width: '100%', height: '10px', backgroundColor: '#F2F2F7', borderRadius: '10px', overflow: 'hidden' }}>
+                  <div style={{ width: `${Math.min((totalsByCat[cat] / (totalBalance || 1)) * 100, 100)}%`, height: '100%', backgroundColor: CATEGORIES[cat]?.color }}></div>
+                </div>
+              </div>
+            ))
+          )}
         </div>
       )}
 
@@ -336,7 +361,11 @@ export default function App() {
             <div style={{ marginTop: '15px', padding: '20px', backgroundColor: '#F2F2F7', borderRadius: '25px' }}>
               <input placeholder="Nome" value={newAccName} onChange={e => setNewAccName(e.target.value)} style={{ width: '100%', padding: '15px', border: 'none', borderRadius: '15px', marginBottom: '15px', boxSizing: 'border-box' }} />
               <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', justifyContent: 'center', marginBottom: '15px' }}>
-                {ACC_ICONS.map(i => <button key={i} onClick={() => setNewAccIcon(i)} style={{ width: '45px', height: '45px', border: 'none', borderRadius: '10px', background: newAccIcon === i ? '#007AFF' : 'white', fontSize: '20px' }}>{i}</button>)}
+                {ACC_ICONS.map(i => (
+                  <button key={i} onClick={() => setNewAccIcon(i)} style={{ width: '45px', height: '45px', border: 'none', borderRadius: '10px', background: newAccIcon === i ? '#007AFF' : 'white', fontSize: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0 }}>
+                    {i}
+                  </button>
+                ))}
               </div>
               <button onClick={() => { if(newAccName) { updateSettings({ accounts: { ...settings.accounts, [newAccName.toLowerCase()]: { label: newAccName, icon: newAccIcon } } }); setNewAccName(''); setShowAddAccount(false); } }} style={{ width: '100%', padding: '16px', backgroundColor: '#007AFF', color: 'white', border: 'none', borderRadius: '16px', fontWeight: 'bold' }}>Salvar</button>
             </div>
@@ -346,10 +375,10 @@ export default function App() {
       )}
 
       {/* NAVBAR FIXA NO FUNDO */}
-      <div style={{ position: 'fixed', bottom: '20px', left: '50%', transform: 'translateX(-50%)', width: '90%', maxWidth: '400px', backgroundColor: 'rgba(255,255,255,0.95)', backdropFilter: 'blur(10px)', display: 'flex', justifyContent: 'space-around', padding: '15px 0', borderRadius: '25px', boxShadow: '0 10px 30px rgba(0,0,0,0.1)', border: '1px solid rgba(255,255,255,0.3)' }}>
-        <button onClick={() => setActiveTab('home')} style={{ background: 'none', border: 'none', fontSize: '26px', opacity: activeTab === 'home' ? 1 : 0.2 }}>🏠</button>
-        <button onClick={() => setActiveTab('reports')} style={{ background: 'none', border: 'none', fontSize: '26px', opacity: activeTab === 'reports' ? 1 : 0.2 }}>📊</button>
-        <button onClick={() => setActiveTab('settings')} style={{ background: 'none', border: 'none', fontSize: '26px', opacity: activeTab === 'settings' ? 1 : 0.2 }}>⚙️</button>
+      <div style={{ position: 'fixed', bottom: '20px', left: '50%', transform: 'translateX(-50%)', width: '90%', maxWidth: '400px', backgroundColor: 'rgba(255,255,255,0.95)', backdropFilter: 'blur(10px)', display: 'flex', justifyContent: 'space-around', padding: '15px 0', borderRadius: '25px', boxShadow: '0 10px 30px rgba(0,0,0,0.1)', border: '1px solid rgba(255,255,255,0.3)', zIndex: 1000 }}>
+        <button onClick={() => {setActiveTab('home'); setSelectedDetail(null);}} style={{ background: 'none', border: 'none', fontSize: '26px', opacity: activeTab === 'home' ? 1 : 0.2 }}>🏠</button>
+        <button onClick={() => {setActiveTab('reports'); setSelectedDetail(null);}} style={{ background: 'none', border: 'none', fontSize: '26px', opacity: activeTab === 'reports' ? 1 : 0.2 }}>📊</button>
+        <button onClick={() => {setActiveTab('settings'); setSelectedDetail(null);}} style={{ background: 'none', border: 'none', fontSize: '26px', opacity: activeTab === 'settings' ? 1 : 0.2 }}>⚙️</button>
       </div>
 
       <div style={{ height: '100px' }}></div>
