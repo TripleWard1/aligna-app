@@ -32,6 +32,12 @@ export default function App() {
   
   const [selectingUser, setSelectingUser] = useState(null);
   const [loginPass, setLoginPass] = useState('');
+  
+  // Novos estados para o ecrã de registo nativo
+  const [isRegistering, setIsRegistering] = useState(false);
+  const [regName, setRegName] = useState('');
+  const [regEmail, setRegEmail] = useState('');
+  const [regPass, setRegPass] = useState('');
 
   const [settings, setSettings] = useState({ 
     lowBalanceLimit: 50, currency: '€', privacyMode: false, avatar: AVATARS[0], 
@@ -67,6 +73,31 @@ export default function App() {
     setUser(selectingUser);
     setSelectingUser(null);
     setLoginPass('');
+  };
+
+  const handleRegister = () => {
+    if (!regName || !regEmail || !regPass) {
+      alert("Por favor, preencha todos os campos.");
+      return;
+    }
+    const userId = regName.toLowerCase().trim();
+    if (allUsers[userId]) {
+      alert("Este nome de utilizador já existe.");
+      return;
+    }
+
+    const initialSettings = {
+      ...settings,
+      email: regEmail,
+      password: regPass,
+      avatar: AVATARS[0]
+    };
+
+    set(ref(db, `users/${userId}/settings`), initialSettings).then(() => {
+      localStorage.setItem('f_user', userId);
+      setUser(userId);
+      setIsRegistering(false);
+    });
   };
 
   const getAccountBalance = (accKey) => {
@@ -126,7 +157,6 @@ export default function App() {
 
     let autoPerformance = perf ? perf.value : "0";
 
-    // Busca de preço automática se for investimento
     if (transType === 'investimento' && desc.value) {
       try {
         const response = await fetch(`https://api.twelvedata.com/quote?symbol=${desc.value.toUpperCase()}&apikey=${TWELVE_DATA_KEY}`);
@@ -157,7 +187,7 @@ export default function App() {
     try {
       await push(ref(db, `users/${user}/transactions`), transactionData);
       form.reset();
-      setTransType('expense'); // Volta para despesa após registar
+      setTransType('expense');
     } catch (error) {
       alert("Erro ao gravar: " + error.message);
     }
@@ -167,34 +197,46 @@ export default function App() {
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', backgroundColor: '#F2F4F7', padding: '20px', fontFamily: '-apple-system, sans-serif' }}>
       <div style={{ textAlign: 'center', marginBottom: '40px' }}>
         <h1 style={{ fontWeight: '900', fontSize: '46px', color: '#1C1C1E', margin: 0, letterSpacing: '-2px' }}>Aligna</h1>
-        <p style={{ color: '#8E8E93', fontSize: '15px', fontWeight: '500' }}>Quem está a entrar?</p>
+        <p style={{ color: '#8E8E93', fontSize: '15px', fontWeight: '500' }}>{isRegistering ? 'Criar Novo Perfil' : 'Quem está a entrar?'}</p>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '20px', width: '100%', maxWidth: '400px' }}>
-        {Object.keys(allUsers).map(u => (
-          <div key={u} onClick={() => { setSelectingUser(u); setLoginPass(''); }} style={{ backgroundColor: 'white', padding: '30px 20px', borderRadius: '35px', cursor: 'pointer', textAlign: 'center', boxShadow: selectingUser === u ? '0 0 0 3px #007AFF' : '0 10px 25px rgba(0,0,0,0.04)', border: '1px solid rgba(0,0,0,0.02)', transition: '0.3s transform' }}>
-            <div style={{ fontSize: '50px', marginBottom: '15px' }}>{allUsers[u].settings?.avatar || '👤'}</div>
-            <div style={{ fontWeight: '800', fontSize: '16px', color: '#1C1C1E' }}>{u.toUpperCase()}</div>
+      {!isRegistering ? (
+        <>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '20px', width: '100%', maxWidth: '400px' }}>
+            {Object.keys(allUsers).map(u => (
+              <div key={u} onClick={() => { setSelectingUser(u); setLoginPass(''); }} style={{ backgroundColor: 'white', padding: '30px 20px', borderRadius: '35px', cursor: 'pointer', textAlign: 'center', boxShadow: selectingUser === u ? '0 0 0 3px #007AFF' : '0 10px 25px rgba(0,0,0,0.04)', border: '1px solid rgba(0,0,0,0.02)', transition: '0.3s transform' }}>
+                <div style={{ fontSize: '50px', marginBottom: '15px' }}>{allUsers[u].settings?.avatar || '👤'}</div>
+                <div style={{ fontWeight: '800', fontSize: '16px', color: '#1C1C1E' }}>{u.toUpperCase()}</div>
+              </div>
+            ))}
           </div>
-        ))}
-      </div>
 
-      {selectingUser && (
-        <div style={{ marginTop: '30px', width: '100%', maxWidth: '380px', backgroundColor: 'white', padding: '25px', borderRadius: '30px', boxShadow: '0 15px 35px rgba(0,0,0,0.08)' }}>
-          <p style={{ margin: '0 0 15px', fontWeight: '800', textAlign: 'center' }}>Olá, {selectingUser.toUpperCase()}!</p>
-          <input 
-            type="password" 
-            placeholder="Introduza a Password" 
-            autoFocus
-            value={loginPass}
-            onChange={(e) => setLoginPass(e.target.value)}
-            style={{ width: '100%', padding: '16px', borderRadius: '15px', border: '1px solid #E5E5EA', backgroundColor: '#F8F9FB', fontSize: '16px', boxSizing: 'border-box', marginBottom: '15px' }}
-          />
-          <button onClick={handleEntry} style={{ width: '100%', padding: '16px', backgroundColor: '#1C1C1E', color: 'white', border: 'none', borderRadius: '15px', fontWeight: '800', fontSize: '15px', cursor: 'pointer' }}>Entrar Agora</button>
+          {selectingUser && (
+            <div style={{ marginTop: '30px', width: '100%', maxWidth: '380px', backgroundColor: 'white', padding: '25px', borderRadius: '30px', boxShadow: '0 15px 35px rgba(0,0,0,0.08)' }}>
+              <p style={{ margin: '0 0 15px', fontWeight: '800', textAlign: 'center' }}>Olá, {selectingUser.toUpperCase()}!</p>
+              <input 
+                type="password" 
+                placeholder="Introduza a Password" 
+                autoFocus
+                value={loginPass}
+                onChange={(e) => setLoginPass(e.target.value)}
+                style={{ width: '100%', padding: '16px', borderRadius: '15px', border: '1px solid #E5E5EA', backgroundColor: '#F8F9FB', fontSize: '16px', boxSizing: 'border-box', marginBottom: '15px' }}
+              />
+              <button onClick={handleEntry} style={{ width: '100%', padding: '16px', backgroundColor: '#1C1C1E', color: 'white', border: 'none', borderRadius: '15px', fontWeight: '800', fontSize: '15px', cursor: 'pointer' }}>Entrar Agora</button>
+            </div>
+          )}
+
+          <button onClick={() => setIsRegistering(true)} style={{ marginTop: '30px', background: 'none', border: 'none', color: '#007AFF', fontWeight: '800', fontSize: '14px', cursor: 'pointer' }}>+ Adicionar Novo Perfil</button>
+        </>
+      ) : (
+        <div style={{ width: '100%', maxWidth: '380px', backgroundColor: 'white', padding: '30px', borderRadius: '35px', boxShadow: '0 15px 35px rgba(0,0,0,0.08)' }}>
+          <input placeholder="Nome de Utilizador" value={regName} onChange={(e) => setRegName(e.target.value)} style={{ width: '100%', padding: '16px', borderRadius: '15px', border: '1px solid #E5E5EA', backgroundColor: '#F8F9FB', fontSize: '16px', boxSizing: 'border-box', marginBottom: '12px' }} />
+          <input placeholder="Teu E-mail" value={regEmail} onChange={(e) => setRegEmail(e.target.value)} style={{ width: '100%', padding: '16px', borderRadius: '15px', border: '1px solid #E5E5EA', backgroundColor: '#F8F9FB', fontSize: '16px', boxSizing: 'border-box', marginBottom: '12px' }} />
+          <input type="password" placeholder="Escolha uma Password" value={regPass} onChange={(e) => setRegPass(e.target.value)} style={{ width: '100%', padding: '16px', borderRadius: '15px', border: '1px solid #E5E5EA', backgroundColor: '#F8F9FB', fontSize: '16px', boxSizing: 'border-box', marginBottom: '20px' }} />
+          <button onClick={handleRegister} style={{ width: '100%', padding: '16px', backgroundColor: '#34C759', color: 'white', border: 'none', borderRadius: '15px', fontWeight: '800', fontSize: '15px', cursor: 'pointer', marginBottom: '10px' }}>Criar Perfil</button>
+          <button onClick={() => setIsRegistering(false)} style={{ width: '100%', background: 'none', border: 'none', color: '#8E8E93', fontWeight: '600', fontSize: '13px', cursor: 'pointer' }}>Cancelar</button>
         </div>
       )}
-
-      <button onClick={() => { const n = prompt('Nome do novo perfil:'); if(n) { setSelectingUser(n.toLowerCase()); } }} style={{ marginTop: '30px', background: 'none', border: 'none', color: '#007AFF', fontWeight: '800', fontSize: '14px', cursor: 'pointer' }}>+ Adicionar Novo Perfil</button>
     </div>
   );
 
@@ -240,7 +282,7 @@ export default function App() {
 
           <h4 style={{ marginBottom: '15px', fontWeight: '800', fontSize: '16px' }}>Minhas Contas</h4>
           {Object.keys(settings.accounts || {}).map(k => (
-            <div key={k} style={{ display: 'flex', justifyBetween: 'space-between', alignItems: 'center', backgroundColor: '#F8F9FB', padding: '15px 20px', borderRadius: '18px', marginBottom: '10px' }}>
+            <div key={k} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#F8F9FB', padding: '15px 20px', borderRadius: '18px', marginBottom: '10px' }}>
               <span style={{fontWeight: '600'}}>{settings.accounts[k].icon} {settings.accounts[k].label}</span>
               <button onClick={() => { if(Object.keys(settings.accounts).length > 1) { const na = {...settings.accounts}; delete na[k]; updateSettings({accounts: na}); } }} style={{ border: 'none', color: '#FF3B30', background: 'none', fontWeight: '800', cursor: 'pointer', marginLeft: 'auto' }}>Apagar</button>
             </div>
@@ -280,75 +322,39 @@ export default function App() {
       </div>
 
       <div style={{ backgroundColor: 'white', padding: '30px', borderRadius: '35px', marginBottom: '35px', boxShadow: '0 10px 30px rgba(0,0,0,0.02)' }}>
-      <form onSubmit={handleTransactionSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
-  
-  {/* SELETOR DE TIPO */}
-  <div style={{ display: 'flex', backgroundColor: '#F2F2F7', borderRadius: '18px', padding: '6px' }}>
-    {['expense', 'income', 'investimento', 'transfer'].map((type) => (
-      <button 
-        key={type} 
-        type="button" 
-        onClick={() => setTransType(type)} 
-        style={{ 
-          flex: 1, padding: '12px', border: 'none', borderRadius: '14px', 
-          backgroundColor: transType === type ? 'white' : 'transparent', 
-          fontWeight: '800', fontSize: '13px', cursor: 'pointer',
-          boxShadow: transType === type ? '0 4px 10px rgba(0,0,0,0.05)' : 'none'
-        }}
-      >
-        {type === 'expense' ? 'Despesa' : type === 'income' ? 'Receita' : type === 'investimento' ? 'Investir' : 'Troca'}
-      </button>
-    ))}
-  </div>
-
-  {/* DESCRIÇÃO */}
-  <input name="desc" placeholder={content.placeholder} required style={{ width: '100%', boxSizing: 'border-box', padding: '18px', borderRadius: '18px', border: 'none', backgroundColor: '#F8F9FB', fontSize: '15px' }} />
-  
-  {/* CAMPOS DE INVESTIMENTO */}
-  {transType === 'investimento' && (
-    <div style={{ display: 'flex', gap: '10px' }}>
-      <select name="assetType" style={{ flex: 1, padding: '16px', borderRadius: '18px', border: 'none', backgroundColor: '#F8F9FB', fontWeight: '700' }}>
-        {ASSET_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
-      </select>
-      <input name="perf" placeholder="Perf. %" style={{ width: '100px', padding: '16px', borderRadius: '18px', border: 'none', backgroundColor: '#F8F9FB', fontWeight: '700', textAlign: 'center' }} />
-    </div>
-  )}
-
-  {/* VALOR */}
-  <div style={{ position: 'relative' }}>
-    <span style={{ position: 'absolute', left: '18px', top: '50%', transform: 'translateY(-50%)', fontWeight: '900', fontSize: '22px', color: (transType === 'expense' || transType === 'transfer') ? '#FF3B30' : '#34C759' }}>
-      {(transType === 'expense' || transType === 'transfer') ? '-' : '+'}
-    </span>
-    <input name="val" type="number" step="0.01" placeholder="0.00" required style={{ width: '100%', boxSizing: 'border-box', padding: '18px 18px 18px 40px', borderRadius: '18px', border: 'none', backgroundColor: '#F8F9FB', fontSize: '22px', fontWeight: '900' }} />
-  </div>
-
-  {/* CONTAS E CATEGORIAS */}
-  <div style={{ display: 'flex', gap: '12px' }}>
-    <select name="acc" style={{ flex: 1, padding: '16px', borderRadius: '18px', border: 'none', backgroundColor: '#F8F9FB', fontWeight: '700' }}>
-      {Object.keys(settings.accounts || {}).map(k => <option key={k} value={k}>{settings.accounts[k].label}</option>)}
-    </select>
-    
-    <select name={transType === 'transfer' ? "toAcc" : "cat"} style={{ flex: 1, padding: '16px', borderRadius: '18px', border: 'none', backgroundColor: '#F8F9FB', fontWeight: '700' }}>
-      {transType === 'transfer' ? (
-        Object.keys(settings.accounts || {}).map(k => <option key={k} value={k}>Para: {settings.accounts[k].label}</option>)
-      ) : (
-        content.categories.map(k => <option key={k} value={k}>{CATEGORIES[k].icon} {CATEGORIES[k].label}</option>)
-      )}
-    </select>
-  </div>
-
-  <button type="submit" style={{ padding: '20px', backgroundColor: content.color, color: 'white', border: 'none', borderRadius: '20px', fontWeight: '900', fontSize: '17px', cursor: 'pointer' }}>
-    {transType === 'investimento' ? 'Registar Investimento' : transType === 'transfer' ? 'Confirmar Troca' : 'Adicionar Registo'}
-  </button>
-</form>
+        <form onSubmit={handleTransactionSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
+          <div style={{ display: 'flex', backgroundColor: '#F2F2F7', borderRadius: '18px', padding: '6px' }}>
+            {['expense', 'income', 'investimento', 'transfer'].map((type) => (
+              <button key={type} type="button" onClick={() => setTransType(type)} style={{ flex: 1, padding: '12px', border: 'none', borderRadius: '14px', backgroundColor: transType === type ? 'white' : 'transparent', fontWeight: '800', fontSize: '13px', cursor: 'pointer', boxShadow: transType === type ? '0 4px 10px rgba(0,0,0,0.05)' : 'none' }}>
+                {type === 'expense' ? 'Despesa' : type === 'income' ? 'Receita' : type === 'investimento' ? 'Investir' : 'Troca'}
+              </button>
+            ))}
+          </div>
+          <input name="desc" placeholder={content.placeholder} required style={{ width: '100%', boxSizing: 'border-box', padding: '18px', borderRadius: '18px', border: 'none', backgroundColor: '#F8F9FB', fontSize: '15px' }} />
+          {transType === 'investimento' && (
+            <div style={{ display: 'flex', gap: '10px' }}>
+              <select name="assetType" style={{ flex: 1, padding: '16px', borderRadius: '18px', border: 'none', backgroundColor: '#F8F9FB', fontWeight: '700' }}>{ASSET_TYPES.map(t => <option key={t} value={t}>{t}</option>)}</select>
+              <input name="perf" placeholder="Perf. %" style={{ width: '100px', padding: '16px', borderRadius: '18px', border: 'none', backgroundColor: '#F8F9FB', fontWeight: '700', textAlign: 'center' }} />
+            </div>
+          )}
+          <div style={{ position: 'relative' }}>
+            <span style={{ position: 'absolute', left: '18px', top: '50%', transform: 'translateY(-50%)', fontWeight: '900', fontSize: '22px', color: (transType === 'expense' || transType === 'transfer') ? '#FF3B30' : '#34C759' }}>{(transType === 'expense' || transType === 'transfer') ? '-' : '+'}</span>
+            <input name="val" type="number" step="0.01" placeholder="0.00" required style={{ width: '100%', boxSizing: 'border-box', padding: '18px 18px 18px 40px', borderRadius: '18px', border: 'none', backgroundColor: '#F8F9FB', fontSize: '22px', fontWeight: '900' }} />
+          </div>
+          <div style={{ display: 'flex', gap: '12px' }}>
+            <select name="acc" style={{ flex: 1, padding: '16px', borderRadius: '18px', border: 'none', backgroundColor: '#F8F9FB', fontWeight: '700' }}>{Object.keys(settings.accounts || {}).map(k => <option key={k} value={k}>{settings.accounts[k].label}</option>)}</select>
+            <select name={transType === 'transfer' ? "toAcc" : "cat"} style={{ flex: 1, padding: '16px', borderRadius: '18px', border: 'none', backgroundColor: '#F8F9FB', fontWeight: '700' }}>
+              {transType === 'transfer' ? Object.keys(settings.accounts || {}).map(k => <option key={k} value={k}>Para: {settings.accounts[k].label}</option>) : content.categories.map(k => <option key={k} value={k}>{CATEGORIES[k].icon} {CATEGORIES[k].label}</option>)}
+            </select>
+          </div>
+          <button type="submit" style={{ padding: '20px', backgroundColor: content.color, color: 'white', border: 'none', borderRadius: '20px', fontWeight: '900', fontSize: '17px', cursor: 'pointer' }}>{transType === 'investimento' ? 'Registar Investimento' : transType === 'transfer' ? 'Confirmar Troca' : 'Adicionar Registo'}</button>
+        </form>
       </div>
 
       <h3 style={{fontWeight: '900', marginBottom: '20px', fontSize: '20px'}}>Atividade Recente</h3>
       {[...list].reverse().slice(0, 10).map(t => (
         <div key={t.id} style={{ display: 'flex', alignItems: 'center', backgroundColor: 'white', padding: '18px 20px', borderRadius: '28px', marginBottom: '12px' }}>
-          <div style={{ width: '50px', height: '50px', borderRadius: '16px', backgroundColor: '#F8F9FB', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px', marginRight: '15px' }}>
-            {t.type === 'investimento' ? '📈' : (CATEGORIES[t.category]?.icon || '💰')}
-          </div>
+          <div style={{ width: '50px', height: '50px', borderRadius: '16px', backgroundColor: '#F8F9FB', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px', marginRight: '15px' }}>{t.type === 'investimento' ? '📈' : (CATEGORIES[t.category]?.icon || '💰')}</div>
           <div style={{ flex: 1 }}>
             <p style={{ margin: 0, fontWeight: '700', fontSize: '15px' }}>{t.description} {t.assetDetails && <small style={{color: '#007AFF'}}>({t.assetDetails.type})</small>}</p>
             <p style={{ margin: 0, color: '#AEAEB2', fontSize: '12px' }}>{t.date} • {settings.accounts[t.account]?.label} {t.assetDetails?.performance && `• ${t.assetDetails.performance}%`}</p>
