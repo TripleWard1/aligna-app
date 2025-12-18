@@ -469,31 +469,31 @@ export default function App() {
 
 {activeTab === 'reports' && (
         <div style={{ display: 'flex', gap: '8px', marginBottom: '20px' }}>
-        <select 
-          value={reportMonth} 
-          onChange={e => setReportMonth(parseInt(e.target.value))} 
-          style={{ flex: 1, padding: '12px', borderRadius: '12px', border: '1px solid #E5E5EA', fontWeight: 'bold', fontSize: '12px' }}
-        >
-          <option value={0}>ANO COMPLETO</option>
-          {Array.from({length: 12}, (_, i) => (
-            <option key={i+1} value={i+1}>
-              {new Date(0, i).toLocaleString('pt', {month: 'long'}).toUpperCase()}
-            </option>
-          ))}
-        </select>
-      
-        {/* SELETOR DE ANO DINÂMICO - Resolve o problema de 2026 */}
-        <select 
-          value={reportYear} 
-          onChange={e => setReportYear(parseInt(e.target.value))} 
-          style={{ width: '100px', padding: '12px', borderRadius: '12px', border: '1px solid #E5E5EA', fontWeight: 'bold', fontSize: '12px' }}
-        >
-          {[...new Set(list.map(t => t.year)), new Date().getFullYear()]
-            .sort((a, b) => b - a)
-            .map(y => <option key={y} value={y}>{y}</option>)
-          }
-        </select>
-      </div>
+  <select 
+    value={reportMonth} 
+    onChange={e => setReportMonth(parseInt(e.target.value))} 
+    style={{ flex: 1, padding: '12px', borderRadius: '12px', border: '1px solid #E5E5EA', fontWeight: 'bold', fontSize: '12px' }}
+  >
+    <option value={0}>ANO COMPLETO</option>
+    {Array.from({length: 12}, (_, i) => (
+      <option key={i+1} value={i+1}>
+        {new Date(0, i).toLocaleString('pt', {month: 'long'}).toUpperCase()}
+      </option>
+    ))}
+  </select>
+
+  {/* SELETOR DE ANO DINÂMICO - Resolve o problema de 2026 */}
+  <select 
+    value={reportYear} 
+    onChange={e => setReportYear(parseInt(e.target.value))} 
+    style={{ width: '100px', padding: '12px', borderRadius: '12px', border: '1px solid #E5E5EA', fontWeight: 'bold', fontSize: '12px' }}
+  >
+    {[...new Set(list.map(t => t.year)), new Date().getFullYear()]
+      .sort((a, b) => b - a)
+      .map(y => <option key={y} value={y}>{y}</option>)
+    }
+  </select>
+</div>
 
           {/* Novos Cartões de Resumo */}
           {!selectedDetail && (
