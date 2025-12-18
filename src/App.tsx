@@ -297,21 +297,22 @@ const monthlyExpenses = filteredList
   .filter(t => t.type === 'expense')
   .reduce((acc, t) => acc + t.amount, 0);
 
-// 1. Primeiro, garantimos que o filtro captura todos os dados do mês/ano sem falhas
-const filteredList = list.filter(t => 
-  t.month === reportMonth && 
-  t.year === reportYear
-);
-
-// 2. O novo bloco de soma (totalsByCat)
+// Cálculo robusto para somar todos os valores sem limites
 const totalsByCat = filteredList.reduce((acc, t) => {
-  // Somamos apenas transações de despesa e receita (ignoramos 'transfer' para não duplicar)
   if (t.type === 'expense' || t.type === 'income') {
-    const currentAmount = parseFloat(t.amount) || 0;
-    acc[t.category] = (acc[t.category] || 0) + currentAmount;
+    // Garantimos que o valor é tratado como número para evitar erros de soma
+    const val = Number(t.amount) || 0;
+    acc[t.category] = (acc[t.category] || 0) + val;
   }
   return acc;
 }, {});
+
+// Cálculos adicionais para suporte visual (coloque logo abaixo do bloco acima)
+const monthlyIncome = filteredList
+  .filter(t => t.type === 'income')
+  .reduce((acc, t) => acc + Number(t.amount), 0);
+
+const maxCategoryValue = Math.max(...Object.values(totalsByCat).map(Number), 0);
 
   if (!user) {
     const knownProfiles = JSON.parse(localStorage.getItem('known_profiles') || '[]');
