@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { db } from './firebase'; 
 import { ref, push, onValue, set, remove, update, get } from "firebase/database";
 
-
 const TWELVE_DATA_KEY = "49563e179ee146c5a53279200c654f29";
 
 // Objeto CATEGORIES atualizado no seu Código Principal
