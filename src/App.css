@@ -1,13 +1,33 @@
-/* FORÇA O PRETO NO IPHONE E ANDROID */
-input, textarea, select {
+/* 1. RESET TOTAL PARA TODOS OS CAMPOS */
+input, 
+textarea, 
+select, 
+button {
+  /* Força a cor preta no texto que escreves */
   color: #000000 !important;
-  -webkit-text-fill-color: #000000 !important; /* Única forma de vencer o modo escuro do iOS */
+  
+  /* ESTA LINHA É A CHAVE: Vence o modo escuro do iOS/Safari */
+  -webkit-text-fill-color: #000000 !important;
+  
+  /* Garante que o fundo não fica escuro */
   background-color: #ffffff !important;
+  background: #ffffff !important;
+  
+  /* Remove estilos automáticos do sistema que mudam cores */
+  appearance: none !important;
+  -webkit-appearance: none !important;
   opacity: 1 !important;
 }
 
-/* Cor do texto de exemplo (Placeholder) */
-input::placeholder {
+/* 2. FORÇAR COR NO TEXTO QUE APARECE ENQUANTO NÃO ESCREVES */
+input::placeholder,
+textarea::placeholder {
   color: #666666 !important;
   -webkit-text-fill-color: #666666 !important;
+}
+
+/* 3. GARANTIR QUE O TEXTO GERAL DO SITE É PRETO */
+body, #root, .app-container, div, p, span {
+  color: #000000 !important;
+  -webkit-text-fill-color: #000000 !important;
 }
