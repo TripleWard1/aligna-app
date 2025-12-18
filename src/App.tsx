@@ -290,7 +290,7 @@ export default function App() {
   }
 
   return (
-    <div style={{ padding: '15px', maxWidth: '100%', margin: '0 auto', backgroundColor: '#F8F9FB', minHeight: '100vh', fontFamily: '-apple-system, sans-serif', boxSizing: 'border-box' }}>
+    <div style={{ padding: '15px', maxWidth: '100%', margin: '0 auto', backgroundColor: '#F8F9FB', minHeight: '100vh', fontFamily: '-apple-system, sans-serif', boxSizing: 'border-box', overflowX: 'hidden' }}>
       
       {/* Header Mobile */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px' }}>
@@ -329,7 +329,7 @@ export default function App() {
               <div style={{ display: 'flex', backgroundColor: '#F2F2F7', borderRadius: '15px', padding: '4px', overflowX: 'auto' }}>
                 {['expense', 'income', 'investimento', 'transfer'].map(t => (
                   <button key={t} type="button" onClick={() => setTransType(t)} style={{ flex: 1, padding: '10px 5px', border: 'none', borderRadius: '12px', backgroundColor: transType === t ? 'white' : 'transparent', fontWeight: '800', fontSize: '11px', whiteSpace: 'nowrap' }}>
-                    {t === 'expense' ? 'Gasto' : t === 'income' ? 'Ganho' : t === 'investimento' ? 'Inv.' : 'Troca'}
+                    {t === 'expense' ? 'Despesa' : t === 'income' ? 'Receita' : t === 'investimento' ? 'Inv.' : 'Troca'}
                   </button>
                 ))}
               </div>
@@ -373,29 +373,33 @@ export default function App() {
           </div>
 
           {/* Lista de Atividade Compacta */}
-          {getSortedList().map(t => (
-            <div key={t.id} style={{ display: 'flex', alignItems: 'center', backgroundColor: 'white', padding: '12px 15px', borderRadius: '22px', marginBottom: '10px' }}>
-              <div style={{ width: '40px', height: '40px', borderRadius: '12px', backgroundColor: '#F8F9FB', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px', marginRight: '12px' }}>{t.type === 'investimento' ? '📈' : (CATEGORIES[t.category]?.icon || '💰')}</div>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <p style={{ margin: 0, fontWeight: '700', fontSize: '13px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{t.description}</p>
-                <p style={{ margin: 0, color: '#AEAEB2', fontSize: '10px' }}>{t.date} • {settings.accounts[t.account]?.label}</p>
-              </div>
-              <div style={{ textAlign: 'right', marginLeft: '10px' }}>
-                <p style={{ margin: 0, fontWeight: '800', fontSize: '14px', color: (t.type === 'income' || t.type === 'investimento') ? '#34C759' : t.type === 'expense' ? '#FF3B30' : '#1C1C1E' }}>
-                  {formatValue(t.amount)}
-                </p>
-                <div style={{display: 'flex', gap: '12px', justifyContent: 'flex-end', marginTop: '4px'}}>
-                   <button onClick={() => handleEdit(t)} style={{ border: 'none', background: 'none', fontSize: '12px', padding: 0 }}>✏️</button>
-                   <button onClick={() => { if(window.confirm('Eliminar?')) remove(ref(db, `users/${user}/transactions/${t.id}`)); }} style={{ border: 'none', background: 'none', fontSize: '12px', padding: 0 }}>🗑️</button>
+          {getSortedList().map(t => {
+            const isGain = t.type === 'income' || t.type === 'investimento';
+            const isLoss = t.type === 'expense';
+            return (
+              <div key={t.id} style={{ display: 'flex', alignItems: 'center', backgroundColor: 'white', padding: '12px 15px', borderRadius: '22px', marginBottom: '10px' }}>
+                <div style={{ width: '40px', height: '40px', borderRadius: '12px', backgroundColor: '#F8F9FB', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px', marginRight: '12px' }}>{t.type === 'investimento' ? '📈' : (CATEGORIES[t.category]?.icon || '💰')}</div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <p style={{ margin: 0, fontWeight: '700', fontSize: '13px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{t.description}</p>
+                  <p style={{ margin: 0, color: '#AEAEB2', fontSize: '10px' }}>{t.date} • {settings.accounts[t.account]?.label}</p>
+                </div>
+                <div style={{ textAlign: 'right', marginLeft: '10px' }}>
+                  <p style={{ margin: 0, fontWeight: '800', fontSize: '14px', color: isGain ? '#34C759' : isLoss ? '#FF3B30' : '#1C1C1E' }}>
+                    {isGain ? '+' : isLoss ? '-' : ''}{formatValue(t.amount)}
+                  </p>
+                  <div style={{display: 'flex', gap: '12px', justifyContent: 'flex-end', marginTop: '4px'}}>
+                     <button onClick={() => handleEdit(t)} style={{ border: 'none', background: 'none', fontSize: '12px', padding: 0 }}>✏️</button>
+                     <button onClick={() => { if(window.confirm('Eliminar?')) remove(ref(db, `users/${user}/transactions/${t.id}`)); }} style={{ border: 'none', background: 'none', fontSize: '12px', padding: 0 }}>🗑️</button>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </>
       )}
 
       {activeTab === 'reports' && (
-        <div style={{ backgroundColor: 'white', padding: '20px', borderRadius: '30px' }}>
+        <div style={{ backgroundColor: 'white', padding: '20px', borderRadius: '30px', boxSizing: 'border-box' }}>
           <h3 style={{ fontWeight: '900', marginBottom: '20px', fontSize: '18px' }}>Análise Mensal</h3>
           <div style={{ display: 'flex', gap: '8px', marginBottom: '25px' }}>
             <select value={reportMonth} onChange={e => setReportMonth(parseInt(e.target.value))} style={{ flex: 1, padding: '12px', borderRadius: '12px', border: '1px solid #E5E5EA', fontWeight: 'bold', fontSize: '12px' }}>
@@ -436,20 +440,20 @@ export default function App() {
       )}
 
       {activeTab === 'settings' && (
-        <div style={{ backgroundColor: 'white', padding: '20px', borderRadius: '30px' }}>
+        <div style={{ backgroundColor: 'white', padding: '20px', borderRadius: '30px', boxSizing: 'border-box', overflowX: 'hidden' }}>
           <h3 style={{ fontWeight: '900', marginTop: 0, fontSize: '18px' }}>Definições</h3>
-          <div style={{ display: 'flex', gap: '10px', overflowX: 'auto', paddingBottom: '15px', marginBottom: '10px' }}>
+          <div style={{ display: 'flex', gap: '10px', overflowX: 'auto', paddingBottom: '15px', marginBottom: '10px', WebkitOverflowScrolling: 'touch' }}>
             {AVATARS.map(a => <div key={a} onClick={() => updateSettings({avatar: a})} style={{ minWidth: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: '20px', backgroundColor: settings.avatar === a ? '#007AFF' : '#F2F2F7', borderRadius: '12px', color: settings.avatar === a ? 'white' : 'inherit' }}>{a}</div>)}
           </div>
           <input value={settings.email} onChange={e => updateSettings({email: e.target.value})} placeholder="Email" style={{ width: '100%', padding: '14px', borderRadius: '12px', border: 'none', backgroundColor: '#F2F2F7', marginBottom: '10px', boxSizing: 'border-box', fontSize: '14px' }} />
           <input value={settings.password} type="password" onChange={e => updateSettings({password: e.target.value})} placeholder="Senha App" style={{ width: '100%', padding: '14px', borderRadius: '12px', border: 'none', backgroundColor: '#F2F2F7', boxSizing: 'border-box', marginBottom: '15px', fontSize: '14px' }} />
           
-          <div style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
-            <div style={{ flex: 1 }}>
+          <div style={{ display: 'flex', gap: '10px', marginBottom: '20px', flexWrap: 'wrap' }}>
+            <div style={{ flex: '1 1 120px' }}>
               <label style={{fontSize: '9px', fontWeight: '700', color: '#8E8E93', marginLeft: '5px'}}>LIMITE SALDO</label>
               <input type="number" value={settings.lowBalanceLimit} onChange={e => updateSettings({lowBalanceLimit: parseFloat(e.target.value)})} style={{ width: '100%', padding: '14px', borderRadius: '12px', border: 'none', backgroundColor: '#F2F2F7', boxSizing: 'border-box', fontSize: '14px' }} />
             </div>
-            <button onClick={() => updateSettings({privacyMode: !settings.privacyMode})} style={{ flex: 1, padding: '14px', borderRadius: '12px', border: 'none', backgroundColor: settings.privacyMode ? '#FF9500' : '#E5E5EA', color: settings.privacyMode ? 'white' : '#1C1C1E', fontWeight: '800', marginTop: '14px', fontSize: '12px' }}>
+            <button onClick={() => updateSettings({privacyMode: !settings.privacyMode})} style={{ flex: '1 1 120px', padding: '14px', borderRadius: '12px', border: 'none', backgroundColor: settings.privacyMode ? '#FF9500' : '#E5E5EA', color: settings.privacyMode ? 'white' : '#1C1C1E', fontWeight: '800', alignSelf: 'flex-end', height: '46px', fontSize: '12px' }}>
               {settings.privacyMode ? '🕶️ Privado' : '👁️ Público'}
             </button>
           </div>
