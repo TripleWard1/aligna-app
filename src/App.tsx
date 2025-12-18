@@ -296,7 +296,22 @@ export default function App() {
     return acc;
   }, {});
 
+  // ... cálculos anteriores (filteredList, monthlyIncome, etc.)
   const maxCategoryValue = Math.max(...Object.values(totalsByCat).map(Number), 0);
+
+  // --- AQUI ENTRA O PONTO 3 ---
+  const currentMonth = new Date().getMonth() + 1;
+  const currentYear = new Date().getFullYear();
+
+  // Esta lógica decide se divide por 12 ou pelos meses que já passaram de 2026
+  const divisorMovel = reportMonth === 0 
+    ? (reportYear < currentYear ? 12 : currentMonth) 
+    : 1;
+  // ----------------------------
+
+  if (!user) return ( ... ); // Bloco de login
+
+  return ( ... ); // Bloco principal da App
 
   // --- FIM DO BLOCO ---
 
