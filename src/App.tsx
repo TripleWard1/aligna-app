@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { db } from './firebase'; 
-import { ref, push, onValue, set, remove, update } from "firebase/database";
+import { ref, push, onValue, set, remove, update, get } from "firebase/database";
 
 const TWELVE_DATA_KEY = "49563e179ee146c5a53279200c654f29";
 
@@ -12,7 +12,7 @@ const CATEGORIES = {
   casa: { label: 'Casa', icon: '🏠', color: '#FFCC00' },
   luz: { label: 'Eletricidade', icon: '⚡', color: '#FFD60A' },
   gas: { label: 'Gás', icon: '🔥', color: '#5AC8FA' },
-  servicos: { label: 'Serviços Casa', icon: '🛠️', color: '#8E8E93' },
+  servicos: { label: 'Servicos Casa', icon: '🛠️', color: '#8E8E93' },
   internet: { label: 'Internet/TV', icon: '🌐', color: '#007AFF' },
   salario: { label: 'Salário', icon: '💰', color: '#34C759' },
   investimento: { label: 'Investimento', icon: '📈', color: '#5AC8FA' },
@@ -34,11 +34,9 @@ export default function App() {
   const [newAccName, setNewAccName] = useState('');
   const [newAccIcon, setNewAccIcon] = useState('🏦');
   
-  // Estados para Edição e Ordenação
   const [editingId, setEditingId] = useState(null);
-  const [sortOrder, setSortOrder] = useState('entry'); // 'entry' ou 'date'
+  const [sortOrder, setSortOrder] = useState('entry'); 
 
-  // Form states (para edição fácil)
   const [formData, setFormData] = useState({
     desc: '', val: '', cat: 'alimentacao', acc: 'carteira', toAcc: 'carteira', assetType: 'ETF', perf: '', date: new Date().toISOString().split('T')[0]
   });
@@ -47,9 +45,12 @@ export default function App() {
   const [reportYear, setReportYear] = useState(new Date().getFullYear());
   const [selectedDetail, setSelectedDetail] = useState(null);
 
+  // Estados de Login/Registo
+  const [loginMode, setLoginMode] = useState('profiles'); // 'profiles', 'manual', 'register'
   const [selectingUser, setSelectingUser] = useState(null);
+  const [loginName, setLoginName] = useState('');
   const [loginPass, setLoginPass] = useState('');
-  const [isRegistering, setIsRegistering] = useState(false);
+  
   const [regName, setRegName] = useState('');
   const [regEmail, setRegEmail] = useState('');
   const [regPass, setRegPass] = useState('');
@@ -60,7 +61,10 @@ export default function App() {
   });
 
   useEffect(() => {
-    onValue(ref(db, `users`), (snap) => setAllUsers(snap.val() || {}));
+    onValue(ref(db, `users`), (snap) => {
+      setAllUsers(snap.val() || {});
+    });
+
     if (user) {
       onValue(ref(db, `users/${user}/settings`), (snap) => {
         if (snap.val()) setSettings(prev => ({ ...prev, ...snap.val() }));
@@ -78,21 +82,38 @@ export default function App() {
     if (user) set(ref(db, `users/${user}/settings`), updated);
   };
 
-  const handleEntry = () => {
-    const savedPass = allUsers[selectingUser]?.settings?.password || "";
-    if (savedPass && loginPass !== savedPass) {
+  // Função para entrar (quer seja perfil clicado ou nome escrito)
+  const handleEntry = async (targetUser) => {
+    const uName = targetUser || loginName.toLowerCase().trim();
+    if (!uName) return;
+
+    const userRef = ref(db, `users/${uName}`);
+    const snapshot = await get(userRef);
+    
+    if (!snapshot.exists()) {
+      alert("Utilizador não encontrado.");
+      return;
+    }
+
+    const userData = snapshot.val();
+    if (userData.settings?.password && loginPass !== userData.settings.password) {
       alert("⚠️ Password Incorreta!");
       return;
     }
-    localStorage.setItem('f_user', selectingUser);
+
+    // Guardar no localStorage para este dispositivo o reconhecer no futuro
     const known = JSON.parse(localStorage.getItem('known_profiles') || '[]');
-    if(!known.includes(selectingUser)) {
-        known.push(selectingUser);
+    if (!known.includes(uName)) {
+        known.push(uName);
         localStorage.setItem('known_profiles', JSON.stringify(known));
     }
-    setUser(selectingUser);
+
+    localStorage.setItem('f_user', uName);
+    setUser(uName);
     setSelectingUser(null);
     setLoginPass('');
+    setLoginName('');
+    setLoginMode('profiles');
   };
 
   const handleRegister = () => {
@@ -105,12 +126,12 @@ export default function App() {
     }
     const initialSettings = { ...settings, email: regEmail, password: regPass, avatar: AVATARS[0] };
     set(ref(db, `users/${userId}/settings`), initialSettings).then(() => {
-      localStorage.setItem('f_user', userId);
       const known = JSON.parse(localStorage.getItem('known_profiles') || '[]');
       known.push(userId);
       localStorage.setItem('known_profiles', JSON.stringify(known));
+      localStorage.setItem('f_user', userId);
       setUser(userId);
-      setIsRegistering(false);
+      setLoginMode('profiles');
     });
   };
 
@@ -163,7 +184,7 @@ export default function App() {
       account: formData.acc, 
       toAccount: transType === 'transfer' ? formData.toAcc : null, 
       date: selectedDate.toLocaleDateString('pt-PT'),
-      isoDate: formData.date, // para ordenação correta
+      isoDate: formData.date, 
       month: selectedDate.getMonth() + 1,
       year: selectedDate.getFullYear(),
       timestamp: editingId ? list.find(x => x.id === editingId).timestamp : Date.now() 
@@ -211,40 +232,73 @@ export default function App() {
 
   if (!user) {
     const knownProfiles = JSON.parse(localStorage.getItem('known_profiles') || '[]');
+
     return (
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', backgroundColor: '#F2F4F7', padding: '20px', fontFamily: '-apple-system, sans-serif' }}>
-        <h1 style={{ fontWeight: '900', fontSize: '46px', letterSpacing: '-2px' }}>Aligna</h1>
-        {!isRegistering ? (
+      <div style={{ 
+        display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', 
+        minHeight: '100vh', background: 'linear-gradient(180deg, #F8F9FB 0%, #E9ECEF 100%)', 
+        padding: '30px', fontFamily: '-apple-system, sans-serif' 
+      }}>
+        <div style={{ textAlign: 'center', marginBottom: '40px' }}>
+          <h1 style={{ fontWeight: '900', fontSize: '52px', letterSpacing: '-3px', margin: '0', color: '#1C1C1E' }}>Aligna</h1>
+          <p style={{ color: '#8E8E93', fontWeight: '600', marginTop: '5px' }}>Finanças sob controlo</p>
+        </div>
+
+        {loginMode === 'profiles' && (
           <>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '20px', width: '100%', maxWidth: '400px', marginTop: '30px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '15px', width: '100%', maxWidth: '400px' }}>
               {knownProfiles.map(u => allUsers[u] && (
-                <div key={u} onClick={() => setSelectingUser(u)} style={{ backgroundColor: 'white', padding: '30px 20px', borderRadius: '35px', cursor: 'pointer', textAlign: 'center', boxShadow: selectingUser === u ? '0 0 0 3px #007AFF' : '0 10px 25px rgba(0,0,0,0.04)' }}>
-                  <div style={{ fontSize: '50px' }}>{allUsers[u].settings?.avatar || '👤'}</div>
-                  <div style={{ fontWeight: '800' }}>{u.toUpperCase()}</div>
+                <div key={u} onClick={() => setSelectingUser(u)} style={{ 
+                  backgroundColor: 'white', padding: '25px 15px', borderRadius: '30px', cursor: 'pointer', 
+                  textAlign: 'center', transition: 'all 0.2s ease',
+                  boxShadow: selectingUser === u ? '0 0 0 3px #007AFF' : '0 10px 20px rgba(0,0,0,0.04)',
+                  transform: selectingUser === u ? 'scale(1.05)' : 'scale(1)'
+                }}>
+                  <div style={{ fontSize: '44px', marginBottom: '10px' }}>{allUsers[u].settings?.avatar || '👤'}</div>
+                  <div style={{ fontWeight: '800', fontSize: '14px', color: '#1C1C1E', textTransform: 'uppercase' }}>{u}</div>
                 </div>
               ))}
             </div>
+
             {selectingUser && (
-              <div style={{ marginTop: '20px', width: '100%', maxWidth: '380px', backgroundColor: 'white', padding: '25px', borderRadius: '30px' }}>
-                <input type="password" placeholder="Password" autoFocus value={loginPass} onChange={e => setLoginPass(e.target.value)} style={{ width: '100%', padding: '16px', borderRadius: '15px', border: '1px solid #E5E5EA', boxSizing: 'border-box', marginBottom: '10px' }} />
-                <button onClick={handleEntry} style={{ width: '100%', padding: '16px', backgroundColor: '#1C1C1E', color: 'white', border: 'none', borderRadius: '15px', fontWeight: '800' }}>Entrar</button>
+              <div style={{ marginTop: '20px', width: '100%', maxWidth: '380px', backgroundColor: 'white', padding: '25px', borderRadius: '30px', boxShadow: '0 20px 40px rgba(0,0,0,0.08)' }}>
+                <input type="password" placeholder="Password" autoFocus value={loginPass} onChange={e => setLoginPass(e.target.value)} style={{ width: '100%', padding: '18px', borderRadius: '18px', border: '1px solid #F2F2F7', boxSizing: 'border-box', marginBottom: '15px', backgroundColor: '#F8F9FB' }} />
+                <button onClick={() => handleEntry(selectingUser)} style={{ width: '100%', padding: '18px', backgroundColor: '#007AFF', color: 'white', border: 'none', borderRadius: '18px', fontWeight: '800' }}>Entrar</button>
               </div>
             )}
-            <button onClick={() => setIsRegistering(true)} style={{ marginTop: '20px', background: 'none', border: 'none', color: '#007AFF', fontWeight: '800' }}>+ Criar Perfil</button>
+
+            <div style={{ display: 'flex', gap: '20px', marginTop: '30px' }}>
+              <button onClick={() => setLoginMode('manual')} style={{ background: 'none', border: 'none', color: '#007AFF', fontWeight: '800', cursor: 'pointer' }}>Entrar em conta existente</button>
+              <button onClick={() => setLoginMode('register')} style={{ background: 'none', border: 'none', color: '#34C759', fontWeight: '800', cursor: 'pointer' }}>Criar Novo Perfil</button>
+            </div>
           </>
-        ) : (
-          <div style={{ width: '100%', maxWidth: '380px', backgroundColor: 'white', padding: '30px', borderRadius: '35px' }}>
-            <input placeholder="Nome" value={regName} onChange={e => setRegName(e.target.value)} style={{ width: '100%', padding: '16px', borderRadius: '15px', border: '1px solid #E5E5EA', marginBottom: '10px', boxSizing: 'border-box' }} />
-            <input placeholder="Email" value={regEmail} onChange={e => setRegEmail(e.target.value)} style={{ width: '100%', padding: '16px', borderRadius: '15px', border: '1px solid #E5E5EA', marginBottom: '10px', boxSizing: 'border-box' }} />
-            <input type="password" placeholder="Password" value={regPass} onChange={e => setRegPass(e.target.value)} style={{ width: '100%', padding: '16px', borderRadius: '15px', border: '1px solid #E5E5EA', marginBottom: '20px', boxSizing: 'border-box' }} />
-            <button onClick={handleRegister} style={{ width: '100%', padding: '16px', backgroundColor: '#34C759', color: 'white', border: 'none', borderRadius: '15px', fontWeight: '800' }}>Confirmar</button>
-            <button onClick={() => setIsRegistering(false)} style={{ width: '100%', background: 'none', border: 'none', color: '#8E8E93', marginTop: '10px' }}>Cancelar</button>
+        )}
+
+        {loginMode === 'manual' && (
+          <div style={{ width: '100%', maxWidth: '380px', backgroundColor: 'white', padding: '30px', borderRadius: '35px', boxShadow: '0 20px 40px rgba(0,0,0,0.08)' }}>
+            <h3 style={{ marginTop: 0, fontWeight: '900' }}>Entrar</h3>
+            <input placeholder="Nome de Utilizador" value={loginName} onChange={e => setLoginName(e.target.value)} style={{ width: '100%', padding: '18px', borderRadius: '18px', border: 'none', marginBottom: '12px', boxSizing: 'border-box', backgroundColor: '#F8F9FB' }} />
+            <input type="password" placeholder="Password" value={loginPass} onChange={e => setLoginPass(e.target.value)} style={{ width: '100%', padding: '18px', borderRadius: '18px', border: 'none', marginBottom: '20px', boxSizing: 'border-box', backgroundColor: '#F8F9FB' }} />
+            <button onClick={() => handleEntry()} style={{ width: '100%', padding: '18px', backgroundColor: '#007AFF', color: 'white', border: 'none', borderRadius: '18px', fontWeight: '800' }}>Entrar</button>
+            <button onClick={() => setLoginMode('profiles')} style={{ width: '100%', background: 'none', border: 'none', color: '#8E8E93', marginTop: '15px' }}>Voltar</button>
+          </div>
+        )}
+
+        {loginMode === 'register' && (
+          <div style={{ width: '100%', maxWidth: '380px', backgroundColor: 'white', padding: '35px', borderRadius: '35px', boxShadow: '0 20px 40px rgba(0,0,0,0.08)' }}>
+            <h3 style={{ marginTop: 0, fontWeight: '900' }}>Novo Perfil</h3>
+            <input placeholder="Nome" value={regName} onChange={e => setRegName(e.target.value)} style={{ width: '100%', padding: '18px', borderRadius: '18px', border: 'none', marginBottom: '12px', boxSizing: 'border-box', backgroundColor: '#F8F9FB' }} />
+            <input placeholder="Email" value={regEmail} onChange={e => setRegEmail(e.target.value)} style={{ width: '100%', padding: '18px', borderRadius: '18px', border: 'none', marginBottom: '12px', boxSizing: 'border-box', backgroundColor: '#F8F9FB' }} />
+            <input type="password" placeholder="Password" value={regPass} onChange={e => setRegPass(e.target.value)} style={{ width: '100%', padding: '18px', borderRadius: '18px', border: 'none', marginBottom: '25px', boxSizing: 'border-box', backgroundColor: '#F8F9FB' }} />
+            <button onClick={handleRegister} style={{ width: '100%', padding: '18px', backgroundColor: '#34C759', color: 'white', border: 'none', borderRadius: '18px', fontWeight: '800' }}>Criar Perfil</button>
+            <button onClick={() => setLoginMode('profiles')} style={{ width: '100%', background: 'none', border: 'none', color: '#8E8E93', marginTop: '15px' }}>Voltar</button>
           </div>
         )}
       </div>
     );
   }
 
+  // O resto do código (Menu Principal, Transações, etc.) permanece o mesmo...
   return (
     <div style={{ padding: '20px', maxWidth: '480px', margin: '0 auto', backgroundColor: '#F8F9FB', minHeight: '100vh', fontFamily: '-apple-system, sans-serif' }}>
       
