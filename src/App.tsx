@@ -270,11 +270,10 @@ const isLowBalance = totalBalance < (settings.lowBalanceLimit || 50);
     }).slice(0, 15);
   };
 
-  // --- COLA ESTE BLOCO ABAIXO EXATAMENTE AQUI ---
+  // --- BLOCO ATUALIZADO COM GRÁFICO CIRCULAR ---
 
   const getCategoryHistory = (catKey) => {
     const history = {};
-    // ADICIONADO: .filter(t => t.type === 'expense') para ignorar receitas no gráfico
     list.filter(t => t.category === catKey && t.type === 'expense').forEach(t => {
       const label = `${t.month}/${t.year.toString().slice(-2)}`;
       history[label] = (history[label] || 0) + Number(t.amount);
@@ -288,18 +287,12 @@ const isLowBalance = totalBalance < (settings.lowBalanceLimit || 50);
       }).slice(-6);
   };
 
-  // Se reportMonth for 0, significa "Ano Completo"
   const filteredList = list.filter(t => {
-    // 1. O ano tem de ser IGUAL ao selecionado no dropdown
     const yearMatch = Number(t.year) === Number(reportYear);
-    
-    // 2. Se for 0 (Ano Completo), mostra tudo desse ano. Se não, filtra o mês.
     const monthMatch = reportMonth === 0 ? true : Number(t.month) === Number(reportMonth);
-    
     return yearMatch && monthMatch;
   });
 
-  // Filtro de Despesas (Barra Amarela)
   const totalsByCat = filteredList.reduce((acc, t) => {
     if (t.type === 'expense') {
       const catName = t.category || 'outros';
@@ -308,7 +301,6 @@ const isLowBalance = totalBalance < (settings.lowBalanceLimit || 50);
     return acc;
   }, {});
 
-  // Filtro de Receitas (Cartão Verde)
   const totalsByCatIncome = filteredList.reduce((acc, t) => {
     if (t.type === 'income') {
       const catName = t.category || 'salario';
@@ -317,7 +309,26 @@ const isLowBalance = totalBalance < (settings.lowBalanceLimit || 50);
     return acc;
   }, {});
 
+  const monthlyExpenses = Object.values(totalsByCat).reduce((a, b) => a + b, 0);
+  const monthlyIncome = Object.values(totalsByCatIncome).reduce((a, b) => a + b, 0);
   const maxCategoryValue = Math.max(...Object.values(totalsByCat).map(Number), 0);
+
+  // FUNÇÃO PARA O GRÁFICO DONUT
+  const getDonutData = () => {
+    if (monthlyExpenses === 0) return [];
+    let cumulativePercentage = 0;
+    return Object.keys(totalsByCat).map(cat => {
+      const percentage = (totalsByCat[cat] / monthlyExpenses) * 100;
+      const startOffset = cumulativePercentage;
+      cumulativePercentage += percentage;
+      return {
+        cat,
+        percentage,
+        color: CATEGORIES[cat]?.color || '#8E8E93',
+        offset: startOffset
+      };
+    });
+  };
 
   // --- FIM DO BLOCO ---
 
@@ -555,7 +566,6 @@ const isLowBalance = totalBalance < (settings.lowBalanceLimit || 50);
   <div style={{ backgroundColor: 'white', padding: '20px', borderRadius: '30px', boxSizing: 'border-box' }}>
     <h3 style={{ fontWeight: '900', marginBottom: '20px', fontSize: '18px' }}>Análise Mensal</h3>
     
-    {/* Seletores de Mês e Ano Lado a Lado */}
     <div style={{ display: 'flex', gap: '8px', marginBottom: '20px' }}>
       <select 
         value={reportMonth} 
@@ -582,78 +592,92 @@ const isLowBalance = totalBalance < (settings.lowBalanceLimit || 50);
       </select>
     </div>
 
-    {/* Cartões de Resumo */}
-    {/* Substitui o mapeamento original por este bloco completo abaixo */}
-{!selectedDetail && (
-  <>
-    {/* Lista de Despesas */}
-    {Object.keys(totalsByCat).length > 0 && (
-      <p style={{ fontSize: '11px', fontWeight: '800', color: '#8E8E93', marginTop: '20px', marginBottom: '10px' }}>DETALHE DE GASTOS</p>
-    )}
-    {Object.keys(totalsByCat).sort((a, b) => totalsByCat[b] - totalsByCat[a]).map(cat => (
-      <div key={cat} onClick={() => setSelectedDetail(cat)} style={{ marginBottom: '18px', cursor: 'pointer' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px', fontSize: '13px', fontWeight: '800' }}>
-          <span>{CATEGORIES[cat]?.icon} {CATEGORIES[cat]?.label}</span>
-          <span>{totalsByCat[cat].toFixed(2)}{settings.currency}</span>
-        </div>
-        <div style={{ width: '100%', height: '8px', backgroundColor: '#F2F2F7', borderRadius: '10px', overflow: 'hidden' }}>
-          <div style={{ 
-            width: `${Math.min((totalsByCat[cat] / (maxCategoryValue || 1)) * 100, 100)}%`, 
-            height: '100%', 
-            backgroundColor: CATEGORIES[cat]?.color, 
-            borderRadius: '10px' 
-          }}></div>
-        </div>
-      </div>
-    ))}
-
-    {/* Nova Secção: Rendimentos */}
-    {Object.keys(totalsByCatIncome).length > 0 && (
+    {!selectedDetail ? (
       <>
-        <p style={{ fontSize: '11px', fontWeight: '800', color: '#8E8E93', marginTop: '30px', marginBottom: '10px' }}>FONTES DE RENDIMENTO</p>
-        {Object.keys(totalsByCatIncome).map(cat => (
-          <div key={cat} style={{ padding: '15px', backgroundColor: '#F2F7F2', borderRadius: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <span style={{ fontSize: '20px' }}>{CATEGORIES[cat]?.icon || '💰'}</span>
-              <span style={{ fontSize: '14px', fontWeight: '800' }}>{CATEGORIES[cat]?.label || 'Receita'}</span>
+        {/* GRÁFICO DONUT */}
+        {monthlyExpenses > 0 && (
+          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginBottom: '30px', position: 'relative' }}>
+            <svg viewBox="0 0 36 36" style={{ width: '160px', height: '160px', transform: 'rotate(-90deg)' }}>
+              {getDonutData().map((slice, i) => (
+                <circle
+                  key={i}
+                  cx="18" cy="18" r="15.915"
+                  fill="transparent"
+                  stroke={slice.color}
+                  strokeWidth="4"
+                  strokeDasharray={`${slice.percentage} ${100 - slice.percentage}`}
+                  strokeDashoffset={-slice.offset}
+                />
+              ))}
+            </svg>
+            <div style={{ position: 'absolute', textAlign: 'center' }}>
+              <p style={{ margin: 0, fontSize: '9px', fontWeight: '800', color: '#8E8E93' }}>GASTOS</p>
+              <p style={{ margin: 0, fontSize: '18px', fontWeight: '900' }}>{monthlyExpenses.toFixed(0)}{settings.currency}</p>
             </div>
-            <strong style={{ fontSize: '15px', color: '#34C759' }}>
-              +{totalsByCatIncome[cat].toFixed(2)}{settings.currency}
-            </strong>
+          </div>
+        )}
+
+        {/* LISTA DE GASTOS */}
+        {Object.keys(totalsByCat).length > 0 && (
+          <p style={{ fontSize: '11px', fontWeight: '800', color: '#8E8E93', marginTop: '10px', marginBottom: '15px' }}>DETALHE DE GASTOS</p>
+        )}
+        {Object.keys(totalsByCat).sort((a, b) => totalsByCat[b] - totalsByCat[a]).map(cat => (
+          <div key={cat} onClick={() => setSelectedDetail(cat)} style={{ marginBottom: '18px', cursor: 'pointer' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px', fontSize: '13px', fontWeight: '800' }}>
+              <span>{CATEGORIES[cat]?.icon} {CATEGORIES[cat]?.label}</span>
+              <span>{totalsByCat[cat].toFixed(2)}{settings.currency}</span>
+            </div>
+            <div style={{ width: '100%', height: '8px', backgroundColor: '#F2F2F7', borderRadius: '10px', overflow: 'hidden' }}>
+              <div style={{ 
+                width: `${Math.min((totalsByCat[cat] / (maxCategoryValue || 1)) * 100, 100)}%`, 
+                height: '100%', 
+                backgroundColor: CATEGORIES[cat]?.color, 
+                borderRadius: '10px' 
+              }}></div>
+            </div>
           </div>
         ))}
-      </>
-    )}
-  </>
-)}
 
-    {selectedDetail ? (
+        {/* RENDIMENTOS */}
+        {Object.keys(totalsByCatIncome).length > 0 && (
+          <>
+            <p style={{ fontSize: '11px', fontWeight: '800', color: '#8E8E93', marginTop: '30px', marginBottom: '10px' }}>FONTES DE RENDIMENTO</p>
+            {Object.keys(totalsByCatIncome).map(cat => (
+              <div key={cat} style={{ padding: '15px', backgroundColor: '#F2F7F2', borderRadius: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <span style={{ fontSize: '20px' }}>{CATEGORIES[cat]?.icon}</span>
+                  <span style={{ fontSize: '14px', fontWeight: '800' }}>{CATEGORIES[cat]?.label}</span>
+                </div>
+                <strong style={{ fontSize: '15px', color: '#34C759' }}>
+                  +{totalsByCatIncome[cat].toFixed(2)}{settings.currency}
+                </strong>
+              </div>
+            ))}
+          </>
+        )}
+      </>
+    ) : (
+      /* VISTA DE DETALHE (HISTÓRICO) */
       <div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '25px' }}>
-          <button onClick={() => setSelectedDetail(null)} style={{ background: '#F2F2F7', border: 'none', width: '35px', height: '35px', borderRadius: '50%', fontSize: '16px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>←</button>
+          <button onClick={() => setSelectedDetail(null)} style={{ background: '#F2F2F7', border: 'none', width: '35px', height: '35px', borderRadius: '50%', fontSize: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>←</button>
           <div>
             <h4 style={{ margin: 0, fontSize: '16px', fontWeight: '900' }}>{CATEGORIES[selectedDetail]?.label}</h4>
             <p style={{ margin: 0, fontSize: '11px', color: '#8E8E93', fontWeight: 'bold' }}>EVOLUÇÃO DOS GASTOS</p>
           </div>
         </div>
-
-        <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', height: '140px', padding: '15px', backgroundColor: '#F8F9FB', borderRadius: '24px', marginBottom: '25px', gap: '10px' }}>
-          {getCategoryHistory(selectedDetail).length > 0 ? getCategoryHistory(selectedDetail).map((data, idx) => {
-            const maxVal = Math.max(...getCategoryHistory(selectedDetail).map(d => d.val));
-            const heightPct = (data.val / (maxVal || 1)) * 100;
-            return (
-              <div key={idx} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', height: '100%' }}>
-                <div style={{ flex: 1, width: '100%', display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}>
-                  <div style={{ width: '100%', maxWidth: '35px', height: `${heightPct}%`, backgroundColor: CATEGORIES[selectedDetail]?.color || '#007AFF', borderRadius: '8px 8px 4px 4px', minHeight: '2px' }}></div>
-                </div>
-                <span style={{ fontSize: '9px', fontWeight: '900', color: '#AEAEB2', marginTop: '10px' }}>{data.date}</span>
-                <span style={{ fontSize: '9px', fontWeight: '900', color: '#1C1C1E' }}>{data.val.toFixed(0)}{settings.currency}</span>
+        <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', height: '140px', padding: '15px', backgroundColor: '#F8F9FB', borderRadius: '24px', gap: '10px' }}>
+          {getCategoryHistory(selectedDetail).map((data, idx) => (
+            <div key={idx} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', height: '100%' }}>
+              <div style={{ flex: 1, width: '100%', display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}>
+                <div style={{ width: '100%', maxWidth: '30px', height: `${(data.val / Math.max(...getCategoryHistory(selectedDetail).map(d => d.val))) * 100}%`, backgroundColor: CATEGORIES[selectedDetail]?.color, borderRadius: '6px' }}></div>
               </div>
-            );
-          }) : <p style={{ width: '100%', textAlign: 'center', color: '#AEAEB2', fontSize: '12px' }}>Sem dados históricos</p>}
+              <span style={{ fontSize: '8px', fontWeight: '900', marginTop: '8px' }}>{data.date}</span>
+            </div>
+          ))}
         </div>
       </div>
-    ) : null} {/* Alterado aqui para null para não duplicar a lista */}
+    )}
   </div>
 )}
 
