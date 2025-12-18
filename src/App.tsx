@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { db } from './firebase'; 
-import { ref, push, onValue, set, remove } from "firebase/database";
+import { ref, push, onValue, set, remove, update } from "firebase/database";
 
 const TWELVE_DATA_KEY = "49563e179ee146c5a53279200c654f29";
 
@@ -34,7 +34,15 @@ export default function App() {
   const [newAccName, setNewAccName] = useState('');
   const [newAccIcon, setNewAccIcon] = useState('🏦');
   
-  // Estados para Relatórios e Detalhes
+  // Estados para Edição e Ordenação
+  const [editingId, setEditingId] = useState(null);
+  const [sortOrder, setSortOrder] = useState('entry'); // 'entry' ou 'date'
+
+  // Form states (para edição fácil)
+  const [formData, setFormData] = useState({
+    desc: '', val: '', cat: 'alimentacao', acc: 'carteira', toAcc: 'carteira', assetType: 'ETF', perf: '', date: new Date().toISOString().split('T')[0]
+  });
+  
   const [reportMonth, setReportMonth] = useState(new Date().getMonth() + 1);
   const [reportYear, setReportYear] = useState(new Date().getFullYear());
   const [selectedDetail, setSelectedDetail] = useState(null);
@@ -135,39 +143,65 @@ export default function App() {
 
   const handleTransactionSubmit = async (e) => {
     e.preventDefault();
-    const { desc, val, cat, acc, toAcc, assetType, perf } = e.target.elements;
-    let autoPerformance = perf ? perf.value : "0";
+    let autoPerformance = formData.perf || "0";
 
-    if (transType === 'investimento' && desc.value) {
+    if (transType === 'investimento' && formData.desc) {
       try {
-        const response = await fetch(`https://api.twelvedata.com/quote?symbol=${desc.value.toUpperCase()}&apikey=${TWELVE_DATA_KEY}`);
+        const response = await fetch(`https://api.twelvedata.com/quote?symbol=${formData.desc.toUpperCase()}&apikey=${TWELVE_DATA_KEY}`);
         const data = await response.json();
         if (data && data.percent_change) autoPerformance = parseFloat(data.percent_change).toFixed(2);
       } catch (err) { console.error(err); }
     }
 
+    const selectedDate = new Date(formData.date);
     const tData = { 
-      description: desc.value.toUpperCase(), 
-      amount: Math.abs(parseFloat(val.value)), 
+      description: formData.desc.toUpperCase(), 
+      amount: Math.abs(parseFloat(formData.val)), 
       type: transType, 
-      category: transType === 'transfer' ? 'transferencia' : (cat ? cat.value : 'investimento'),
-      assetDetails: transType === 'investimento' ? { type: assetType.value, performance: autoPerformance } : null,
-      account: acc.value, 
-      toAccount: transType === 'transfer' ? toAcc.value : null, 
-      date: new Date().toLocaleDateString('pt-PT'),
-      month: new Date().getMonth() + 1,
-      year: new Date().getFullYear(),
-      timestamp: Date.now() 
+      category: transType === 'transfer' ? 'transferencia' : formData.cat,
+      assetDetails: transType === 'investimento' ? { type: formData.assetType, performance: autoPerformance } : null,
+      account: formData.acc, 
+      toAccount: transType === 'transfer' ? formData.toAcc : null, 
+      date: selectedDate.toLocaleDateString('pt-PT'),
+      isoDate: formData.date, // para ordenação correta
+      month: selectedDate.getMonth() + 1,
+      year: selectedDate.getFullYear(),
+      timestamp: editingId ? list.find(x => x.id === editingId).timestamp : Date.now() 
     };
 
-    push(ref(db, `users/${user}/transactions`), tData);
-    e.target.reset();
+    if (editingId) {
+      update(ref(db, `users/${user}/transactions/${editingId}`), tData);
+      setEditingId(null);
+    } else {
+      push(ref(db, `users/${user}/transactions`), tData);
+    }
+
+    setFormData({ ...formData, desc: '', val: '', perf: '', date: new Date().toISOString().split('T')[0] });
   };
 
-  // --- LOGICA DE RELATÓRIOS ---
+  const handleEdit = (t) => {
+    setTransType(t.type);
+    setEditingId(t.id);
+    setFormData({
+      desc: t.description,
+      val: t.amount,
+      cat: t.category,
+      acc: t.account,
+      toAcc: t.toAccount || 'carteira',
+      assetType: t.assetDetails?.type || 'ETF',
+      perf: t.assetDetails?.performance || '',
+      date: t.isoDate || new Date().toISOString().split('T')[0]
+    });
+    window.scrollTo({ top: 400, behavior: 'smooth' });
+  };
+
+  const getSortedList = () => {
+    let sorted = [...list];
+    if (sortOrder === 'entry') return sorted.reverse().slice(0, 15);
+    return sorted.sort((a, b) => new Date(b.isoDate || 0) - new Date(a.isoDate || 0)).slice(0, 15);
+  };
+
   const filteredList = list.filter(t => t.month === reportMonth && t.year === reportYear);
-  
-  // Agrupar tanto despesas como receitas para os relatórios
   const totalsByCat = filteredList.reduce((acc, t) => {
     if (t.type === 'expense' || t.type === 'income') {
       acc[t.category] = (acc[t.category] || 0) + t.amount;
@@ -241,7 +275,8 @@ export default function App() {
             ))}
           </div>
 
-          <div style={{ backgroundColor: 'white', padding: '30px', borderRadius: '35px', marginBottom: '35px' }}>
+          <div style={{ backgroundColor: 'white', padding: '30px', borderRadius: '35px', marginBottom: '35px', border: editingId ? '2px solid #007AFF' : 'none' }}>
+            <h4 style={{margin: '0 0 15px 0', fontWeight: '800'}}>{editingId ? '📝 Editar Registo' : '➕ Novo Registo'}</h4>
             <form onSubmit={handleTransactionSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
               <div style={{ display: 'flex', backgroundColor: '#F2F2F7', borderRadius: '18px', padding: '6px' }}>
                 {['expense', 'income', 'investimento', 'transfer'].map(t => (
@@ -250,26 +285,46 @@ export default function App() {
                   </button>
                 ))}
               </div>
-              <input name="desc" placeholder={content.placeholder} required style={{ width: '100%', boxSizing: 'border-box', padding: '18px', borderRadius: '18px', border: 'none', backgroundColor: '#F8F9FB' }} />
+              
+              <div style={{ display: 'flex', gap: '10px', alignItems: 'center', backgroundColor: '#F8F9FB', padding: '5px 15px', borderRadius: '18px' }}>
+                <span style={{fontSize: '13px', fontWeight: 'bold', color: '#8E8E93'}}>DATA:</span>
+                <input type="date" value={formData.date} onChange={e => setFormData({...formData, date: e.target.value})} style={{ border: 'none', background: 'none', padding: '12px', flex: 1, fontWeight: 'bold' }} />
+              </div>
+
+              <input value={formData.desc} onChange={e => setFormData({...formData, desc: e.target.value})} placeholder={content.placeholder} required style={{ width: '100%', boxSizing: 'border-box', padding: '18px', borderRadius: '18px', border: 'none', backgroundColor: '#F8F9FB' }} />
+              
               {transType === 'investimento' && (
                 <div style={{ display: 'flex', gap: '10px' }}>
-                  <select name="assetType" style={{ flex: 1, padding: '16px', borderRadius: '18px', border: 'none', backgroundColor: '#F8F9FB' }}>{ASSET_TYPES.map(t => <option key={t} value={t}>{t}</option>)}</select>
-                  <input name="perf" placeholder="Auto %" style={{ width: '80px', padding: '16px', borderRadius: '18px', border: 'none', backgroundColor: '#F8F9FB', textAlign: 'center' }} />
+                  <select value={formData.assetType} onChange={e => setFormData({...formData, assetType: e.target.value})} style={{ flex: 1, padding: '16px', borderRadius: '18px', border: 'none', backgroundColor: '#F8F9FB' }}>{ASSET_TYPES.map(t => <option key={t} value={t}>{t}</option>)}</select>
+                  <input value={formData.perf} onChange={e => setFormData({...formData, perf: e.target.value})} placeholder="Auto %" style={{ width: '80px', padding: '16px', borderRadius: '18px', border: 'none', backgroundColor: '#F8F9FB', textAlign: 'center' }} />
                 </div>
               )}
-              <input name="val" type="number" step="0.01" placeholder="0.00" required style={{ width: '100%', boxSizing: 'border-box', padding: '18px', borderRadius: '18px', border: 'none', backgroundColor: '#F8F9FB', fontSize: '22px', fontWeight: '900' }} />
+
+              <input value={formData.val} onChange={e => setFormData({...formData, val: e.target.value})} type="number" step="0.01" placeholder="0.00" required style={{ width: '100%', boxSizing: 'border-box', padding: '18px', borderRadius: '18px', border: 'none', backgroundColor: '#F8F9FB', fontSize: '22px', fontWeight: '900' }} />
+              
               <div style={{ display: 'flex', gap: '12px' }}>
-                <select name="acc" style={{ flex: 1, padding: '16px', borderRadius: '18px', border: 'none', backgroundColor: '#F8F9FB' }}>{Object.keys(settings.accounts || {}).map(k => <option key={k} value={k}>{settings.accounts[k].label}</option>)}</select>
-                <select name={transType === 'transfer' ? "toAcc" : "cat"} style={{ flex: 1, padding: '16px', borderRadius: '18px', border: 'none', backgroundColor: '#F8F9FB' }}>
+                <select value={formData.acc} onChange={e => setFormData({...formData, acc: e.target.value})} style={{ flex: 1, padding: '16px', borderRadius: '18px', border: 'none', backgroundColor: '#F8F9FB' }}>{Object.keys(settings.accounts || {}).map(k => <option key={k} value={k}>{settings.accounts[k].label}</option>)}</select>
+                <select value={transType === 'transfer' ? formData.toAcc : formData.cat} onChange={e => setFormData({...formData, [transType === 'transfer' ? 'toAcc' : 'cat']: e.target.value})} style={{ flex: 1, padding: '16px', borderRadius: '18px', border: 'none', backgroundColor: '#F8F9FB' }}>
                   {transType === 'transfer' ? Object.keys(settings.accounts || {}).map(k => <option key={k} value={k}>Para: {settings.accounts[k].label}</option>) : content.categories.map(k => <option key={k} value={k}>{CATEGORIES[k].icon} {CATEGORIES[k].label}</option>)}
                 </select>
               </div>
-              <button type="submit" style={{ padding: '20px', backgroundColor: content.color, color: 'white', border: 'none', borderRadius: '20px', fontWeight: '900' }}>Adicionar</button>
+
+              <div style={{display: 'flex', gap: '10px'}}>
+                <button type="submit" style={{ flex: 2, padding: '20px', backgroundColor: editingId ? '#007AFF' : content.color, color: 'white', border: 'none', borderRadius: '20px', fontWeight: '900' }}>{editingId ? 'Guardar Alteração' : 'Adicionar'}</button>
+                {editingId && <button type="button" onClick={() => {setEditingId(null); setFormData({...formData, desc: '', val: ''})}} style={{ flex: 1, backgroundColor: '#E5E5EA', borderRadius: '20px', border: 'none', fontWeight: 'bold'}}>Cancelar</button>}
+              </div>
             </form>
           </div>
 
-          <h3 style={{fontWeight: '900', marginBottom: '20px'}}>Atividade</h3>
-          {list.slice(-15).reverse().map(t => (
+          <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px'}}>
+            <h3 style={{fontWeight: '900', margin: 0}}>Atividade</h3>
+            <select value={sortOrder} onChange={e => setSortOrder(e.target.value)} style={{ border: 'none', backgroundColor: 'transparent', fontWeight: 'bold', color: '#007AFF', fontSize: '12px'}}>
+              <option value="entry">ORDEM: MAIS RECENTES</option>
+              <option value="date">ORDEM: DATA DO GASTO</option>
+            </select>
+          </div>
+
+          {getSortedList().map(t => (
             <div key={t.id} style={{ display: 'flex', alignItems: 'center', backgroundColor: 'white', padding: '18px 20px', borderRadius: '28px', marginBottom: '12px' }}>
               <div style={{ width: '50px', height: '50px', borderRadius: '16px', backgroundColor: '#F8F9FB', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px', marginRight: '15px' }}>{t.type === 'investimento' ? '📈' : (CATEGORIES[t.category]?.icon || '💰')}</div>
               <div style={{ flex: 1 }}>
@@ -280,7 +335,10 @@ export default function App() {
                 <p style={{ margin: 0, fontWeight: '800', color: (t.type === 'income' || t.type === 'investimento') ? '#34C759' : t.type === 'expense' ? '#FF3B30' : '#1C1C1E' }}>
                   {(t.type === 'income' || t.type === 'investimento') ? '+' : t.type === 'expense' ? '-' : ''}{formatValue(t.amount)}
                 </p>
-                <button onClick={() => { if(window.confirm('Eliminar?')) remove(ref(db, `users/${user}/transactions/${t.id}`)); }} style={{ border: 'none', background: 'none', fontSize: '14px', cursor: 'pointer' }}>🗑️</button>
+                <div style={{display: 'flex', gap: '8px', justifyContent: 'flex-end', marginTop: '5px'}}>
+                   <button onClick={() => handleEdit(t)} style={{ border: 'none', background: 'none', fontSize: '14px', cursor: 'pointer' }}>✏️</button>
+                   <button onClick={() => { if(window.confirm('Eliminar?')) remove(ref(db, `users/${user}/transactions/${t.id}`)); }} style={{ border: 'none', background: 'none', fontSize: '14px', cursor: 'pointer' }}>🗑️</button>
+                </div>
               </div>
             </div>
           ))}
@@ -290,7 +348,6 @@ export default function App() {
       {activeTab === 'reports' && (
         <div style={{ backgroundColor: 'white', padding: '30px', borderRadius: '35px' }}>
           <h3 style={{ fontWeight: '900', marginBottom: '25px' }}>Análise Mensal</h3>
-          
           <div style={{ display: 'flex', gap: '10px', marginBottom: '30px' }}>
             <select value={reportMonth} onChange={e => setReportMonth(parseInt(e.target.value))} style={{ flex: 1, padding: '12px', borderRadius: '15px', border: '1px solid #E5E5EA', fontWeight: 'bold' }}>
               {Array.from({length: 12}, (_, i) => <option key={i+1} value={i+1}>{new Date(0, i).toLocaleString('pt', {month: 'long'}).toUpperCase()}</option>)}
@@ -374,7 +431,6 @@ export default function App() {
         </div>
       )}
 
-      {/* NAVBAR FIXA NO FUNDO */}
       <div style={{ position: 'fixed', bottom: '20px', left: '50%', transform: 'translateX(-50%)', width: '90%', maxWidth: '400px', backgroundColor: 'rgba(255,255,255,0.95)', backdropFilter: 'blur(10px)', display: 'flex', justifyContent: 'space-around', padding: '15px 0', borderRadius: '25px', boxShadow: '0 10px 30px rgba(0,0,0,0.1)', border: '1px solid rgba(255,255,255,0.3)', zIndex: 1000 }}>
         <button onClick={() => {setActiveTab('home'); setSelectedDetail(null);}} style={{ background: 'none', border: 'none', fontSize: '26px', opacity: activeTab === 'home' ? 1 : 0.2 }}>🏠</button>
         <button onClick={() => {setActiveTab('reports'); setSelectedDetail(null);}} style={{ background: 'none', border: 'none', fontSize: '26px', opacity: activeTab === 'reports' ? 1 : 0.2 }}>📊</button>
