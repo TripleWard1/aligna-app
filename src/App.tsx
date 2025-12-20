@@ -904,7 +904,16 @@ const isLowBalance = totalBalance < (settings.lowBalanceLimit || 50);
 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px' }}>
             {inventory.map(item => (
               <div key={item.id} style={{ backgroundColor: 'white', borderRadius: '20px', overflow: 'hidden', boxShadow: '0 5px 15px rgba(0,0,0,0.03)' }}>
-                <div style={{ height: '100px', backgroundColor: '#F8F9FB', backgroundImage: `url(${item.photo})`, backgroundSize: 'cover', backgroundPosition: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <div style={{ 
+  height: '100px', 
+  backgroundColor: '#F8F9FB', 
+  // A imagem só carrega se a aba for a de inventário
+  backgroundImage: activeTab === 'inventory' ? `url(${item.photo})` : 'none', 
+  backgroundSize: 'cover',
+  display: 'flex', 
+  alignItems: 'center', 
+  justifyContent: 'center' 
+}}>
                   {!item.photo && <span style={{ fontSize: '30px' }}>📦</span>}
                 </div>
                 <div style={{ padding: '12px' }}>
