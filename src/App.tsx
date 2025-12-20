@@ -46,11 +46,31 @@ const AVATARS = ['👤', '👨‍💻', '👩‍💼', '🧥', '🎨', '🚀', '
 const ACC_ICONS = ['👛', '🏦', '🐖', '💳', '💎', '📊', '💰'];
 
 export default function App() {
-  const [invFilter, setInvFilter] = useState('TODOS'); // Controla o filtro do inventário
-  const [viewPhoto, setViewPhoto] = useState(null); // Armazena o URL da foto em ecrã total
+  // --- SISTEMA DE FEEDBACK (SOM E VIBRAÇÃO) ---
+  const [audio] = useState(new Audio('https://www.myinstants.com/media/sounds/coin.mp3'));
+
+  const triggerHaptic = (style = 'medium') => {
+    if (typeof window !== 'undefined' && window.navigator && window.navigator.vibrate) {
+      if (style === 'light') window.navigator.vibrate(10);
+      else if (style === 'medium') window.navigator.vibrate(30);
+      else if (style === 'error') window.navigator.vibrate([50, 30, 50]);
+    }
+  };
+
+  // --- ESTADOS DO INVENTÁRIO ---
+  const [invFilter, setInvFilter] = useState('TODOS'); 
+  const [viewPhoto, setViewPhoto] = useState(null); 
   const [inventory, setInventory] = useState([]);
   const [showAddInventory, setShowAddInventory] = useState(false);
-  const [invData, setInvData] = useState({ name: '', buyPrice: '', resellValue: '', photo: '' });
+  const [invData, setInvData] = useState({ 
+    name: '', 
+    buyPrice: '', 
+    resellValue: '', 
+    photo: '', 
+    category: 'OUTROS' 
+  });
+
+  // --- ESTADOS GERAIS ---
   const [user, setUser] = useState(localStorage.getItem('f_user') || null);
   const [list, setList] = useState([]);
   const [allUsers, setAllUsers] = useState({});
@@ -215,9 +235,14 @@ const isLowBalance = totalBalance < (settings.lowBalanceLimit || 50);
   const content = getDynamicContent();
   const handleInventorySubmit = (e) => {
     e.preventDefault();
+
+    // feedback tátil e sonoro ao guardar
+    if (typeof triggerHaptic === 'function') triggerHaptic('medium');
+    if (audio) audio.play().catch(err => console.log("Som aguarda interação"));
+
     const itemData = {
       name: invData.name,
-      // ACRESCENTA ESTA LINHA ABAIXO
+      // Garante que a categoria (tag) é gravada na base de dados
       category: invData.category || 'OUTROS', 
       buyPrice: parseFloat(invData.buyPrice) || 0,
       resellValue: parseFloat(invData.resellValue) || 0,
@@ -234,10 +259,10 @@ const isLowBalance = totalBalance < (settings.lowBalanceLimit || 50);
       push(ref(db, `users/${user}/inventory`), itemData);
     }
 
-    // ATUALIZA TAMBÉM A LIMPEZA (reset) PARA INCLUIR A CATEGORIA
+    // Limpa o formulário e reseta todos os campos, incluindo a categoria
     setInvData({ name: '', buyPrice: '', resellValue: '', photo: '', category: 'OUTROS' });
     setShowAddInventory(false);
-};
+  };
 
   const handleEditInventory = (item) => {
     setInvData({ ...item }); 
@@ -1189,12 +1214,62 @@ const isLowBalance = totalBalance < (settings.lowBalanceLimit || 50);
   </div>
 )}
 
-{/* Menu Inferior */}
-      <div style={{ position: 'fixed', bottom: '15px', left: '50%', transform: 'translateX(-50%)', width: '92%', maxWidth: '400px', backgroundColor: 'rgba(255,255,255,0.92)', backdropFilter: 'blur(15px)', WebkitBackdropFilter: 'blur(15px)', display: 'flex', justifyContent: 'space-around', padding: '12px 0', borderRadius: '25px', boxShadow: '0 8px 25px rgba(0,0,0,0.1)', border: '1px solid rgba(255,255,255,0.4)', zIndex: 1000 }}>
-  <button onClick={() => {setActiveTab('home'); setSelectedDetail(null);}} style={{ background: 'none', border: 'none', fontSize: '24px', opacity: activeTab === 'home' ? 1 : 0.2 }}>🏠</button>
-  <button onClick={() => {setActiveTab('reports'); setSelectedDetail(null);}} style={{ background: 'none', border: 'none', fontSize: '24px', opacity: activeTab === 'reports' ? 1 : 0.2 }}>📊</button>
-  <button onClick={() => {setActiveTab('inventory'); setSelectedDetail(null);}} style={{ background: 'none', border: 'none', fontSize: '24px', opacity: activeTab === 'inventory' ? 1 : 0.2 }}>📦</button>
-  <button onClick={() => {setActiveTab('settings'); setSelectedDetail(null);}} style={{ background: 'none', border: 'none', fontSize: '24px', opacity: activeTab === 'settings' ? 1 : 0.2 }}>⚙️</button>
+{/* Menu Inferior Dinâmico */}
+<div style={{ 
+  position: 'fixed', 
+  bottom: '15px', 
+  left: '50%', 
+  transform: 'translateX(-50%)', 
+  width: '92%', 
+  maxWidth: '400px', 
+  backgroundColor: 'rgba(255,255,255,0.92)', 
+  backdropFilter: 'blur(15px)', 
+  WebkitBackdropFilter: 'blur(15px)', 
+  display: 'flex', 
+  justifyContent: 'space-around', 
+  padding: '12px 0', 
+  borderRadius: '25px', 
+  boxShadow: '0 8px 25px rgba(0,0,0,0.1)', 
+  border: '1px solid rgba(255,255,255,0.4)', 
+  zIndex: 1000,
+  transition: 'all 0.4s ease'
+}}>
+  
+  {/* Botão HOME */}
+  <button onClick={() => { triggerHaptic('light'); setActiveTab('home'); setSelectedDetail(null); }} 
+    style={{ 
+      background: 'none', border: 'none', fontSize: '24px', transition: '0.3s',
+      transform: activeTab === 'home' ? 'scale(1.2)' : 'scale(1)',
+      opacity: activeTab === 'home' ? 1 : 0.3,
+      filter: activeTab === 'home' ? 'drop-shadow(0 0 8px rgba(0,122,255,0.5))' : 'none'
+    }}>🏠</button>
+
+  {/* Botão RELATÓRIOS */}
+  <button onClick={() => { triggerHaptic('light'); setActiveTab('reports'); setSelectedDetail(null); }} 
+    style={{ 
+      background: 'none', border: 'none', fontSize: '24px', transition: '0.3s',
+      transform: activeTab === 'reports' ? 'scale(1.2)' : 'scale(1)',
+      opacity: activeTab === 'reports' ? 1 : 0.3,
+      filter: activeTab === 'reports' ? 'drop-shadow(0 0 8px rgba(175,82,222,0.5))' : 'none'
+    }}>📊</button>
+
+  {/* Botão INVENTÁRIO */}
+  <button onClick={() => { triggerHaptic('light'); setActiveTab('inventory'); setSelectedDetail(null); }} 
+    style={{ 
+      background: 'none', border: 'none', fontSize: '24px', transition: '0.3s',
+      transform: activeTab === 'inventory' ? 'scale(1.2)' : 'scale(1)',
+      opacity: activeTab === 'inventory' ? 1 : 0.3,
+      filter: activeTab === 'inventory' ? 'drop-shadow(0 0 8px rgba(52,199,89,0.5))' : 'none'
+    }}>📦</button>
+
+  {/* Botão DEFINIÇÕES */}
+  <button onClick={() => { triggerHaptic('light'); setActiveTab('settings'); setSelectedDetail(null); }} 
+    style={{ 
+      background: 'none', border: 'none', fontSize: '24px', transition: '0.3s',
+      transform: activeTab === 'settings' ? 'scale(1.2)' : 'scale(1)',
+      opacity: activeTab === 'settings' ? 1 : 0.3,
+      filter: activeTab === 'settings' ? 'drop-shadow(0 0 8px rgba(142,142,147,0.5))' : 'none'
+    }}>⚙️</button>
 </div>
 
       <div style={{ height: '90px' }}></div>
