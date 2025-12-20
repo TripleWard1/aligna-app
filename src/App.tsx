@@ -217,6 +217,8 @@ const isLowBalance = totalBalance < (settings.lowBalanceLimit || 50);
     e.preventDefault();
     const itemData = {
       name: invData.name,
+      // ACRESCENTA ESTA LINHA ABAIXO
+      category: invData.category || 'OUTROS', 
       buyPrice: parseFloat(invData.buyPrice) || 0,
       resellValue: parseFloat(invData.resellValue) || 0,
       photo: invData.photo || '',
@@ -232,9 +234,10 @@ const isLowBalance = totalBalance < (settings.lowBalanceLimit || 50);
       push(ref(db, `users/${user}/inventory`), itemData);
     }
 
-    setInvData({ name: '', buyPrice: '', resellValue: '', photo: '' });
+    // ATUALIZA TAMBÉM A LIMPEZA (reset) PARA INCLUIR A CATEGORIA
+    setInvData({ name: '', buyPrice: '', resellValue: '', photo: '', category: 'OUTROS' });
     setShowAddInventory(false);
-  };
+};
 
   const handleEditInventory = (item) => {
     setInvData({ ...item }); 
