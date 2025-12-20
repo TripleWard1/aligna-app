@@ -657,26 +657,62 @@ const isLowBalance = totalBalance < (settings.lowBalanceLimit || 50);
         )}
       </>
     ) : (
-      /* VISTA DE DETALHE (HISTÓRICO) */
-      <div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '25px' }}>
-          <button onClick={() => setSelectedDetail(null)} style={{ background: '#F2F2F7', border: 'none', width: '35px', height: '35px', borderRadius: '50%', fontSize: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>←</button>
-          <div>
-            <h4 style={{ margin: 0, fontSize: '16px', fontWeight: '900' }}>{CATEGORIES[selectedDetail]?.label}</h4>
-            <p style={{ margin: 0, fontSize: '11px', color: '#8E8E93', fontWeight: 'bold' }}>EVOLUÇÃO DOS GASTOS</p>
-          </div>
-        </div>
-        <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', height: '140px', padding: '15px', backgroundColor: '#F8F9FB', borderRadius: '24px', gap: '10px' }}>
-          {getCategoryHistory(selectedDetail).map((data, idx) => (
-            <div key={idx} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', height: '100%' }}>
-              <div style={{ flex: 1, width: '100%', display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}>
-                <div style={{ width: '100%', maxWidth: '30px', height: `${(data.val / Math.max(...getCategoryHistory(selectedDetail).map(d => d.val))) * 100}%`, backgroundColor: CATEGORIES[selectedDetail]?.color, borderRadius: '6px' }}></div>
-              </div>
-              <span style={{ fontSize: '8px', fontWeight: '900', marginTop: '8px' }}>{data.date}</span>
-            </div>
-          ))}
-        </div>
-      </div>
+     /* VISTA DE DETALHE (HISTÓRICO) */
+     <div>
+     <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '25px' }}>
+       <button onClick={() => setSelectedDetail(null)} style={{ background: '#F2F2F7', border: 'none', width: '35px', height: '35px', borderRadius: '50%', fontSize: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>←</button>
+       <div>
+         <h4 style={{ margin: 0, fontSize: '16px', fontWeight: '900' }}>{CATEGORIES[selectedDetail]?.label}</h4>
+         <p style={{ margin: 0, fontSize: '11px', color: '#8E8E93', fontWeight: 'bold' }}>DETALHE E EVOLUÇÃO</p>
+       </div>
+     </div>
+
+     {/* Gráfico com Valores sobre as barras */}
+     <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', height: '160px', padding: '20px 15px 15px 15px', backgroundColor: '#F8F9FB', borderRadius: '24px', gap: '10px', marginBottom: '25px' }}>
+       {getCategoryHistory(selectedDetail).map((data, idx) => {
+         const maxVal = Math.max(...getCategoryHistory(selectedDetail).map(d => d.val));
+         return (
+           <div key={idx} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', height: '100%' }}>
+             <span style={{ fontSize: '9px', fontWeight: '900', color: CATEGORIES[selectedDetail]?.color, marginBottom: '5px' }}>
+               {data.val.toFixed(0)}€
+             </span>
+             <div style={{ flex: 1, width: '100%', display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}>
+               <div style={{ 
+                 width: '100%', 
+                 maxWidth: '30px', 
+                 height: `${(data.val / (maxVal || 1)) * 100}%`, 
+                 backgroundColor: CATEGORIES[selectedDetail]?.color, 
+                 borderRadius: '6px',
+                 transition: 'height 0.3s ease'
+               }}></div>
+             </div>
+             <span style={{ fontSize: '8px', fontWeight: '900', marginTop: '8px', color: '#8E8E93' }}>{data.date}</span>
+           </div>
+         );
+       })}
+     </div>
+
+     {/* Lista de Movimentos deste Mês para esta Categoria */}
+     <p style={{ fontSize: '11px', fontWeight: '800', color: '#8E8E93', marginBottom: '15px' }}>MOVIMENTOS DE {new Date(0, reportMonth-1).toLocaleString('pt', {month: 'long'}).toUpperCase()}</p>
+     <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+       {filteredList
+         .filter(t => t.category === selectedDetail && t.type === 'expense')
+         .sort((a, b) => b.timestamp - a.timestamp)
+         .map(t => (
+           <div key={t.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 15px', backgroundColor: '#F2F2F7', borderRadius: '18px' }}>
+             <div style={{ flex: 1 }}>
+               <p style={{ margin: 0, fontWeight: '700', fontSize: '13px' }}>{t.description}</p>
+               <p style={{ margin: 0, color: '#8E8E93', fontSize: '10px' }}>{t.date} • {settings.accounts[t.account]?.label}</p>
+             </div>
+             <strong style={{ fontSize: '14px', color: '#FF3B30' }}>-{t.amount.toFixed(2)}€</strong>
+           </div>
+         ))
+       }
+       {filteredList.filter(t => t.category === selectedDetail && t.type === 'expense').length === 0 && (
+         <p style={{ textAlign: 'center', fontSize: '12px', color: '#AEAEB2', padding: '20px' }}>Sem registos neste período.</p>
+       )}
+     </div>
+   </div>
     )}
   </div>
 )}
