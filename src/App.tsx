@@ -213,15 +213,31 @@ const isLowBalance = totalBalance < (settings.lowBalanceLimit || 50);
   const content = getDynamicContent();
   const handleInventorySubmit = (e) => {
     e.preventDefault();
-    const newItem = {
-      ...invData,
+    const itemData = {
+      name: invData.name,
       buyPrice: parseFloat(invData.buyPrice) || 0,
       resellValue: parseFloat(invData.resellValue) || 0,
-      timestamp: Date.now()
+      photo: invData.photo || '',
+      timestamp: invData.timestamp || Date.now(),
+      lastUpdate: Date.now() 
     };
-    push(ref(db, `users/${user}/inventory`), newItem);
+
+    if (invData.id) {
+      // Se tiver ID, atualiza o item existente
+      update(ref(db, `users/${user}/inventory/${invData.id}`), itemData);
+    } else {
+      // Se não tiver, cria um novo
+      push(ref(db, `users/${user}/inventory`), itemData);
+    }
+
     setInvData({ name: '', buyPrice: '', resellValue: '', photo: '' });
     setShowAddInventory(false);
+  };
+
+  const handleEditInventory = (item) => {
+    setInvData({ ...item }); 
+    setShowAddInventory(true);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handlePhotoChange = (e) => {
@@ -232,6 +248,7 @@ const isLowBalance = totalBalance < (settings.lowBalanceLimit || 50);
       reader.readAsDataURL(file);
     }
   };
+
   const handleTransactionSubmit = async (e) => {
     e.preventDefault();
     let autoPerformance = formData.perf || "0";
@@ -259,6 +276,8 @@ const isLowBalance = totalBalance < (settings.lowBalanceLimit || 50);
       year: selectedDate.getFullYear(),
       timestamp: editingId ? list.find(x => x.id === editingId).timestamp : Date.now() 
     };
+
+    // A partir daqui continua com o resto do seu código original (set, push, etc)
 
     if (editingId) {
       update(ref(db, `users/${user}/transactions/${editingId}`), tData);
@@ -839,6 +858,7 @@ const isLowBalance = totalBalance < (settings.lowBalanceLimit || 50);
                   <p style={{ margin: '0 0 5px 0', fontWeight: '800', fontSize: '12px', height: '32px', overflow: 'hidden' }}>{item.name}</p>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <span style={{ fontSize: '10px', fontWeight: '700', color: '#34C759' }}>{item.resellValue}€</span>
+                    <button onClick={() => handleEditInventory(item)} style={{ border: 'none', background: 'none', fontSize: '14px', cursor: 'pointer' }}>✏️</button>
                     <button onClick={() => remove(ref(db, `users/${user}/inventory/${item.id}`))} style={{ border: 'none', background: 'none', fontSize: '12px' }}>🗑️</button>
                   </div>
                 </div>
