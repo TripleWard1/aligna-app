@@ -625,7 +625,7 @@ const isLowBalance = totalBalance < (settings.lowBalanceLimit || 50);
       )}
 
 {activeTab === 'reports' && (
-  <div style={{ backgroundColor: 'white', padding: '20px', borderRadius: '30px', boxSizing: 'border-box' }}>
+  <div style={{ backgroundColor: 'white', padding: '20px', borderRadius: '30px' }}>
     <h3 style={{ fontWeight: '900', marginBottom: '20px', fontSize: '18px' }}>Análise Mensal</h3>
     
     <div style={{ display: 'flex', gap: '8px', marginBottom: '20px' }}>
@@ -828,6 +828,7 @@ const isLowBalance = totalBalance < (settings.lowBalanceLimit || 50);
         </div>
       )}
       {activeTab === 'inventory' && (
+        
         <div style={{ paddingBottom: '20px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
             <h3 style={{ fontWeight: '900', margin: 0, fontSize: '18px' }}>📦 Inventário</h3>
@@ -863,7 +864,7 @@ const isLowBalance = totalBalance < (settings.lowBalanceLimit || 50);
             </form>
           )}
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px' }}>
+<div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px' }}>
             {inventory.map(item => (
               <div key={item.id} style={{ backgroundColor: 'white', borderRadius: '20px', overflow: 'hidden', boxShadow: '0 5px 15px rgba(0,0,0,0.03)' }}>
                 <div style={{ height: '100px', backgroundColor: '#F8F9FB', backgroundImage: `url(${item.photo})`, backgroundSize: 'cover', backgroundPosition: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -871,15 +872,10 @@ const isLowBalance = totalBalance < (settings.lowBalanceLimit || 50);
                 </div>
                 <div style={{ padding: '12px' }}>
                   <p style={{ margin: '0 0 5px 0', fontWeight: '800', fontSize: '12px', height: '32px', overflow: 'hidden' }}>{item.name}</p>
-                  <p style={{ 
-    margin: '0 0 8px 0', 
-    fontSize: '9px', 
-    color: formatDateInfo(item.lastUpdate || item.timestamp).color, 
-    fontWeight: '600' 
-  }}>
-    {item.lastUpdate ? `EDITADO EM: ` : `CRIADO EM: `}
-    {formatDateInfo(item.lastUpdate || item.timestamp).text}
-  </p>
+                  <p style={{ margin: '0 0 8px 0', fontSize: '9px', color: formatDateInfo(item.lastUpdate || item.timestamp).color, fontWeight: '600' }}>
+                    {item.lastUpdate ? `EDITADO EM: ` : `CRIADO EM: `}
+                    {formatDateInfo(item.lastUpdate || item.timestamp).text}
+                  </p>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <span style={{ fontSize: '10px', fontWeight: '700', color: '#34C759' }}>{item.resellValue}€</span>
                     <button onClick={() => handleEditInventory(item)} style={{ border: 'none', background: 'none', fontSize: '14px', cursor: 'pointer' }}>✏️</button>
