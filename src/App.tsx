@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { db } from './firebase'; 
 import { ref, push, onValue, set, remove, update, get } from "firebase/database";
 
+
 const TWELVE_DATA_KEY = "49563e179ee146c5a53279200c654f29";
 
 // Objeto CATEGORIES atualizado no seu Código Principal
@@ -45,6 +46,9 @@ const AVATARS = ['👤', '👨‍💻', '👩‍💼', '🧥', '🎨', '🚀', '
 const ACC_ICONS = ['👛', '🏦', '🐖', '💳', '💎', '📊', '💰'];
 
 export default function App() {
+  const [inventory, setInventory] = useState([]);
+  const [showAddInventory, setShowAddInventory] = useState(false);
+  const [invData, setInvData] = useState({ name: '', buyPrice: '', resellValue: '', photo: '' });
   const [user, setUser] = useState(localStorage.getItem('f_user') || null);
   const [list, setList] = useState([]);
   const [allUsers, setAllUsers] = useState({});
@@ -92,6 +96,10 @@ export default function App() {
       onValue(ref(db, `users/${user}/transactions`), (snap) => {
         const data = snap.val();
         setList(data ? Object.keys(data).map(id => ({ ...data[id], id })) : []);
+        onValue(ref(db, `users/${user}/inventory`), (snap) => {
+          const data = snap.val();
+          setInventory(data ? Object.keys(data).map(id => ({ ...data[id], id })) : []);
+        });
       });
     }
   }, [user]);
@@ -203,7 +211,27 @@ const isLowBalance = totalBalance < (settings.lowBalanceLimit || 50);
   };
 
   const content = getDynamicContent();
+  const handleInventorySubmit = (e) => {
+    e.preventDefault();
+    const newItem = {
+      ...invData,
+      buyPrice: parseFloat(invData.buyPrice) || 0,
+      resellValue: parseFloat(invData.resellValue) || 0,
+      timestamp: Date.now()
+    };
+    push(ref(db, `users/${user}/inventory`), newItem);
+    setInvData({ name: '', buyPrice: '', resellValue: '', photo: '' });
+    setShowAddInventory(false);
+  };
 
+  const handlePhotoChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => setInvData({ ...invData, photo: reader.result });
+      reader.readAsDataURL(file);
+    }
+  };
   const handleTransactionSubmit = async (e) => {
     e.preventDefault();
     let autoPerformance = formData.perf || "0";
@@ -413,7 +441,7 @@ const isLowBalance = totalBalance < (settings.lowBalanceLimit || 50);
                 {loginMode === 'manual' ? 'Entrar' : 'Criar Perfil'}
               </button>
               <button onClick={() => setLoginMode('profiles')} style={{ width: '100%', background: 'none', border: 'none', color: '#8E8E93', fontSize: '14px' }}>Voltar</button>
-            </div>
+              </div>
           </div>
         )}
       </div>
@@ -427,7 +455,7 @@ const isLowBalance = totalBalance < (settings.lowBalanceLimit || 50);
       <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px' }}>
         <div style={{ width: '50px', height: '50px', borderRadius: '15px', backgroundColor: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '28px', boxShadow: '0 5px 15px rgba(0,0,0,0.05)' }}>{settings.avatar}</div>
         <div>
-          <h2 style={{ fontSize: '18px', margin: 0, fontWeight: '900' }}>{user.toUpperCase()}</h2>
+          <h2 style={{ fontSize: '18px', margin: 0, fontWeight: '900' }}>{user ? user.toUpperCase() : 'UTILIZADOR'}</h2>
           <p style={{margin: 0, fontSize: '11px', color: (totalBalance < settings.lowBalanceLimit ? '#FF3B30' : '#34C759'), fontWeight: '700'}}>
             ● {totalBalance < settings.lowBalanceLimit ? 'Saldo Baixo!' : 'Online'}
           </p>
@@ -765,13 +793,68 @@ const isLowBalance = totalBalance < (settings.lowBalanceLimit || 50);
           <button onClick={() => { localStorage.removeItem('f_user'); window.location.reload(); }} style={{ width: '100%', padding: '15px', color: '#FF3B30', border: 'none', background: 'none', fontWeight: '800', marginTop: '15px', fontSize: '14px' }}>Sair da Conta</button>
         </div>
       )}
+      {activeTab === 'inventory' && (
+        <div style={{ paddingBottom: '20px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+            <h3 style={{ fontWeight: '900', margin: 0, fontSize: '18px' }}>📦 Inventário</h3>
+            <button onClick={() => setShowAddInventory(!showAddInventory)} style={{ backgroundColor: '#007AFF', color: 'white', border: 'none', borderRadius: '12px', padding: '8px 15px', fontWeight: '800', fontSize: '12px' }}>
+              {showAddInventory ? 'Fechar' : '+ Novo Item'}
+            </button>
+          </div>
+
+          {/* Resumo de Valor do Inventário */}
+          <div style={{ backgroundColor: '#1C1C1E', color: 'white', padding: '20px', borderRadius: '25px', marginBottom: '20px', display: 'flex', justifyContent: 'space-between' }}>
+            <div>
+              <p style={{ margin: 0, fontSize: '10px', opacity: 0.6 }}>INVESTIMENTO TOTAL</p>
+              <h4 style={{ margin: 0 }}>{inventory.reduce((acc, item) => acc + item.buyPrice, 0).toFixed(2)}€</h4>
+            </div>
+            <div style={{ textAlign: 'right' }}>
+              <p style={{ margin: 0, fontSize: '10px', opacity: 0.6, color: '#34C759' }}>VALOR DE REVENDA</p>
+              <h4 style={{ margin: 0, color: '#34C759' }}>{inventory.reduce((acc, item) => acc + item.resellValue, 0).toFixed(2)}€</h4>
+            </div>
+          </div>
+
+          {showAddInventory && (
+            <form onSubmit={handleInventorySubmit} style={{ backgroundColor: 'white', padding: '20px', borderRadius: '25px', marginBottom: '20px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              <input placeholder="Nome do Item (ex: GameBoy DMG-01)" value={invData.name} onChange={e => setInvData({...invData, name: e.target.value})} required style={{ padding: '12px', borderRadius: '12px', border: 'none', backgroundColor: '#F2F2F7' }} />
+              <div style={{ display: 'flex', gap: '10px' }}>
+                <input type="number" placeholder="Preço Compra" value={invData.buyPrice} onChange={e => setInvData({...invData, buyPrice: e.target.value})} style={{ flex: 1, padding: '12px', borderRadius: '12px', border: 'none', backgroundColor: '#F2F2F7' }} />
+                <input type="number" placeholder="Valor Revenda" value={invData.resellValue} onChange={e => setInvData({...invData, resellValue: e.target.value})} style={{ flex: 1, padding: '12px', borderRadius: '12px', border: 'none', backgroundColor: '#F2F2F7' }} />
+              </div>
+              <label style={{ backgroundColor: '#F2F2F7', padding: '12px', borderRadius: '12px', textAlign: 'center', cursor: 'pointer', fontSize: '13px', fontWeight: '700' }}>
+                {invData.photo ? '✅ Foto Carregada' : '📷 Adicionar Foto'}
+                <input type="file" accept="image/*" onChange={handlePhotoChange} style={{ display: 'none' }} />
+              </label>
+              <button type="submit" style={{ backgroundColor: '#34C759', color: 'white', border: 'none', padding: '15px', borderRadius: '15px', fontWeight: '900' }}>Adicionar ao Inventário</button>
+            </form>
+          )}
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px' }}>
+            {inventory.map(item => (
+              <div key={item.id} style={{ backgroundColor: 'white', borderRadius: '20px', overflow: 'hidden', boxShadow: '0 5px 15px rgba(0,0,0,0.03)' }}>
+                <div style={{ height: '100px', backgroundColor: '#F8F9FB', backgroundImage: `url(${item.photo})`, backgroundSize: 'cover', backgroundPosition: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  {!item.photo && <span style={{ fontSize: '30px' }}>📦</span>}
+                </div>
+                <div style={{ padding: '12px' }}>
+                  <p style={{ margin: '0 0 5px 0', fontWeight: '800', fontSize: '12px', height: '32px', overflow: 'hidden' }}>{item.name}</p>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ fontSize: '10px', fontWeight: '700', color: '#34C759' }}>{item.resellValue}€</span>
+                    <button onClick={() => remove(ref(db, `users/${user}/inventory/${item.id}`))} style={{ border: 'none', background: 'none', fontSize: '12px' }}>🗑️</button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Menu Inferior */}
       <div style={{ position: 'fixed', bottom: '15px', left: '50%', transform: 'translateX(-50%)', width: '92%', maxWidth: '400px', backgroundColor: 'rgba(255,255,255,0.92)', backdropFilter: 'blur(15px)', WebkitBackdropFilter: 'blur(15px)', display: 'flex', justifyContent: 'space-around', padding: '12px 0', borderRadius: '25px', boxShadow: '0 8px 25px rgba(0,0,0,0.1)', border: '1px solid rgba(255,255,255,0.4)', zIndex: 1000 }}>
-        <button onClick={() => {setActiveTab('home'); setSelectedDetail(null);}} style={{ background: 'none', border: 'none', fontSize: '24px', opacity: activeTab === 'home' ? 1 : 0.2, transition: 'opacity 0.2s' }}>🏠</button>
-        <button onClick={() => {setActiveTab('reports'); setSelectedDetail(null);}} style={{ background: 'none', border: 'none', fontSize: '24px', opacity: activeTab === 'reports' ? 1 : 0.2, transition: 'opacity 0.2s' }}>📊</button>
-        <button onClick={() => {setActiveTab('settings'); setSelectedDetail(null);}} style={{ background: 'none', border: 'none', fontSize: '24px', opacity: activeTab === 'settings' ? 1 : 0.2, transition: 'opacity 0.2s' }}>⚙️</button>
-      </div>
+  <button onClick={() => {setActiveTab('home'); setSelectedDetail(null);}} style={{ background: 'none', border: 'none', fontSize: '24px', opacity: activeTab === 'home' ? 1 : 0.2 }}>🏠</button>
+  <button onClick={() => {setActiveTab('reports'); setSelectedDetail(null);}} style={{ background: 'none', border: 'none', fontSize: '24px', opacity: activeTab === 'reports' ? 1 : 0.2 }}>📊</button>
+  <button onClick={() => {setActiveTab('inventory'); setSelectedDetail(null);}} style={{ background: 'none', border: 'none', fontSize: '24px', opacity: activeTab === 'inventory' ? 1 : 0.2 }}>📦</button>
+  <button onClick={() => {setActiveTab('settings'); setSelectedDetail(null);}} style={{ background: 'none', border: 'none', fontSize: '24px', opacity: activeTab === 'settings' ? 1 : 0.2 }}>⚙️</button>
+</div>
 
       <div style={{ height: '90px' }}></div>
       <footer style={{ textAlign: 'center', paddingBottom: '30px' }}>
