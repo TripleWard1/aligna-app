@@ -956,7 +956,7 @@ const isLowBalance = totalBalance < (settings.lowBalanceLimit || 50);
     minHeight: '100vh',
     position: 'relative',
     // Configuração do Fundo com a imagem da pasta public
-    backgroundImage: `linear-gradient(rgba(255, 255, 255, 0.88), rgba(255, 255, 255, 0.99)), url('/bg_inv.png')`,
+    backgroundImage: `linear-gradient(rgba(255, 255, 255, 0.88), rgba(255, 255, 255, 0.10)), url('/bg_inv.png')`,
     backgroundSize: '500px', // Ajusta o tamanho dos logos ao teu gosto
     backgroundAttachment: 'fixed',
     backgroundRepeat: 'repeat',
