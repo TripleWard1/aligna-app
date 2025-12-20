@@ -634,19 +634,95 @@ const isLowBalance = totalBalance < (settings.lowBalanceLimit || 50);
             const isGain = t.type === 'income' || t.type === 'investimento';
             const isLoss = t.type === 'expense';
             return (
-              <div key={t.id} style={{ display: 'flex', alignItems: 'center', backgroundColor: 'white', padding: '12px 15px', borderRadius: '22px', marginBottom: '10px' }}>
-                <div style={{ width: '40px', height: '40px', borderRadius: '12px', backgroundColor: '#F8F9FB', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px', marginRight: '12px' }}>{t.type === 'investimento' ? '📈' : (CATEGORIES[t.category]?.icon || '💰')}</div>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <p style={{ margin: 0, fontWeight: '700', fontSize: '13px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{t.description}</p>
-                  <p style={{ margin: 0, color: '#AEAEB2', fontSize: '10px' }}>{t.date} • {settings.accounts[t.account]?.label}</p>
+              <div key={t.id} style={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                backgroundColor: 'white', 
+                padding: '14px 16px', 
+                borderRadius: '24px', 
+                marginBottom: '12px',
+                boxShadow: '0 4px 12px rgba(0,0,0,0.03)',
+                border: '1px solid rgba(0,0,0,0.01)'
+              }}>
+                {/* Ícone com Fundo Suave */}
+                <div style={{ 
+                  width: '44px', 
+                  height: '44px', 
+                  borderRadius: '14px', 
+                  backgroundColor: '#F8F9FB', 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center', 
+                  fontSize: '22px', 
+                  marginRight: '14px',
+                  boxShadow: 'inset 0 0 0 1px rgba(0,0,0,0.02)'
+                }}>
+                  {t.type === 'investimento' ? '📈' : (CATEGORIES[t.category]?.icon || '💰')}
                 </div>
-                <div style={{ textAlign: 'right', marginLeft: '10px' }}>
-                  <p style={{ margin: 0, fontWeight: '800', fontSize: '14px', color: isGain ? '#34C759' : isLoss ? '#FF3B30' : '#1C1C1E' }}>
+
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <p style={{ 
+                    margin: 0, 
+                    fontWeight: '800', 
+                    fontSize: '13px', 
+                    color: '#1C1C1E',
+                    whiteSpace: 'nowrap', 
+                    overflow: 'hidden', 
+                    textOverflow: 'ellipsis' 
+                  }}>
+                    {t.description}
+                  </p>
+                  <p style={{ margin: 0, color: '#AEAEB2', fontSize: '10px', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.2px' }}>
+                    {t.date} • {settings.accounts[t.account]?.label}
+                  </p>
+                </div>
+
+                <div style={{ textAlign: 'right', marginLeft: '12px' }}>
+                  <p style={{ 
+                    margin: 0, 
+                    fontWeight: '900', 
+                    fontSize: '15px', 
+                    color: isGain ? '#34C759' : isLoss ? '#FF3B30' : '#1C1C1E' 
+                  }}>
                     {isGain ? '+' : isLoss ? '-' : ''}{formatValue(t.amount)}
                   </p>
-                  <div style={{display: 'flex', gap: '12px', justifyContent: 'flex-end', marginTop: '4px'}}>
-                     <button onClick={() => handleEdit(t)} style={{ border: 'none', background: 'none', fontSize: '12px', padding: 0 }}>✏️</button>
-                     <button onClick={() => { if(window.confirm('Eliminar?')) remove(ref(db, `users/${user}/transactions/${t.id}`)); }} style={{ border: 'none', background: 'none', fontSize: '12px', padding: 0 }}>🗑️</button>
+                  
+                  {/* Botões de Ação Estilizados */}
+                  <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end', marginTop: '6px' }}>
+                     <button 
+                       onClick={() => handleEdit(t)} 
+                       style={{ 
+                         border: 'none', 
+                         background: '#F2F2F7', 
+                         width: '28px', 
+                         height: '28px', 
+                         borderRadius: '8px', 
+                         display: 'flex', 
+                         alignItems: 'center', 
+                         justifyContent: 'center', 
+                         fontSize: '12px',
+                         cursor: 'pointer' 
+                       }}
+                     >
+                       ✏️
+                     </button>
+                     <button 
+                       onClick={() => { if(window.confirm('Eliminar registo?')) remove(ref(db, `users/${user}/transactions/${t.id}`)); }} 
+                       style={{ 
+                         border: 'none', 
+                         background: '#FFF5F5', 
+                         width: '28px', 
+                         height: '28px', 
+                         borderRadius: '8px', 
+                         display: 'flex', 
+                         alignItems: 'center', 
+                         justifyContent: 'center', 
+                         fontSize: '11px',
+                         cursor: 'pointer' 
+                       }}
+                     >
+                       🗑️
+                     </button>
                   </div>
                 </div>
               </div>
