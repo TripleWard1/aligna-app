@@ -46,6 +46,7 @@ const AVATARS = ['👤', '👨‍💻', '👩‍💼', '🧥', '🎨', '🚀', '
 const ACC_ICONS = ['👛', '🏦', '🐖', '💳', '💎', '📊', '💰'];
 
 export default function App() {
+  const [invFilter, setInvFilter] = useState('TODOS'); // Controla o filtro do inventário
   const [viewPhoto, setViewPhoto] = useState(null); // Armazena o URL da foto em ecrã total
   const [inventory, setInventory] = useState([]);
   const [showAddInventory, setShowAddInventory] = useState(false);
@@ -996,44 +997,94 @@ const isLowBalance = totalBalance < (settings.lowBalanceLimit || 50);
       justifyContent: 'space-between',
       boxShadow: '0 10px 20px rgba(0,0,0,0.15)'
     }}>
-      <div>
-        <p style={{ margin: 0, fontSize: '9px', opacity: 0.5, fontWeight: '800', letterSpacing: '0.5px' }}>INVESTIMENTO TOTAL</p>
-        <h4 style={{ margin: '4px 0 0 0', fontSize: '20px', fontWeight: '900' }}>
-          {inventory.reduce((acc, item) => acc + (Number(item.buyPrice) || 0), 0).toFixed(2)}€
-        </h4>
-      </div>
-      <div style={{ textAlign: 'right' }}>
-        <p style={{ margin: 0, fontSize: '9px', opacity: 0.5, fontWeight: '800', letterSpacing: '0.5px', color: '#34C759' }}>VALOR DE REVENDA</p>
-        <h4 style={{ margin: '4px 0 0 0', fontSize: '20px', fontWeight: '900', color: '#34C759' }}>
-          {inventory.reduce((acc, item) => acc + (Number(item.resellValue) || 0), 0).toFixed(2)}€
-        </h4>
-      </div>
-    </div>
+      </div> {/* Este é o fecho do Resumo de Valor */}
 
-    {/* O resto do teu código (formulário e grid de itens) continua aqui abaixo, 
-        apenas garante que os elementos pai tenham position: 'relative' e zIndex: 1 
-        para ficarem acima do fundo. */}
+{/* --- PASSO 2: BARRA DE FILTROS --- */}
+<div style={{ 
+  display: 'flex', 
+  gap: '10px', 
+  overflowX: 'auto', 
+  paddingBottom: '15px', 
+  marginBottom: '10px',
+  WebkitOverflowScrolling: 'touch',
+  position: 'relative',
+  zIndex: 1
+}}>
+  {['TODOS', 'NINTENDO', 'SEGA', 'PLAYSTATION', 'GAMEBOY', 'OUTROS'].map(tag => (
+    <button
+      key={tag}
+      onClick={() => setInvFilter(tag)}
+      style={{
+        padding: '8px 16px',
+        borderRadius: '12px',
+        border: 'none',
+        backgroundColor: invFilter === tag ? '#007AFF' : 'white',
+        color: invFilter === tag ? 'white' : '#8E8E93',
+        fontWeight: '900',
+        fontSize: '10px',
+        letterSpacing: '0.5px',
+        whiteSpace: 'nowrap',
+        boxShadow: invFilter === tag ? '0 4px 10px rgba(0,122,255,0.3)' : '0 2px 5px rgba(0,0,0,0.05)',
+        transition: '0.2s'
+      }}
+    >
+      {tag}
+    </button>
+  ))}
+</div>
+{/* --- FIM DA BARRA DE FILTROS --- */}
 
-          {showAddInventory && (
+{/* O resto do teu código (formulário e grid de itens) continua aqui abaixo... */}
+
+{showAddInventory && (
             <form onSubmit={handleInventorySubmit} style={{ backgroundColor: 'white', padding: '24px', borderRadius: '28px', marginBottom: '25px', display: 'flex', flexDirection: 'column', gap: '12px', boxShadow: '0 8px 20px rgba(0,0,0,0.04)' }}>
               <h4 style={{ margin: '0 0 5px 0', fontWeight: '800', fontSize: '15px' }}>✨ Detalhes do Item</h4>
-              <input placeholder="Nome do Item (ex: GameBoy DMG-01)" value={invData.name} onChange={e => setInvData({...invData, name: e.target.value})} required style={{ padding: '14px', borderRadius: '14px', border: 'none', backgroundColor: '#F2F2F7', fontSize: '14px' }} />
+              
+              <input 
+                placeholder="Nome do Item (ex: GameBoy DMG-01)" 
+                value={invData.name} 
+                onChange={e => setInvData({...invData, name: e.target.value})} 
+                required 
+                style={{ padding: '14px', borderRadius: '14px', border: 'none', backgroundColor: '#F2F2F7', fontSize: '14px' }} 
+              />
+
+              {/* Seletor de Categoria/Tag */}
+              <select 
+                value={invData.category || 'OUTROS'} 
+                onChange={e => setInvData({...invData, category: e.target.value})} 
+                style={{ padding: '14px', borderRadius: '14px', border: 'none', backgroundColor: '#F2F2F7', fontSize: '14px', fontWeight: '800', color: '#1C1C1E', appearance: 'none' }}
+              >
+                <option value="OUTROS">SELECIONAR TAG (MARCA)</option>
+                <option value="NINTENDO">NINTENDO</option>
+                <option value="SEGA">SEGA</option>
+                <option value="PLAYSTATION">PLAYSTATION</option>
+                <option value="GAMEBOY">GAMEBOY</option>
+                <option value="OUTROS">OUTROS</option>
+              </select>
+
               <div style={{ display: 'flex', gap: '10px' }}>
                 <input type="number" placeholder="Compra €" value={invData.buyPrice} onChange={e => setInvData({...invData, buyPrice: e.target.value})} style={{ flex: 1, padding: '14px', borderRadius: '14px', border: 'none', backgroundColor: '#F2F2F7', fontSize: '14px' }} />
                 <input type="number" placeholder="Revenda €" value={invData.resellValue} onChange={e => setInvData({...invData, resellValue: e.target.value})} style={{ flex: 1, padding: '14px', borderRadius: '14px', border: 'none', backgroundColor: '#F2F2F7', fontSize: '14px' }} />
               </div>
+
               <label style={{ backgroundColor: '#F2F2F7', padding: '14px', borderRadius: '14px', textAlign: 'center', cursor: 'pointer', fontSize: '13px', fontWeight: '800', color: invData.photo ? '#34C759' : '#007AFF', transition: '0.2s' }}>
                 {invData.photo ? '✅ Foto Pronta' : '📷 Tirar / Carregar Foto'}
                 <input type="file" accept="image/*" onChange={handlePhotoChange} style={{ display: 'none' }} />
               </label>
+
               <button type="submit" style={{ backgroundColor: '#007AFF', color: 'white', border: 'none', padding: '16px', borderRadius: '16px', fontWeight: '900', fontSize: '15px', marginTop: '5px' }}>
                 {invData.id ? 'Atualizar Item' : 'Guardar no Inventário'}
               </button>
             </form>
           )}
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '15px' }}>
-            {inventory.map(item => (
+<div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '15px' }}>
+  {inventory
+    .filter(item => {
+      if (!invFilter || invFilter === 'TODOS') return true;
+      return item.category === invFilter;
+    })
+    .map(item => (
               <div key={item.id} style={{ backgroundColor: 'white', borderRadius: '24px', overflow: 'hidden', boxShadow: '0 6px 18px rgba(0,0,0,0.04)', display: 'flex', flexDirection: 'column', border: '1px solid rgba(0,0,0,0.02)' }}>
                 <div style={{ 
                   height: '140px', 
