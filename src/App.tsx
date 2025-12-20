@@ -252,12 +252,43 @@ const isLowBalance = totalBalance < (settings.lowBalanceLimit || 50);
     return { text: dateStr, color };
   };
   
+  const compressImage = (base64Str, maxWidth = 400, maxHeight = 400) => {
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.src = base64Str;
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let width = img.width;
+        let height = img.height;
+  
+        if (width > height) {
+          if (width > maxWidth) {
+            height *= maxWidth / width;
+            width = maxWidth;
+          }
+        } else {
+          if (height > maxHeight) {
+            width *= maxHeight / height;
+            height = maxHeight;
+          }
+        }
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+        resolve(canvas.toDataURL('image/jpeg', 0.7)); // Comprime para 70% de qualidade
+      };
+    });
+  };
 
   const handlePhotoChange = (e) => {
     const file = e.target.files[0];
     if (file) {
       const reader = new FileReader();
-      reader.onloadend = () => setInvData({ ...invData, photo: reader.result });
+      reader.onloadend = async () => {
+        const compressed = await compressImage(reader.result);
+        setInvData({ ...invData, photo: compressed });
+      };
       reader.readAsDataURL(file);
     }
   };
@@ -828,11 +859,13 @@ const isLowBalance = totalBalance < (settings.lowBalanceLimit || 50);
         </div>
       )}
       {activeTab === 'inventory' && (
-        
         <div style={{ paddingBottom: '20px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
             <h3 style={{ fontWeight: '900', margin: 0, fontSize: '18px' }}>📦 Inventário</h3>
-            <button onClick={() => setShowAddInventory(!showAddInventory)} style={{ backgroundColor: '#007AFF', color: 'white', border: 'none', borderRadius: '12px', padding: '8px 15px', fontWeight: '800', fontSize: '12px' }}>
+            <button 
+              onClick={() => setShowAddInventory(!showAddInventory)} 
+              style={{ backgroundColor: '#007AFF', color: 'white', border: 'none', borderRadius: '12px', padding: '8px 15px', fontWeight: '800', fontSize: '12px' }}
+            >
               {showAddInventory ? 'Fechar' : '+ Novo Item'}
             </button>
           </div>
@@ -841,11 +874,15 @@ const isLowBalance = totalBalance < (settings.lowBalanceLimit || 50);
           <div style={{ backgroundColor: '#1C1C1E', color: 'white', padding: '20px', borderRadius: '25px', marginBottom: '20px', display: 'flex', justifyContent: 'space-between' }}>
             <div>
               <p style={{ margin: 0, fontSize: '10px', opacity: 0.6 }}>INVESTIMENTO TOTAL</p>
-              <h4 style={{ margin: 0 }}>{inventory.reduce((acc, item) => acc + item.buyPrice, 0).toFixed(2)}€</h4>
+              <h4 style={{ margin: 0 }}>
+                {inventory.reduce((acc, item) => acc + (Number(item.buyPrice) || 0), 0).toFixed(2)}€
+              </h4>
             </div>
             <div style={{ textAlign: 'right' }}>
               <p style={{ margin: 0, fontSize: '10px', opacity: 0.6, color: '#34C759' }}>VALOR DE REVENDA</p>
-              <h4 style={{ margin: 0, color: '#34C759' }}>{inventory.reduce((acc, item) => acc + item.resellValue, 0).toFixed(2)}€</h4>
+              <h4 style={{ margin: 0, color: '#34C759' }}>
+                {inventory.reduce((acc, item) => acc + (Number(item.resellValue) || 0), 0).toFixed(2)}€
+              </h4>
             </div>
           </div>
 
