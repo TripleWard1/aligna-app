@@ -908,33 +908,54 @@ const isLowBalance = totalBalance < (settings.lowBalanceLimit || 50);
   height: '100px', 
   backgroundColor: '#F8F9FB', 
   // A imagem só carrega se a aba for a de inventário
-  backgroundImage: activeTab === 'inventory' ? `url(${item.photo})` : 'none', 
-  backgroundSize: 'cover',
+  backgroundColor: '#F8F9FB',
   display: 'flex', 
   alignItems: 'center', 
-  justifyContent: 'center' 
+  justifyContent: 'center',
+  height: '120px',
+  overflow: 'hidden'
 }}>
-                  {!item.photo && <span style={{ fontSize: '30px' }}>📦</span>}
-                </div>
-                <div style={{ padding: '12px' }}>
-                  <p style={{ margin: '0 0 5px 0', fontWeight: '800', fontSize: '12px', height: '32px', overflow: 'hidden' }}>{item.name}</p>
-                  <p style={{ margin: '0 0 8px 0', fontSize: '9px', color: formatDateInfo(item.lastUpdate || item.timestamp).color, fontWeight: '600' }}>
-                    {item.lastUpdate ? `EDITADO EM: ` : `CRIADO EM: `}
-                    {formatDateInfo(item.lastUpdate || item.timestamp).text}
-                  </p>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ fontSize: '10px', fontWeight: '700', color: '#34C759' }}>{item.resellValue}€</span>
-                    <button onClick={() => handleEditInventory(item)} style={{ border: 'none', background: 'none', fontSize: '14px', cursor: 'pointer' }}>✏️</button>
-                    <button onClick={() => remove(ref(db, `users/${user}/inventory/${item.id}`))} style={{ border: 'none', background: 'none', fontSize: '12px' }}>🗑️</button>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
+  {item.photo && activeTab === 'inventory' ? (
+    <img 
+      src={item.photo} 
+      alt={item.name}
+      style={{ 
+        width: '100%', 
+        height: '100%', 
+        objectFit: 'contain' 
+      }} 
+    />
+  ) : (
+    <span style={{ fontSize: '30px' }}>📦</span>
+  )}
+</div>
 
-      {/* Menu Inferior */}
+<div style={{ padding: '12px' }}>
+  <p style={{ margin: '0 0 5px 0', fontWeight: '800', fontSize: '12px', height: '32px', overflow: 'hidden' }}>
+    {item.name}
+  </p>
+  <p style={{ 
+    margin: '0 0 8px 0', 
+    fontSize: '9px', 
+    color: formatDateInfo(item.lastUpdate || item.timestamp).color, 
+    fontWeight: '600' 
+  }}>
+    {item.lastUpdate ? `EDITADO EM: ` : `CRIADO EM: `}
+    {formatDateInfo(item.lastUpdate || item.timestamp).text}
+  </p>
+  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+    <span style={{ fontSize: '10px', fontWeight: '700', color: '#34C759' }}>{item.resellValue}€</span>
+    <button onClick={() => handleEditInventory(item)} style={{ border: 'none', background: 'none', fontSize: '14px', cursor: 'pointer' }}>✏️</button>
+    <button onClick={() => remove(ref(db, `users/${user}/inventory/${item.id}`))} style={{ border: 'none', background: 'none', fontSize: '12px' }}>🗑️</button>
+  </div>
+</div>
+</div>
+))}
+</div>
+</div>
+)}
+
+{/* Menu Inferior */}
       <div style={{ position: 'fixed', bottom: '15px', left: '50%', transform: 'translateX(-50%)', width: '92%', maxWidth: '400px', backgroundColor: 'rgba(255,255,255,0.92)', backdropFilter: 'blur(15px)', WebkitBackdropFilter: 'blur(15px)', display: 'flex', justifyContent: 'space-around', padding: '12px 0', borderRadius: '25px', boxShadow: '0 8px 25px rgba(0,0,0,0.1)', border: '1px solid rgba(255,255,255,0.4)', zIndex: 1000 }}>
   <button onClick={() => {setActiveTab('home'); setSelectedDetail(null);}} style={{ background: 'none', border: 'none', fontSize: '24px', opacity: activeTab === 'home' ? 1 : 0.2 }}>🏠</button>
   <button onClick={() => {setActiveTab('reports'); setSelectedDetail(null);}} style={{ background: 'none', border: 'none', fontSize: '24px', opacity: activeTab === 'reports' ? 1 : 0.2 }}>📊</button>
