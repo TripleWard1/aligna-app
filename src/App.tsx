@@ -732,14 +732,14 @@ const isLowBalance = totalBalance < (settings.lowBalanceLimit || 50);
       )}
 
 {activeTab === 'reports' && (
-  <div style={{ backgroundColor: 'white', padding: '20px', borderRadius: '30px' }}>
-    <h3 style={{ fontWeight: '900', marginBottom: '20px', fontSize: '18px' }}>Análise Mensal</h3>
+  <div style={{ backgroundColor: 'white', padding: '24px', borderRadius: '32px', boxShadow: '0 10px 30px rgba(0,0,0,0.04)' }}>
+    <h3 style={{ fontWeight: '900', marginBottom: '20px', fontSize: '20px', letterSpacing: '-0.5px' }}>Análise Mensal</h3>
     
-    <div style={{ display: 'flex', gap: '8px', marginBottom: '20px' }}>
+    <div style={{ display: 'flex', gap: '8px', marginBottom: '25px' }}>
       <select 
         value={reportMonth} 
         onChange={e => setReportMonth(parseInt(e.target.value))} 
-        style={{ flex: 1, padding: '12px', borderRadius: '12px', border: '1px solid #E5E5EA', fontWeight: 'bold', fontSize: '12px' }}
+        style={{ flex: 1, padding: '14px', borderRadius: '16px', border: 'none', backgroundColor: '#F2F2F7', fontWeight: '800', fontSize: '12px', color: '#1C1C1E' }}
       >
         <option value={0}>ANO COMPLETO</option>
         {Array.from({length: 12}, (_, i) => (
@@ -752,7 +752,7 @@ const isLowBalance = totalBalance < (settings.lowBalanceLimit || 50);
       <select 
         value={reportYear} 
         onChange={e => setReportYear(parseInt(e.target.value))} 
-        style={{ width: '100px', padding: '12px', borderRadius: '12px', border: '1px solid #E5E5EA', fontWeight: 'bold', fontSize: '12px' }}
+        style={{ width: '100px', padding: '14px', borderRadius: '16px', border: 'none', backgroundColor: '#F2F2F7', fontWeight: '800', fontSize: '12px', color: '#1C1C1E', textAlign: 'center' }}
       >
         {[...new Set([...list.map(t => Number(t.year || new Date(t.date).getFullYear())), new Date().getFullYear()])]
           .sort((a, b) => b - a)
@@ -763,62 +763,83 @@ const isLowBalance = totalBalance < (settings.lowBalanceLimit || 50);
 
     {!selectedDetail ? (
       <>
-        {/* GRÁFICO DONUT */}
+        {/* CARDS DE RESUMO (KPIs) */}
+        <div style={{ display: 'flex', gap: '12px', marginBottom: '30px' }}>
+          <div style={{ flex: 1, backgroundColor: '#F2F7F2', padding: '15px', borderRadius: '20px', border: '1px solid rgba(52, 199, 89, 0.1)' }}>
+            <p style={{ margin: 0, fontSize: '9px', fontWeight: '800', color: '#34C759', opacity: 0.8 }}>RECEITAS</p>
+            <p style={{ margin: '4px 0 0 0', fontSize: '16px', fontWeight: '900', color: '#1C1C1E' }}>+{monthlyIncome.toFixed(0)}€</p>
+          </div>
+          <div style={{ flex: 1, backgroundColor: '#FFF5F5', padding: '15px', borderRadius: '20px', border: '1px solid rgba(255, 59, 48, 0.1)' }}>
+            <p style={{ margin: 0, fontSize: '9px', fontWeight: '800', color: '#FF3B30', opacity: 0.8 }}>GASTOS</p>
+            <p style={{ margin: '4px 0 0 0', fontSize: '16px', fontWeight: '900', color: '#1C1C1E' }}>-{monthlyExpenses.toFixed(0)}€</p>
+          </div>
+        </div>
+
+        {/* GRÁFICO DONUT COM SOMBRA */}
         {monthlyExpenses > 0 && (
-          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginBottom: '30px', position: 'relative' }}>
-            <svg viewBox="0 0 36 36" style={{ width: '160px', height: '160px', transform: 'rotate(-90deg)' }}>
+          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginBottom: '35px', position: 'relative' }}>
+            <svg viewBox="0 0 36 36" style={{ width: '170px', height: '170px', transform: 'rotate(-90deg)', filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.06))' }}>
               {getDonutData().map((slice, i) => (
                 <circle
                   key={i}
                   cx="18" cy="18" r="15.915"
                   fill="transparent"
                   stroke={slice.color}
-                  strokeWidth="4"
+                  strokeWidth="3.8"
                   strokeDasharray={`${slice.percentage} ${100 - slice.percentage}`}
                   strokeDashoffset={-slice.offset}
+                  style={{ transition: 'stroke-dasharray 0.6s ease' }}
                 />
               ))}
             </svg>
             <div style={{ position: 'absolute', textAlign: 'center' }}>
-              <p style={{ margin: 0, fontSize: '9px', fontWeight: '800', color: '#8E8E93' }}>GASTOS</p>
-              <p style={{ margin: 0, fontSize: '18px', fontWeight: '900' }}>{monthlyExpenses.toFixed(0)}{settings.currency}</p>
+              <p style={{ margin: 0, fontSize: '10px', fontWeight: '800', color: '#AEAEB2', letterSpacing: '1px' }}>DESPESA</p>
+              <p style={{ margin: 0, fontSize: '22px', fontWeight: '900', color: '#1C1C1E' }}>{monthlyExpenses.toFixed(0)}€</p>
             </div>
           </div>
         )}
 
-        {/* LISTA DE GASTOS */}
+        {/* LISTA DE GASTOS COM BARRAS DINÂMICAS */}
         {Object.keys(totalsByCat).length > 0 && (
-          <p style={{ fontSize: '11px', fontWeight: '800', color: '#8E8E93', marginTop: '10px', marginBottom: '15px' }}>DETALHE DE GASTOS</p>
+          <p style={{ fontSize: '11px', fontWeight: '900', color: '#8E8E93', marginBottom: '15px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Distribuição de Custos</p>
         )}
         {Object.keys(totalsByCat).sort((a, b) => totalsByCat[b] - totalsByCat[a]).map(cat => (
-          <div key={cat} onClick={() => setSelectedDetail(cat)} style={{ marginBottom: '18px', cursor: 'pointer' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px', fontSize: '13px', fontWeight: '800' }}>
-              <span>{CATEGORIES[cat]?.icon} {CATEGORIES[cat]?.label}</span>
-              <span>{totalsByCat[cat].toFixed(2)}{settings.currency}</span>
+          <div key={cat} onClick={() => setSelectedDetail(cat)} style={{ marginBottom: '20px', cursor: 'pointer' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', alignItems: 'center' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <span style={{ fontSize: '18px', backgroundColor: '#F8F9FB', width: '36px', height: '36px', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  {CATEGORIES[cat]?.icon}
+                </span>
+                <span style={{ fontSize: '14px', fontWeight: '800', color: '#1C1C1E' }}>{CATEGORIES[cat]?.label}</span>
+              </div>
+              <div style={{ textAlign: 'right' }}>
+                <span style={{ display: 'block', fontSize: '14px', fontWeight: '900', color: '#1C1C1E' }}>{totalsByCat[cat].toFixed(2)}€</span>
+              </div>
             </div>
-            <div style={{ width: '100%', height: '8px', backgroundColor: '#F2F2F7', borderRadius: '10px', overflow: 'hidden' }}>
+            <div style={{ width: '100%', height: '6px', backgroundColor: '#F2F2F7', borderRadius: '10px', overflow: 'hidden' }}>
               <div style={{ 
                 width: `${Math.min((totalsByCat[cat] / (maxCategoryValue || 1)) * 100, 100)}%`, 
                 height: '100%', 
                 backgroundColor: CATEGORIES[cat]?.color, 
-                borderRadius: '10px' 
+                borderRadius: '10px',
+                transition: 'width 1s ease-in-out'
               }}></div>
             </div>
           </div>
         ))}
 
-        {/* RENDIMENTOS */}
+        {/* RENDIMENTOS COM NOVO DESIGN */}
         {Object.keys(totalsByCatIncome).length > 0 && (
           <>
-            <p style={{ fontSize: '11px', fontWeight: '800', color: '#8E8E93', marginTop: '30px', marginBottom: '10px' }}>FONTES DE RENDIMENTO</p>
+            <p style={{ fontSize: '11px', fontWeight: '900', color: '#8E8E93', marginTop: '30px', marginBottom: '15px', textTransform: 'uppercase' }}>Fontes de Rendimento</p>
             {Object.keys(totalsByCatIncome).map(cat => (
-              <div key={cat} style={{ padding: '15px', backgroundColor: '#F2F7F2', borderRadius: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  <span style={{ fontSize: '20px' }}>{CATEGORIES[cat]?.icon}</span>
-                  <span style={{ fontSize: '14px', fontWeight: '800' }}>{CATEGORIES[cat]?.label}</span>
+              <div key={cat} style={{ padding: '16px', backgroundColor: '#F2F7F2', borderRadius: '22px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', border: '1px solid rgba(52, 199, 89, 0.05)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <span style={{ fontSize: '22px' }}>{CATEGORIES[cat]?.icon}</span>
+                  <span style={{ fontSize: '15px', fontWeight: '800', color: '#1C1C1E' }}>{CATEGORIES[cat]?.label}</span>
                 </div>
-                <strong style={{ fontSize: '15px', color: '#34C759' }}>
-                  +{totalsByCatIncome[cat].toFixed(2)}{settings.currency}
+                <strong style={{ fontSize: '16px', color: '#34C759', fontWeight: '900' }}>
+                  +{totalsByCatIncome[cat].toFixed(0)}€
                 </strong>
               </div>
             ))}
@@ -826,62 +847,57 @@ const isLowBalance = totalBalance < (settings.lowBalanceLimit || 50);
         )}
       </>
     ) : (
-     /* VISTA DE DETALHE (HISTÓRICO) */
-     <div>
-     <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '25px' }}>
-       <button onClick={() => setSelectedDetail(null)} style={{ background: '#F2F2F7', border: 'none', width: '35px', height: '35px', borderRadius: '50%', fontSize: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>←</button>
-       <div>
-         <h4 style={{ margin: 0, fontSize: '16px', fontWeight: '900' }}>{CATEGORIES[selectedDetail]?.label}</h4>
-         <p style={{ margin: 0, fontSize: '11px', color: '#8E8E93', fontWeight: 'bold' }}>DETALHE E EVOLUÇÃO</p>
-       </div>
-     </div>
+      /* VISTA DE DETALHE (HISTÓRICO) */
+      <div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '25px' }}>
+          <button onClick={() => setSelectedDetail(null)} style={{ background: '#F2F2F7', border: 'none', width: '40px', height: '40px', borderRadius: '14px', fontSize: '18px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>←</button>
+          <div>
+            <h4 style={{ margin: 0, fontSize: '18px', fontWeight: '900' }}>{CATEGORIES[selectedDetail]?.label}</h4>
+            <p style={{ margin: 0, fontSize: '11px', color: '#AEAEB2', fontWeight: '800', textTransform: 'uppercase' }}>Evolução Mensal</p>
+          </div>
+        </div>
 
-     {/* Gráfico com Valores sobre as barras */}
-     <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', height: '160px', padding: '20px 15px 15px 15px', backgroundColor: '#F8F9FB', borderRadius: '24px', gap: '10px', marginBottom: '25px' }}>
-       {getCategoryHistory(selectedDetail).map((data, idx) => {
-         const maxVal = Math.max(...getCategoryHistory(selectedDetail).map(d => d.val));
-         return (
-           <div key={idx} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', height: '100%' }}>
-             <span style={{ fontSize: '9px', fontWeight: '900', color: CATEGORIES[selectedDetail]?.color, marginBottom: '5px' }}>
-               {data.val.toFixed(0)}€
-             </span>
-             <div style={{ flex: 1, width: '100%', display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}>
-               <div style={{ 
-                 width: '100%', 
-                 maxWidth: '30px', 
-                 height: `${(data.val / (maxVal || 1)) * 100}%`, 
-                 backgroundColor: CATEGORIES[selectedDetail]?.color, 
-                 borderRadius: '6px',
-                 transition: 'height 0.3s ease'
-               }}></div>
-             </div>
-             <span style={{ fontSize: '8px', fontWeight: '900', marginTop: '8px', color: '#8E8E93' }}>{data.date}</span>
-           </div>
-         );
-       })}
-     </div>
+        <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', height: '180px', padding: '25px 20px 15px 20px', backgroundColor: '#F8F9FB', borderRadius: '28px', gap: '12px', marginBottom: '30px' }}>
+          {getCategoryHistory(selectedDetail).map((data, idx) => {
+            const maxVal = Math.max(...getCategoryHistory(selectedDetail).map(d => d.val), 1);
+            return (
+              <div key={idx} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', height: '100%' }}>
+                <span style={{ fontSize: '9px', fontWeight: '900', color: CATEGORIES[selectedDetail]?.color, marginBottom: '6px' }}>
+                  {data.val.toFixed(0)}€
+                </span>
+                <div style={{ flex: 1, width: '100%', display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}>
+                  <div style={{ 
+                    width: '100%', 
+                    maxWidth: '32px', 
+                    height: `${(data.val / maxVal) * 100}%`, 
+                    backgroundColor: CATEGORIES[selectedDetail]?.color, 
+                    borderRadius: '8px 8px 4px 4px',
+                    transition: 'height 0.8s ease'
+                  }}></div>
+                </div>
+                <span style={{ fontSize: '8px', fontWeight: '800', marginTop: '10px', color: '#AEAEB2' }}>{data.date}</span>
+              </div>
+            );
+          })}
+        </div>
 
-     {/* Lista de Movimentos deste Mês para esta Categoria */}
-     <p style={{ fontSize: '11px', fontWeight: '800', color: '#8E8E93', marginBottom: '15px' }}>MOVIMENTOS DE {new Date(0, reportMonth-1).toLocaleString('pt', {month: 'long'}).toUpperCase()}</p>
-     <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-       {filteredList
-         .filter(t => t.category === selectedDetail && t.type === 'expense')
-         .sort((a, b) => b.timestamp - a.timestamp)
-         .map(t => (
-           <div key={t.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 15px', backgroundColor: '#F2F2F7', borderRadius: '18px' }}>
-             <div style={{ flex: 1 }}>
-               <p style={{ margin: 0, fontWeight: '700', fontSize: '13px' }}>{t.description}</p>
-               <p style={{ margin: 0, color: '#8E8E93', fontSize: '10px' }}>{t.date} • {settings.accounts[t.account]?.label}</p>
-             </div>
-             <strong style={{ fontSize: '14px', color: '#FF3B30' }}>-{t.amount.toFixed(2)}€</strong>
-           </div>
-         ))
-       }
-       {filteredList.filter(t => t.category === selectedDetail && t.type === 'expense').length === 0 && (
-         <p style={{ textAlign: 'center', fontSize: '12px', color: '#AEAEB2', padding: '20px' }}>Sem registos neste período.</p>
-       )}
-     </div>
-   </div>
+        <p style={{ fontSize: '11px', fontWeight: '900', color: '#8E8E93', marginBottom: '15px', textTransform: 'uppercase' }}>Movimentos de {new Date(0, reportMonth-1).toLocaleString('pt', {month: 'long'}).toUpperCase()}</p>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          {filteredList
+            .filter(t => t.category === selectedDetail && t.type === 'expense')
+            .sort((a, b) => b.timestamp - a.timestamp)
+            .map(t => (
+              <div key={t.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px', backgroundColor: '#F8F9FB', borderRadius: '20px' }}>
+                <div style={{ flex: 1 }}>
+                  <p style={{ margin: 0, fontWeight: '800', fontSize: '13px', color: '#1C1C1E' }}>{t.description}</p>
+                  <p style={{ margin: 0, color: '#AEAEB2', fontSize: '10px', fontWeight: '600' }}>{t.date} • {settings.accounts[t.account]?.label}</p>
+                </div>
+                <strong style={{ fontSize: '15px', fontWeight: '900', color: '#FF3B30' }}>-{t.amount.toFixed(2)}€</strong>
+              </div>
+            ))
+          }
+        </div>
+      </div>
     )}
   </div>
 )}
@@ -935,41 +951,67 @@ const isLowBalance = totalBalance < (settings.lowBalanceLimit || 50);
         </div>
       )}
       {activeTab === 'inventory' && (
-        <div style={{ paddingBottom: '20px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-            <h3 style={{ fontWeight: '900', margin: 0, fontSize: '18px' }}>📦 Inventário</h3>
-            <button 
-              onClick={() => setShowAddInventory(!showAddInventory)} 
-              style={{ backgroundColor: '#007AFF', color: 'white', border: 'none', borderRadius: '12px', padding: '8px 15px', fontWeight: '800', fontSize: '12px' }}
-            >
-              {showAddInventory ? 'Fechar' : '+ Novo Item'}
-            </button>
-          </div>
+  <div style={{ 
+    paddingBottom: '20px',
+    minHeight: '100vh',
+    position: 'relative',
+    // Configuração do Fundo com a imagem da pasta public
+    backgroundImage: `linear-gradient(rgba(255, 255, 255, 0.88), rgba(255, 255, 255, 0.99)), url('/bg_inv.png')`,
+    backgroundSize: '500px', // Ajusta o tamanho dos logos ao teu gosto
+    backgroundAttachment: 'fixed',
+    backgroundRepeat: 'repeat',
+    margin: '-20px -20px 0 -20px',
+    padding: '20px'
+  }}>
+    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', position: 'relative', zIndex: 1 }}>
+      <h3 style={{ fontWeight: '900', margin: 0, fontSize: '18px' }}>📦 Inventário</h3>
+      <button 
+        onClick={() => setShowAddInventory(!showAddInventory)} 
+        style={{ 
+          backgroundColor: '#007AFF', 
+          color: 'white', 
+          border: 'none', 
+          borderRadius: '12px', 
+          padding: '8px 15px', 
+          fontWeight: '800', 
+          fontSize: '12px',
+          boxShadow: '0 4px 12px rgba(0,122,255,0.3)'
+        }}
+      >
+        {showAddInventory ? 'Fechar' : '+ Novo Item'}
+      </button>
+    </div>
 
-          {/* Resumo de Valor do Inventário */}
-          <div style={{ 
-            background: 'linear-gradient(135deg, #1C1C1E 0%, #2C2C2E 100%)', 
-            color: 'white', 
-            padding: '24px', 
-            borderRadius: '28px', 
-            marginBottom: '25px', 
-            display: 'flex', 
-            justifyContent: 'space-between',
-            boxShadow: '0 10px 20px rgba(0,0,0,0.15)'
-          }}>
-            <div>
-              <p style={{ margin: 0, fontSize: '9px', opacity: 0.5, fontWeight: '800', letterSpacing: '0.5px' }}>INVESTIMENTO TOTAL</p>
-              <h4 style={{ margin: '4px 0 0 0', fontSize: '20px', fontWeight: '900' }}>
-                {inventory.reduce((acc, item) => acc + (Number(item.buyPrice) || 0), 0).toFixed(2)}€
-              </h4>
-            </div>
-            <div style={{ textAlign: 'right' }}>
-              <p style={{ margin: 0, fontSize: '9px', opacity: 0.5, fontWeight: '800', letterSpacing: '0.5px', color: '#34C759' }}>VALOR DE REVENDA</p>
-              <h4 style={{ margin: '4px 0 0 0', fontSize: '20px', fontWeight: '900', color: '#34C759' }}>
-                {inventory.reduce((acc, item) => acc + (Number(item.resellValue) || 0), 0).toFixed(2)}€
-              </h4>
-            </div>
-          </div>
+    {/* Resumo de Valor do Inventário */}
+    <div style={{ 
+      position: 'relative',
+      zIndex: 1,
+      background: 'linear-gradient(135deg, #1C1C1E 0%, #2C2C2E 100%)', 
+      color: 'white', 
+      padding: '24px', 
+      borderRadius: '28px', 
+      marginBottom: '25px', 
+      display: 'flex', 
+      justifyContent: 'space-between',
+      boxShadow: '0 10px 20px rgba(0,0,0,0.15)'
+    }}>
+      <div>
+        <p style={{ margin: 0, fontSize: '9px', opacity: 0.5, fontWeight: '800', letterSpacing: '0.5px' }}>INVESTIMENTO TOTAL</p>
+        <h4 style={{ margin: '4px 0 0 0', fontSize: '20px', fontWeight: '900' }}>
+          {inventory.reduce((acc, item) => acc + (Number(item.buyPrice) || 0), 0).toFixed(2)}€
+        </h4>
+      </div>
+      <div style={{ textAlign: 'right' }}>
+        <p style={{ margin: 0, fontSize: '9px', opacity: 0.5, fontWeight: '800', letterSpacing: '0.5px', color: '#34C759' }}>VALOR DE REVENDA</p>
+        <h4 style={{ margin: '4px 0 0 0', fontSize: '20px', fontWeight: '900', color: '#34C759' }}>
+          {inventory.reduce((acc, item) => acc + (Number(item.resellValue) || 0), 0).toFixed(2)}€
+        </h4>
+      </div>
+    </div>
+
+    {/* O resto do teu código (formulário e grid de itens) continua aqui abaixo, 
+        apenas garante que os elementos pai tenham position: 'relative' e zIndex: 1 
+        para ficarem acima do fundo. */}
 
           {showAddInventory && (
             <form onSubmit={handleInventorySubmit} style={{ backgroundColor: 'white', padding: '24px', borderRadius: '28px', marginBottom: '25px', display: 'flex', flexDirection: 'column', gap: '12px', boxShadow: '0 8px 20px rgba(0,0,0,0.04)' }}>
