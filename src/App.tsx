@@ -240,6 +240,19 @@ const isLowBalance = totalBalance < (settings.lowBalanceLimit || 50);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  const formatDateInfo = (ts) => {
+    if (!ts) return { text: "", color: "#8E8E93" };
+    
+    const diffInDays = Math.floor((Date.now() - ts) / (1000 * 60 * 60 * 24));
+    const dateStr = new Date(ts).toLocaleDateString('pt-PT', { day: '2-digit', month: '2-digit' });
+    
+    // Se não atualizas o preço há mais de 30 dias, fica Laranja (#FF9500)
+    const color = diffInDays > 30 ? '#FF9500' : '#8E8E93';
+    
+    return { text: dateStr, color };
+  };
+  
+
   const handlePhotoChange = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -304,6 +317,8 @@ const isLowBalance = totalBalance < (settings.lowBalanceLimit || 50);
     });
     window.scrollTo({ top: 150, behavior: 'smooth' });
   };
+
+  
 
   const getSortedList = () => {
     let sorted = [...list];
@@ -856,6 +871,15 @@ const isLowBalance = totalBalance < (settings.lowBalanceLimit || 50);
                 </div>
                 <div style={{ padding: '12px' }}>
                   <p style={{ margin: '0 0 5px 0', fontWeight: '800', fontSize: '12px', height: '32px', overflow: 'hidden' }}>{item.name}</p>
+                  <p style={{ 
+    margin: '0 0 8px 0', 
+    fontSize: '9px', 
+    color: formatDateInfo(item.lastUpdate || item.timestamp).color, 
+    fontWeight: '600' 
+  }}>
+    {item.lastUpdate ? `EDITADO EM: ` : `CRIADO EM: `}
+    {formatDateInfo(item.lastUpdate || item.timestamp).text}
+  </p>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <span style={{ fontSize: '10px', fontWeight: '700', color: '#34C759' }}>{item.resellValue}€</span>
                     <button onClick={() => handleEditInventory(item)} style={{ border: 'none', background: 'none', fontSize: '14px', cursor: 'pointer' }}>✏️</button>
