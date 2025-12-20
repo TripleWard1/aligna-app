@@ -871,87 +871,109 @@ const isLowBalance = totalBalance < (settings.lowBalanceLimit || 50);
           </div>
 
           {/* Resumo de Valor do Inventário */}
-          <div style={{ backgroundColor: '#1C1C1E', color: 'white', padding: '20px', borderRadius: '25px', marginBottom: '20px', display: 'flex', justifyContent: 'space-between' }}>
+          <div style={{ 
+            background: 'linear-gradient(135deg, #1C1C1E 0%, #2C2C2E 100%)', 
+            color: 'white', 
+            padding: '24px', 
+            borderRadius: '28px', 
+            marginBottom: '25px', 
+            display: 'flex', 
+            justifyContent: 'space-between',
+            boxShadow: '0 10px 20px rgba(0,0,0,0.15)'
+          }}>
             <div>
-              <p style={{ margin: 0, fontSize: '10px', opacity: 0.6 }}>INVESTIMENTO TOTAL</p>
-              <h4 style={{ margin: 0 }}>
+              <p style={{ margin: 0, fontSize: '9px', opacity: 0.5, fontWeight: '800', letterSpacing: '0.5px' }}>INVESTIMENTO TOTAL</p>
+              <h4 style={{ margin: '4px 0 0 0', fontSize: '20px', fontWeight: '900' }}>
                 {inventory.reduce((acc, item) => acc + (Number(item.buyPrice) || 0), 0).toFixed(2)}€
               </h4>
             </div>
             <div style={{ textAlign: 'right' }}>
-              <p style={{ margin: 0, fontSize: '10px', opacity: 0.6, color: '#34C759' }}>VALOR DE REVENDA</p>
-              <h4 style={{ margin: 0, color: '#34C759' }}>
+              <p style={{ margin: 0, fontSize: '9px', opacity: 0.5, fontWeight: '800', letterSpacing: '0.5px', color: '#34C759' }}>VALOR DE REVENDA</p>
+              <h4 style={{ margin: '4px 0 0 0', fontSize: '20px', fontWeight: '900', color: '#34C759' }}>
                 {inventory.reduce((acc, item) => acc + (Number(item.resellValue) || 0), 0).toFixed(2)}€
               </h4>
             </div>
           </div>
 
           {showAddInventory && (
-            <form onSubmit={handleInventorySubmit} style={{ backgroundColor: 'white', padding: '20px', borderRadius: '25px', marginBottom: '20px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              <input placeholder="Nome do Item (ex: GameBoy DMG-01)" value={invData.name} onChange={e => setInvData({...invData, name: e.target.value})} required style={{ padding: '12px', borderRadius: '12px', border: 'none', backgroundColor: '#F2F2F7' }} />
+            <form onSubmit={handleInventorySubmit} style={{ backgroundColor: 'white', padding: '24px', borderRadius: '28px', marginBottom: '25px', display: 'flex', flexDirection: 'column', gap: '12px', boxShadow: '0 8px 20px rgba(0,0,0,0.04)' }}>
+              <h4 style={{ margin: '0 0 5px 0', fontWeight: '800', fontSize: '15px' }}>✨ Detalhes do Item</h4>
+              <input placeholder="Nome do Item (ex: GameBoy DMG-01)" value={invData.name} onChange={e => setInvData({...invData, name: e.target.value})} required style={{ padding: '14px', borderRadius: '14px', border: 'none', backgroundColor: '#F2F2F7', fontSize: '14px' }} />
               <div style={{ display: 'flex', gap: '10px' }}>
-                <input type="number" placeholder="Preço Compra" value={invData.buyPrice} onChange={e => setInvData({...invData, buyPrice: e.target.value})} style={{ flex: 1, padding: '12px', borderRadius: '12px', border: 'none', backgroundColor: '#F2F2F7' }} />
-                <input type="number" placeholder="Valor Revenda" value={invData.resellValue} onChange={e => setInvData({...invData, resellValue: e.target.value})} style={{ flex: 1, padding: '12px', borderRadius: '12px', border: 'none', backgroundColor: '#F2F2F7' }} />
+                <input type="number" placeholder="Compra €" value={invData.buyPrice} onChange={e => setInvData({...invData, buyPrice: e.target.value})} style={{ flex: 1, padding: '14px', borderRadius: '14px', border: 'none', backgroundColor: '#F2F2F7', fontSize: '14px' }} />
+                <input type="number" placeholder="Revenda €" value={invData.resellValue} onChange={e => setInvData({...invData, resellValue: e.target.value})} style={{ flex: 1, padding: '14px', borderRadius: '14px', border: 'none', backgroundColor: '#F2F2F7', fontSize: '14px' }} />
               </div>
-              <label style={{ backgroundColor: '#F2F2F7', padding: '12px', borderRadius: '12px', textAlign: 'center', cursor: 'pointer', fontSize: '13px', fontWeight: '700' }}>
-                {invData.photo ? '✅ Foto Carregada' : '📷 Adicionar Foto'}
+              <label style={{ backgroundColor: '#F2F2F7', padding: '14px', borderRadius: '14px', textAlign: 'center', cursor: 'pointer', fontSize: '13px', fontWeight: '800', color: invData.photo ? '#34C759' : '#007AFF', transition: '0.2s' }}>
+                {invData.photo ? '✅ Foto Pronta' : '📷 Tirar / Carregar Foto'}
                 <input type="file" accept="image/*" onChange={handlePhotoChange} style={{ display: 'none' }} />
               </label>
-              <button type="submit" style={{ backgroundColor: '#34C759', color: 'white', border: 'none', padding: '15px', borderRadius: '15px', fontWeight: '900' }}>Adicionar ao Inventário</button>
+              <button type="submit" style={{ backgroundColor: '#007AFF', color: 'white', border: 'none', padding: '16px', borderRadius: '16px', fontWeight: '900', fontSize: '15px', marginTop: '5px' }}>
+                {invData.id ? 'Atualizar Item' : 'Guardar no Inventário'}
+              </button>
             </form>
           )}
 
-<div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '15px' }}>
             {inventory.map(item => (
-              <div key={item.id} style={{ backgroundColor: 'white', borderRadius: '20px', overflow: 'hidden', boxShadow: '0 5px 15px rgba(0,0,0,0.03)' }}>
+              <div key={item.id} style={{ backgroundColor: 'white', borderRadius: '24px', overflow: 'hidden', boxShadow: '0 6px 18px rgba(0,0,0,0.04)', display: 'flex', flexDirection: 'column', border: '1px solid rgba(0,0,0,0.02)' }}>
                 <div style={{ 
-  height: '100px', 
-  backgroundColor: '#F8F9FB', 
-  // A imagem só carrega se a aba for a de inventário
-  backgroundColor: '#F8F9FB',
-  display: 'flex', 
-  alignItems: 'center', 
-  justifyContent: 'center',
-  height: '120px',
-  overflow: 'hidden'
-}}>
-  {item.photo && activeTab === 'inventory' ? (
-    <img 
-      src={item.photo} 
-      alt={item.name}
-      style={{ 
-        width: '100%', 
-        height: '100%', 
-        objectFit: 'contain' 
-      }} 
-    />
-  ) : (
-    <span style={{ fontSize: '30px' }}>📦</span>
-  )}
-</div>
+                  height: '140px', 
+                  backgroundColor: '#F8F9FB',
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center',
+                  overflow: 'hidden',
+                  position: 'relative'
+                }}>
+                  {item.photo && activeTab === 'inventory' ? (
+                    <img 
+                      src={item.photo} 
+                      alt={item.name}
+                      style={{ width: '100%', height: '100%', objectFit: 'contain', padding: '10px' }} 
+                    />
+                  ) : (
+                    <span style={{ fontSize: '40px' }}>📦</span>
+                  )}
+                  {/* Badge de Lucro Potencial */}
+                  {item.resellValue > item.buyPrice && (
+                    <div style={{ position: 'absolute', top: '8px', right: '8px', backgroundColor: '#34C759', color: 'white', fontSize: '8px', fontWeight: '900', padding: '4px 8px', borderRadius: '10px' }}>
+                      +{ (item.resellValue - item.buyPrice).toFixed(0) }€
+                    </div>
+                  )}
+                </div>
 
-<div style={{ padding: '12px' }}>
-  <p style={{ margin: '0 0 5px 0', fontWeight: '800', fontSize: '12px', height: '32px', overflow: 'hidden' }}>
-    {item.name}
-  </p>
-  <p style={{ 
-    margin: '0 0 8px 0', 
-    fontSize: '9px', 
-    color: formatDateInfo(item.lastUpdate || item.timestamp).color, 
-    fontWeight: '600' 
-  }}>
-    {item.lastUpdate ? `EDITADO EM: ` : `CRIADO EM: `}
-    {formatDateInfo(item.lastUpdate || item.timestamp).text}
-  </p>
-  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-    <span style={{ fontSize: '10px', fontWeight: '700', color: '#34C759' }}>{item.resellValue}€</span>
-    <button onClick={() => handleEditInventory(item)} style={{ border: 'none', background: 'none', fontSize: '14px', cursor: 'pointer' }}>✏️</button>
-    <button onClick={() => remove(ref(db, `users/${user}/inventory/${item.id}`))} style={{ border: 'none', background: 'none', fontSize: '12px' }}>🗑️</button>
-  </div>
-</div>
-</div>
-))}
-</div>
+                <div style={{ padding: '12px', flex: 1, display: 'flex', flexDirection: 'column' }}>
+                  <p style={{ margin: '0 0 4px 0', fontWeight: '800', fontSize: '13px', lineHeight: '1.2', color: '#1C1C1E', height: '32px', overflow: 'hidden' }}>
+                    {item.name}
+                  </p>
+                  
+                  <p style={{ 
+                    margin: '0 0 10px 0', 
+                    fontSize: '8px', 
+                    color: formatDateInfo(item.lastUpdate || item.timestamp).color, 
+                    fontWeight: '800',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.3px'
+                  }}>
+                    {item.lastUpdate ? 'Modificado: ' : 'Criado: '}
+                    {formatDateInfo(item.lastUpdate || item.timestamp).text}
+                  </p>
+
+                  <div style={{ marginTop: 'auto', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+                    <div>
+                       <span style={{ display: 'block', fontSize: '8px', fontWeight: '700', color: '#AEAEB2', marginBottom: '2px' }}>VALOR REVENDA</span>
+                       <span style={{ fontSize: '16px', fontWeight: '900', color: '#34C759' }}>{item.resellValue}€</span>
+                    </div>
+                    
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                      <button onClick={() => handleEditInventory(item)} style={{ border: 'none', background: '#F2F2F7', width: '32px', height: '32px', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '14px' }}>✏️</button>
+                      <button onClick={() => { if(window.confirm('Apagar item?')) remove(ref(db, `users/${user}/inventory/${item.id}`)); }} style={{ border: 'none', background: '#FFF5F5', width: '32px', height: '32px', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px' }}>🗑️</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
 </div>
 )}
 
