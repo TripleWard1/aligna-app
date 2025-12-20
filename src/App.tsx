@@ -46,6 +46,7 @@ const AVATARS = ['👤', '👨‍💻', '👩‍💼', '🧥', '🎨', '🚀', '
 const ACC_ICONS = ['👛', '🏦', '🐖', '💳', '💎', '📊', '💰'];
 
 export default function App() {
+  const [viewPhoto, setViewPhoto] = useState(null); // Armazena o URL da foto em ecrã total
   const [inventory, setInventory] = useState([]);
   const [showAddInventory, setShowAddInventory] = useState(false);
   const [invData, setInvData] = useState({ name: '', buyPrice: '', resellValue: '', photo: '' });
@@ -1044,14 +1045,22 @@ const isLowBalance = totalBalance < (settings.lowBalanceLimit || 50);
                   position: 'relative'
                 }}>
                   {item.photo && activeTab === 'inventory' ? (
-                    <img 
-                      src={item.photo} 
-                      alt={item.name}
-                      style={{ width: '100%', height: '100%', objectFit: 'contain', padding: '10px' }} 
-                    />
-                  ) : (
-                    <span style={{ fontSize: '40px' }}>📦</span>
-                  )}
+  <img 
+    src={item.photo} 
+    alt={item.name}
+    /* Aqui está o Passo 3 */
+    onClick={() => setViewPhoto(item.photo)} 
+    style={{ 
+      width: '100%', 
+      height: '100%', 
+      objectFit: 'contain', 
+      padding: '10px', 
+      cursor: 'pointer' // Mostra a "mãozinha" ao passar o rato
+    }} 
+  />
+) : (
+  <span style={{ fontSize: '40px' }}>📦</span>
+)}
                   {/* Badge de Lucro Potencial */}
                   {item.resellValue > item.buyPrice && (
                     <div style={{ position: 'absolute', top: '8px', right: '8px', backgroundColor: '#34C759', color: 'white', fontSize: '8px', fontWeight: '900', padding: '4px 8px', borderRadius: '10px' }}>
@@ -1093,6 +1102,37 @@ const isLowBalance = totalBalance < (settings.lowBalanceLimit || 50);
             ))}
           </div>
 </div>
+)}
+
+{/* PASSO 2: Galeria Full Screen (Colado Aqui) */}
+{viewPhoto && (
+  <div 
+    onClick={() => setViewPhoto(null)} 
+    style={{
+      position: 'fixed',
+      top: 0, left: 0, right: 0, bottom: 0,
+      backgroundColor: 'rgba(0,0,0,0.9)',
+      backdropFilter: 'blur(15px)',
+      WebkitBackdropFilter: 'blur(15px)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      zIndex: 3000, 
+      padding: '20px'
+    }}
+  >
+    <img 
+      src={viewPhoto} 
+      style={{ 
+        maxWidth: '100%', 
+        maxHeight: '85vh', 
+        borderRadius: '24px', 
+        boxShadow: '0 20px 60px rgba(0,0,0,0.5)',
+        objectFit: 'contain'
+      }} 
+    />
+    <p style={{ position: 'absolute', top: '40px', color: 'white', fontWeight: '800', fontSize: '10px', letterSpacing: '1px' }}>TOCA PARA FECHAR</p>
+  </div>
 )}
 
 {/* Menu Inferior */}
