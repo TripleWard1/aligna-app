@@ -1024,7 +1024,21 @@ const isLowBalance = totalBalance < (settings.lowBalanceLimit || 50);
       display: 'flex', 
       justifyContent: 'space-between',
       boxShadow: '0 10px 20px rgba(0,0,0,0.15)'
-    }}>
+    }}> {/* LADO ESQUERDO: INVESTIMENTO */}
+    <div style={{ textAlign: 'left' }}>
+      <p style={{ margin: 0, fontSize: '10px', fontWeight: '800', opacity: 0.6, letterSpacing: '0.5px' }}>INVESTIMENTO TOTAL</p>
+      <h4 style={{ margin: '4px 0 0 0', fontSize: '20px', fontWeight: '900' }}>
+        {inventory.reduce((acc, item) => acc + (Number(item.buyPrice) || 0), 0).toFixed(2)}€
+      </h4>
+    </div>
+
+    {/* LADO DIREITO: VALOR DE REVENDA */}
+    <div style={{ textAlign: 'right' }}>
+      <p style={{ margin: 0, fontSize: '10px', fontWeight: '800', opacity: 0.6, letterSpacing: '0.5px' }}>VALOR REVENDA</p>
+      <h4 style={{ margin: '4px 0 0 0', fontSize: '20px', fontWeight: '900', color: '#34C759' }}>
+        {inventory.reduce((acc, item) => acc + (Number(item.resellValue) || 0), 0).toFixed(2)}€
+      </h4>
+    </div>
       </div> {/* Este é o fecho do Resumo de Valor */}
 
 {/* --- PASSO 2: BARRA DE FILTROS --- */}
