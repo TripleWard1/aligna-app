@@ -78,79 +78,90 @@ export default function App() {
     const doc = new jsPDF();
     const dataAtual = new Date().toLocaleDateString('pt-PT');
     
-    // 1. Filtragem robusta das transações
+    // 1. Filtragem de Segurança (Lida com strings de data YYYY-MM-DD)
     const transacoesFiltradas = list.filter(t => {
       if (!t.date) return false;
-      // Converte a data para garantir compatibilidade (YYYY-MM-DD)
-      const d = new Date(t.date);
-      const m = d.getMonth() + 1;
-      const y = d.getFullYear();
-      
-      // Se for "ANO COMPLETO" (reportMonth === 0), filtra apenas pelo ano
-      if (reportMonth === 0) return y === reportYear;
-      // Caso contrário, filtra por mês e ano
-      return m === reportMonth && y === reportYear;
+      const partes = t.date.split('-'); 
+      const anoTransacao = parseInt(partes[0]);
+      const mesTransacao = parseInt(partes[1]);
+  
+      if (reportMonth === 0) return anoTransacao === reportYear;
+      return mesTransacao === reportMonth && anoTransacao === reportYear;
     });
   
-    // Cabeçalho
+    // Ordenar por data (mais recente primeiro)
+    transacoesFiltradas.sort((a, b) => new Date(b.date) - new Date(a.date));
+  
+    // Cabeçalho do Documento
     doc.setFontSize(20);
     doc.setTextColor(28, 28, 30);
-    doc.text("ALIGNA — ANÁLISE MENSAL", 14, 22);
+    doc.text("ALIGNA — DETALHE MENSAL", 14, 22);
     
+    const mesNome = reportMonth === 0 ? "ANO COMPLETO" : new Date(0, reportMonth - 1).toLocaleString('pt', {month: 'long'}).toUpperCase();
     doc.setFontSize(10);
     doc.setTextColor(142, 142, 147);
-    const mesNome = reportMonth === 0 ? "ANO COMPLETO" : new Date(0, reportMonth - 1).toLocaleString('pt', {month: 'long'}).toUpperCase();
-    doc.text(`PERÍODO: ${mesNome} / ${reportYear}`, 14, 30);
-    doc.text(`PROPRIETÁRIO: HUGO BARROS`, 14, 35);
+    doc.text(`HUGO BARROS | ${mesNome} / ${reportYear}`, 14, 30);
+    doc.text(`EMITIDO EM: ${dataAtual}`, 14, 35);
   
-    // 2. Cálculos garantindo que os valores são números
+    // 2. Cálculos de Totais
     const entradas = transacoesFiltradas
-      .filter(t => t.type === 'income')
+      .filter(t => t.type === 'income' || t.type === 'receita')
       .reduce((acc, t) => acc + (Number(t.val) || 0), 0);
       
     const saidas = transacoesFiltradas
-      .filter(t => t.type === 'expense' || t.type === 'saída') // Adicionada compatibilidade de nomes
+      .filter(t => t.type === 'expense' || t.type === 'saída' || t.type === 'gasto')
       .reduce((acc, t) => acc + (Number(t.val) || 0), 0);
       
     const balanco = entradas - saidas;
   
-    // Resumo Financeiro
+    // Resumo no Topo
     doc.setFontSize(12);
     doc.setTextColor(0, 0, 0);
-    doc.text(`Total Entradas: ${entradas.toFixed(2)}€`, 14, 50);
-    doc.text(`Total Saídas: ${saidas.toFixed(2)}€`, 14, 57);
+    doc.text(`Total Receitas: +${entradas.toFixed(2)}€`, 14, 50);
+    doc.text(`Total Gastos: -${saidas.toFixed(2)}€`, 14, 57);
     
-    // Cor do Balanço (Verde se positivo, Vermelho se negativo)
-    if (balanco >= 0) doc.setTextColor(52, 199, 89);
-    else doc.setTextColor(255, 59, 48);
-    
-    doc.text(`Balanço Líquido: ${balanco.toFixed(2)}€`, 14, 64);
+    doc.setTextColor(balanco >= 0 ? 52 : 255, balanco >= 0 ? 199 : 59, balanco >= 0 ? 89 : 48);
+    doc.text(`Resultado Líquido: ${balanco.toFixed(2)}€`, 14, 64);
   
-    // 3. Montagem da Tabela
-    const tableRows = transacoesFiltradas.map(t => [
-      new Date(t.date).toLocaleDateString('pt-PT'),
-      t.desc || 'Sem descrição',
-      (t.acc || 'Geral').toUpperCase(),
-      t.type === 'income' ? `+${Number(t.val).toFixed(2)}€` : `-${Number(t.val).toFixed(2)}€`
-    ]);
+    // 3. TABELA DISCRIMINADA (Linha por Linha)
+    const tableRows = transacoesFiltradas.map(t => {
+      const isReceita = (t.type === 'income' || t.type === 'receita');
+      return [
+        t.date.split('-').reverse().join('/'), // Data em formato PT
+        t.desc.toUpperCase(),                  // Descrição
+        (t.acc || 'GERAL').toUpperCase(),      // Conta/Origem
+        isReceita ? `+${Number(t.val).toFixed(2)}€` : `-${Number(t.val).toFixed(2)}€` // Valor com sinal
+      ];
+    });
   
     if (tableRows.length > 0) {
       doc.autoTable({
         startY: 75,
-        head: [['Data', 'Descrição', 'Conta', 'Valor']],
+        head: [['DATA', 'DESCRIÇÃO', 'CONTA', 'VALOR']],
         body: tableRows,
         theme: 'striped',
-        headStyles: { fillColor: [28, 28, 30], fontWeight: 'bold' },
-        columnStyles: { 3: { halign: 'right' } },
-        styles: { fontSize: 9 }
+        headStyles: { fillColor: [28, 28, 30], fontSize: 10, halign: 'center' },
+        columnStyles: { 
+          0: { cellWidth: 25 }, 
+          3: { halign: 'right', fontStyle: 'bold' } 
+        },
+        styles: { fontSize: 9, cellPadding: 4 },
+        // Pintar o texto de verde ou vermelho na tabela
+        didParseCell: function(data) {
+          if (data.column.index === 3 && data.cell.section === 'body') {
+            const val = data.cell.raw;
+            if (val.includes('+')) data.cell.styles.textColor = [52, 199, 89];
+            if (val.includes('-')) data.cell.styles.textColor = [255, 59, 48];
+          }
+        }
       });
     } else {
-      doc.setFontSize(10);
+      doc.setFontSize(11);
       doc.setTextColor(150, 150, 150);
-      doc.text("Nenhuma transação encontrada para este período.", 14, 80);
+      doc.text("Sem movimentos registados para este período.", 14, 85);
     }
   
-    doc.save(`Analise_Mensal_${mesNome}_${reportYear}.pdf`);
+    doc.save(`Relatorio_HugoBarros_${mesNome}.pdf`);
     if (typeof triggerHaptic === 'function') triggerHaptic('medium');
   };
   const [editingPrice, setEditingPrice] = useState(null); // Guarda o item para edição rápida
