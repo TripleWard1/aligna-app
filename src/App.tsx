@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { db } from './firebase'; 
 import { ref, push, onValue, set, remove, update, get } from "firebase/database";
+// Adiciona isto logo no início do teu ficheiro, fora da função principal
+import { jsPDF } from "jspdf";
+import "jspdf-autotable";
 
 
 const TWELVE_DATA_KEY = "49563e179ee146c5a53279200c654f29";
@@ -71,6 +74,53 @@ export default function App() {
   });
 
   // --- ESTADOS GERAIS ---
+  const gerarRelatorioMensal = () => {
+    const doc = new jsPDF();
+    const dataAtual = new Date().toLocaleDateString('pt-PT');
+    
+    // Cabeçalho Elegante
+    doc.setFontSize(22);
+    doc.setTextColor(28, 28, 30);
+    doc.text("ALIGNA — RELATÓRIO MENSAL", 14, 22);
+    
+    doc.setFontSize(10);
+    doc.setTextColor(142, 142, 147);
+    doc.text(`PROPRIETÁRIO: HUGO BARROS`, 14, 30);
+    doc.text(`DATA DE EMISSÃO: ${dataAtual}`, 14, 35);
+  
+    // Resumo Financeiro
+    const totalInvestido = inventory.reduce((acc, item) => acc + (Number(item.buyPrice) || 0), 0);
+    const totalRevenda = inventory.reduce((acc, item) => acc + (Number(item.resellValue) || 0), 0);
+    const lucro = totalRevenda - totalInvestido;
+  
+    doc.setFontSize(12);
+    doc.setTextColor(0, 0, 0);
+    doc.text(`Investimento Total: ${totalInvestido.toFixed(2)}€`, 14, 50);
+    doc.text(`Valor de Revenda: ${totalRevenda.toFixed(2)}€`, 14, 57);
+    doc.setTextColor(52, 199, 89);
+    doc.text(`Lucro Potencial: ${lucro.toFixed(2)}€`, 14, 64);
+  
+    // Tabela de Itens
+    const tableRows = inventory.map(item => [
+      item.name,
+      item.category || 'OUTROS',
+      `${Number(item.buyPrice).toFixed(2)}€`,
+      `${Number(item.resellValue).toFixed(2)}€`,
+      `${(item.resellValue - item.buyPrice).toFixed(2)}€`
+    ]);
+  
+    doc.autoTable({
+      startY: 75,
+      head: [['Item', 'Marca', 'Compra', 'Revenda', 'Lucro']],
+      body: tableRows,
+      theme: 'striped',
+      headStyles: { fillColor: [0, 122, 255], fontWeight: 'bold' },
+      styles: { fontSize: 9 }
+    });
+  
+    doc.save(`Relatorio_Mensal_${dataAtual}.pdf`);
+    if (typeof triggerHaptic === 'function') triggerHaptic('medium');
+  };
   const [editingPrice, setEditingPrice] = useState(null); // Guarda o item para edição rápida
 const [tempPrice, setTempPrice] = useState(''); // Guarda o valor que estás a digitar
   const [searchTerm, setSearchTerm] = useState(''); // Estado para a barra de pesquisa
@@ -840,7 +890,32 @@ const isLowBalance = totalBalance < (settings.lowBalanceLimit || 50);
       </select>
     </div>
 
+    {/* BOTÃO PDF INSERIDO AQUI */}
+    <button 
+      onClick={() => gerarRelatorioMensal()}
+      style={{
+        width: '100%',
+        padding: '16px',
+        backgroundColor: '#007AFF',
+        color: 'white',
+        borderRadius: '16px',
+        border: 'none',
+        fontWeight: '900',
+        fontSize: '13px',
+        marginBottom: '25px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: '10px',
+        boxShadow: '0 8px 20px rgba(0,122,255,0.15)',
+        cursor: 'pointer'
+      }}
+    >
+      <span style={{ fontSize: '18px' }}>📄</span> EXPORTAR ANÁLISE PDF
+    </button>
+
     {!selectedDetail ? (
+      // ... resto do teu código continua aqui ...
       <>
         {/* CARDS DE RESUMO (KPIs) */}
         <div style={{ display: 'flex', gap: '12px', marginBottom: '30px' }}>
