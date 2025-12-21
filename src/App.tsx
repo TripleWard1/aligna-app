@@ -76,106 +76,92 @@ export default function App() {
   // --- ESTADOS GERAIS ---
   const gerarRelatorioMensal = () => {
     try {
-      // 1. ACESSO DIRETO AO ESTADO DO REACT
-      // No teu código, a variável de estado que guarda as transações chama-se 'list'
+      // 1. Verificação de Dados
       if (!list || list.length === 0) {
-        alert("Não existem transações registadas na base de dados.");
+        alert("Erro: A lista de transações está vazia no sistema.");
         return;
       }
 
       const doc = new jsPDF();
       
-      // 2. FILTRAGEM PELO MÊS SELECIONADO NA APP
+      // 2. Filtro de Data (Ajustado para ser flexível)
       const mesFmt = reportMonth < 10 ? `0${reportMonth}` : `${reportMonth}`;
-      const busca = reportMonth === 0 ? `${reportYear}` : `${reportYear}-${mesFmt}`;
+      const buscaPeriodo = `${reportYear}-${mesFmt}`;
 
-      const dadosParaPDF = list.filter(t => {
-        // Garantir que a data é tratada como string para a busca
-        const dataStr = String(t.date || "");
-        return dataStr.includes(busca);
+      const dadosFiltrados = list.filter(t => {
+        // Converte qualquer formato de data para String para comparar
+        const d = t.date?.seconds ? new Date(t.date.seconds * 1000).toISOString() : String(t.date || "");
+        return d.includes(buscaPeriodo);
       });
 
-      if (dadosParaPDF.length === 0) {
-        alert("Não existem dados para exportar no mês de " + 
-          new Date(0, reportMonth - 1).toLocaleString('pt', {month: 'long'}));
+      if (dadosFiltrados.length === 0) {
+        alert(`Não foram encontrados movimentos para ${mesFmt}/${reportYear} na base de dados.`);
         return;
       }
 
-      // 3. CABEÇALHO DO PDF
-      doc.setFontSize(20);
+      // 3. Cabeçalho Estilizado
+      doc.setFontSize(22);
       doc.setTextColor(28, 28, 30);
-      doc.text("ALIGNA — DETALHE MENSAL", 14, 20);
+      doc.text("ALIGNA — RELATÓRIO MENSAL", 14, 20);
       
-      const mesNome = reportMonth === 0 ? "GERAL" : new Date(0, reportMonth - 1).toLocaleString('pt', {month: 'long'}).toUpperCase();
+      const mesNome = new Date(0, reportMonth - 1).toLocaleString('pt', {month: 'long'}).toUpperCase();
       doc.setFontSize(10);
-      doc.setTextColor(142, 142, 147);
-      doc.text(`HUGO BARROS | ${mesNome} / ${reportYear}`, 14, 28);
-      doc.text(`EMITIDO EM: ${new Date().toLocaleDateString('pt-PT')}`, 14, 33);
+      doc.setTextColor(100);
+      doc.text(`PROPRIETÁRIO: HUGO BARROS | PERÍODO: ${mesNome} ${reportYear}`, 14, 28);
 
-      // 4. CÁLCULOS FINANCEIROS
-      let totalReceitas = 0;
-      let totalGastos = 0;
+      // 4. Processamento de Valores (Para evitar o erro NaN da imagem anterior)
+      let totalIn = 0;
+      let totalOut = 0;
 
-      const tableRows = dadosParaPDF.map(t => {
-        // Limpa o valor (tira o € se existir e converte para número)
-        const valorLimpo = String(t.val || "0").replace('€', '').replace(',', '.').trim();
+      const rows = dadosFiltrados.map(t => {
+        // Limpeza de valores: remove "€", troca vírgula por ponto
+        const valorLimpo = String(t.val || "0").replace(/[^0-9.,-]/g, '').replace(',', '.');
         const vNum = parseFloat(valorLimpo) || 0;
         
-        const isReceita = t.type === 'income' || t.type === 'receita';
-        if (isReceita) totalReceitas += vNum; else totalGastos += vNum;
-
-        // Formata a data de AAAA-MM-DD para DD/MM/AAAA
-        const dataFormatada = t.date ? String(t.date).split('-').reverse().join('/') : '---';
-        
-        // Vai buscar o nome da categoria usando o objeto CATEGORIES que tens no código
-        const categoriaNome = CATEGORIES[t.category]?.label || t.category || 'OUTROS';
+        const eReceita = t.type === 'income' || t.type === 'receita';
+        if (eReceita) totalIn += vNum; else totalOut += vNum;
 
         return [
-          dataFormatada,
+          t.date ? String(t.date).split('-').reverse().join('/') : '---',
           (t.desc || 'SEM DESCRIÇÃO').toUpperCase(),
-          categoriaNome.toUpperCase(),
-          isReceita ? `+${vNum.toFixed(2)}€` : `-${vNum.toFixed(2)}€`
+          (CATEGORIES[t.category]?.label || 'GERAL').toUpperCase(),
+          eReceita ? `+${vNum.toFixed(2)}€` : `-${vNum.toFixed(2)}€`
         ];
       });
 
-      // 5. RESUMO NO PDF
+      // 5. Resumo Financeiro
       doc.setFontSize(12);
-      doc.setTextColor(0, 0, 0);
-      doc.text(`Total Entradas: +${totalReceitas.toFixed(2)}€`, 14, 48);
-      doc.text(`Total Saídas: -${totalGastos.toFixed(2)}€`, 14, 55);
+      doc.setTextColor(0);
+      doc.text(`Total de Entradas: +${totalIn.toFixed(2)}€`, 14, 45);
+      doc.text(`Total de Saídas: -${totalOut.toFixed(2)}€`, 14, 52);
       
-      const balanco = totalReceitas - totalGastos;
+      const balanco = totalIn - totalOut;
       doc.setTextColor(balanco >= 0 ? [52, 199, 89] : [255, 59, 48]);
-      doc.setFont("helvetica", "bold");
-      doc.text(`BALANÇO LÍQUIDO: ${balanco.toFixed(2)}€`, 14, 63);
+      doc.text(`BALANÇO LÍQUIDO: ${balanco.toFixed(2)}€`, 14, 62);
 
-      // 6. GERAR TABELA
+      // 6. Tabela de Movimentos
       doc.autoTable({
         startY: 70,
         head: [['DATA', 'DESCRIÇÃO', 'CATEGORIA', 'VALOR']],
-        body: tableRows,
+        body: rows,
         theme: 'striped',
-        headStyles: { fillColor: [0, 122, 255], halign: 'center' },
-        columnStyles: { 
-          0: { cellWidth: 25 },
-          3: { halign: 'right', fontStyle: 'bold' } 
-        },
-        styles: { fontSize: 9 },
+        headStyles: { fillColor: [0, 122, 255] },
+        columnStyles: { 3: { halign: 'right' } },
         didParseCell: (data) => {
           if (data.column.index === 3 && data.cell.section === 'body') {
-            const texto = data.cell.raw || '';
-            if (texto.includes('+')) data.cell.styles.textColor = [52, 199, 89];
-            else if (texto.includes('-')) data.cell.styles.textColor = [255, 59, 48];
+            const val = data.cell.raw || '';
+            if (val.includes('+')) data.cell.styles.textColor = [52, 199, 89];
+            else if (val.includes('-')) data.cell.styles.textColor = [255, 59, 48];
           }
         }
       });
 
-      doc.save(`Aligna_Relatorio_${mesNome}.pdf`);
+      doc.save(`Relatorio_Hugo_${mesFmt}_${reportYear}.pdf`);
       if (typeof triggerHaptic === 'function') triggerHaptic('medium');
 
-    } catch (error) {
-      console.error("Erro crítico no PDF:", error);
-      alert("Erro ao gerar PDF: Certifica-te que preencheste todos os campos das tuas transações.");
+    } catch (err) {
+      console.error("Erro PDF:", err);
+      alert("Erro ao gerar PDF. Verifica se tens transações no mês selecionado.");
     }
   };
   const [editingPrice, setEditingPrice] = useState(null); // Guarda o item para edição rápida
