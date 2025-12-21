@@ -76,40 +76,41 @@ export default function App() {
   // --- ESTADOS GERAIS ---
   const gerarRelatorioMensal = () => {
     try {
-      const doc = new jsPDF();
-      
-      // 1. O SEGREDO: Vamos usar as transações que já aparecem no ecrã.
-      // Se a tua lista filtrada se chamar de outra forma, substitui 'list' pelo nome correto.
-      // Vou usar uma lógica que tenta encontrar dados de qualquer maneira:
-      const mesFmt = reportMonth < 10 ? `0${reportMonth}` : `${reportMonth}`;
-      const busca = `${reportYear}-${mesFmt}`;
+      // 1. IDENTIFICAÇÃO DA FONTE DE DADOS
+      // No teu Código Principal, a variável chama-se 'transactions'
+      const fonteDados = (typeof transactions !== 'undefined') ? transactions : list;
   
-      const dadosParaPDF = list.filter(t => {
-        // Se a data for objeto do Firebase, convertemos para String
-        const dataString = t.date?.seconds 
+      if (!fonteDados || fonteDados.length === 0) {
+        alert("Erro: Não foi possível encontrar a lista de transações (transactions/list).");
+        return;
+      }
+  
+      const doc = new jsPDF();
+      const mesFmt = reportMonth < 10 ? `0${reportMonth}` : `${reportMonth}`;
+      const busca = reportMonth === 0 ? `${reportYear}` : `${reportYear}-${mesFmt}`;
+  
+      // 2. FILTRAGEM
+      const dadosParaPDF = fonteDados.filter(t => {
+        const dataStr = t.date?.seconds 
           ? new Date(t.date.seconds * 1000).toISOString() 
           : String(t.date || "");
-        return dataString.includes(busca);
+        return dataStr.includes(busca);
       });
   
-      // Se o filtro acima falhar, vamos usar a lista toda só para garantir que a tabela aparece
-      const listaFinal = dadosParaPDF.length > 0 ? dadosParaPDF : list.slice(0, 50);
-  
-      // 2. CABEÇALHO
+      // 3. CABEÇALHO
       doc.setFontSize(20);
-      doc.text("ALIGNA — ANÁLISE MENSAL", 14, 20);
+      doc.text("ALIGNA — DETALHE MENSAL", 14, 20);
       
       const mesNome = reportMonth === 0 ? "GERAL" : new Date(0, reportMonth - 1).toLocaleString('pt', {month: 'long'}).toUpperCase();
       doc.setFontSize(10);
       doc.setTextColor(100);
       doc.text(`HUGO BARROS | ${mesNome} / ${reportYear}`, 14, 28);
   
-      // 3. PROCESSAMENTO DOS VALORES REAIS
+      // 4. PROCESSAMENTO DAS LINHAS
       let rct = 0;
       let gst = 0;
   
-      const tableRows = listaFinal.map(t => {
-        // Limpeza profunda do valor: remove tudo o que não é número ou ponto/vírgula
+      const tableRows = dadosParaPDF.map(t => {
         const vLimp = String(t.val || "0").replace(/[^0-9.,]/g, '').replace(',', '.');
         const vNum = parseFloat(vLimp) || 0;
         
@@ -119,22 +120,22 @@ export default function App() {
         return [
           t.date ? String(t.date).split('-').reverse().join('/') : '---',
           (t.desc || 'TRANSACÇÃO').toUpperCase(),
-          (t.acc || 'CARTEIRA').toUpperCase(),
+          (t.acc || 'GERAL').toUpperCase(),
           isIncome ? `+${vNum.toFixed(2)}€` : `-${vNum.toFixed(2)}€`
         ];
       });
   
-      // Totais (Vão bater certo com os +158€ e -108€ da tua imagem)
+      // Totais no PDF
       doc.setFontSize(12);
       doc.setTextColor(0);
-      doc.text(`Receitas Totais: +${rct.toFixed(2)}€`, 14, 45);
-      doc.text(`Gastos Totais: -${gst.toFixed(2)}€`, 14, 52);
+      doc.text(`Total Entradas: +${rct.toFixed(2)}€`, 14, 45);
+      doc.text(`Total Saídas: -${gst.toFixed(2)}€`, 14, 52);
       
       const bal = rct - gst;
       doc.setTextColor(bal >= 0 ? [52, 199, 89] : [255, 59, 48]);
-      doc.text(`BALANÇO: ${bal.toFixed(2)}€`, 14, 60);
+      doc.text(`BALANÇO LÍQUIDO: ${bal.toFixed(2)}€`, 14, 60);
   
-      // 4. TABELA (Forçar desenho)
+      // 5. TABELA DISCRIMINADA
       doc.autoTable({
         startY: 70,
         head: [['DATA', 'DESCRIÇÃO', 'CONTA', 'VALOR']],
@@ -155,7 +156,7 @@ export default function App() {
   
     } catch (error) {
       console.error("Erro no PDF:", error);
-      alert("Erro ao gerar. Verifica se a variável 'list' existe.");
+      alert("Ocorreu um erro técnico. Verifica se as bibliotecas jsPDF estão no topo do ficheiro.");
     }
   };
   const [editingPrice, setEditingPrice] = useState(null); // Guarda o item para edição rápida
