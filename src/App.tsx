@@ -78,7 +78,7 @@ export default function App() {
     const doc = new jsPDF();
     const dataAtual = new Date().toLocaleDateString('pt-PT');
     
-    // 1. FILTRAGEM (Usando os nomes exatos do teu estado 'list')
+    // 1. FILTRAGEM (Usando reportMonth e reportYear que já tens no estado)
     const transacoesFiltradas = list.filter(t => {
       if (!t.date) return false;
       const dataStr = String(t.date);
@@ -87,7 +87,7 @@ export default function App() {
       return dataStr.includes(busca);
     });
   
-    // Ordenar por data
+    // Ordenar pela data mais recente
     transacoesFiltradas.sort((a, b) => new Date(b.date) - new Date(a.date));
   
     // Cabeçalho
@@ -99,54 +99,63 @@ export default function App() {
     doc.setFontSize(10);
     doc.setTextColor(142, 142, 147);
     doc.text(`HUGO BARROS | ${mesNome} / ${reportYear}`, 14, 30);
-    doc.text(`EMITIDO EM: ${dataAtual}`, 14, 35);
   
-    // 2. CÁLCULOS (Corrigido para 'val' e 'type')
+    // 2. CÁLCULOS DE TOTAIS (Limpando o campo 'val')
+    const obterValor = (v) => {
+      if (!v) return 0;
+      // Remove o símbolo € e espaços, e troca vírgula por ponto
+      const limpo = String(v).replace('€', '').replace(/\s/g, '').replace(',', '.');
+      return parseFloat(limpo) || 0;
+    };
+  
     const entradas = transacoesFiltradas
-      .filter(t => t.type === 'income' || t.type === 'receita')
-      .reduce((acc, t) => acc + (parseFloat(t.val) || 0), 0);
+      .filter(t => t.type === 'income')
+      .reduce((acc, t) => acc + obterValor(t.val), 0);
       
     const saidas = transacoesFiltradas
-      .filter(t => t.type === 'expense' || t.type === 'saída' || t.type === 'gasto')
-      .reduce((acc, t) => acc + (parseFloat(t.val) || 0), 0);
+      .filter(t => t.type === 'expense')
+      .reduce((acc, t) => acc + obterValor(t.val), 0);
     
     const balanco = entradas - saidas;
   
-    // Resumo
+    // Resumo Financeiro
     doc.setFontSize(12);
     doc.setTextColor(0, 0, 0);
-    doc.text(`Total Receitas: +${entradas.toFixed(2)}€`, 14, 50);
-    doc.text(`Total Gastos: -${saidas.toFixed(2)}€`, 14, 57);
+    doc.text(`Total Receitas: +${entradas.toFixed(2)}€`, 14, 45);
+    doc.text(`Total Gastos: -${saidas.toFixed(2)}€`, 14, 52);
     
     doc.setTextColor(balanco >= 0 ? 52 : 255, balanco >= 0 ? 199 : 59, balanco >= 0 ? 89 : 48);
-    doc.text(`Resultado Líquido: ${balanco.toFixed(2)}€`, 14, 64);
+    doc.text(`Resultado Líquido: ${balanco.toFixed(2)}€`, 14, 60);
   
-    // 3. TABELA (Corrigido: t.desc e t.val)
+    // 3. MONTAGEM DA TABELA (Campos: desc, val, acc)
     const tableRows = transacoesFiltradas.map(t => {
-      const valorNumerico = parseFloat(t.val) || 0;
-      const isReceita = (t.type === 'income' || t.type === 'receita');
+      const valor = obterValor(t.val);
+      const isReceita = t.type === 'income';
       
       return [
         t.date ? String(t.date).split('-').reverse().join('/') : '---',
-        (t.desc || 'SEM DESCRIÇÃO').toUpperCase(),
-        (t.acc || 'GERAL').toUpperCase(),
-        isReceita ? `+${valorNumerico.toFixed(2)}€` : `-${valorNumerico.toFixed(2)}€`
+        (t.desc || 'Sem Descrição').toUpperCase(),
+        (t.acc || 'Carteira').toUpperCase(),
+        isReceita ? `+${valor.toFixed(2)}€` : `-${valor.toFixed(2)}€`
       ];
     });
   
     doc.autoTable({
-      startY: 75,
+      startY: 70,
       head: [['DATA', 'DESCRIÇÃO', 'CONTA', 'VALOR']],
       body: tableRows,
       theme: 'striped',
       headStyles: { fillColor: [28, 28, 30], halign: 'center' },
-      columnStyles: { 3: { halign: 'right', fontStyle: 'bold' } },
-      styles: { fontSize: 9 },
+      columnStyles: { 
+        1: { cellWidth: 'auto' },
+        3: { halign: 'right', fontStyle: 'bold' } 
+      },
+      styles: { fontSize: 8 },
       didParseCell: function(data) {
         if (data.column.index === 3 && data.cell.section === 'body') {
-          const texto = data.cell.raw || '';
-          if (texto.includes('+')) data.cell.styles.textColor = [52, 199, 89];
-          else if (texto.includes('-')) data.cell.styles.textColor = [255, 59, 48];
+          const txt = data.cell.raw || '';
+          if (txt.includes('+')) data.cell.styles.textColor = [52, 199, 89];
+          else if (txt.includes('-')) data.cell.styles.textColor = [255, 59, 48];
         }
       }
     });
