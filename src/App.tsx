@@ -78,47 +78,58 @@ export default function App() {
     const doc = new jsPDF();
     const dataAtual = new Date().toLocaleDateString('pt-PT');
     
-    // Cabeçalho Elegante
-    doc.setFontSize(22);
+    // 1. Filtrar as transações (compras/vendas) com base no mês e ano selecionados
+    const transacoesFiltradas = list.filter(t => {
+      const d = new Date(t.date);
+      const m = d.getMonth() + 1;
+      const y = d.getFullYear();
+      return (reportMonth === 0 || m === reportMonth) && y === reportYear;
+    });
+  
+    // Cabeçalho
+    doc.setFontSize(20);
     doc.setTextColor(28, 28, 30);
-    doc.text("ALIGNA — RELATÓRIO MENSAL", 14, 22);
+    doc.text("ALIGNA — ANÁLISE MENSAL", 14, 22);
     
     doc.setFontSize(10);
     doc.setTextColor(142, 142, 147);
-    doc.text(`PROPRIETÁRIO: HUGO BARROS`, 14, 30);
-    doc.text(`DATA DE EMISSÃO: ${dataAtual}`, 14, 35);
+    const mesNome = reportMonth === 0 ? "ANO COMPLETO" : new Date(0, reportMonth - 1).toLocaleString('pt', {month: 'long'}).toUpperCase();
+    doc.text(`PERÍODO: ${mesNome} / ${reportYear}`, 14, 30);
+    doc.text(`PROPRIETÁRIO: HUGO BARROS`, 14, 35);
   
-    // Resumo Financeiro
-    const totalInvestido = inventory.reduce((acc, item) => acc + (Number(item.buyPrice) || 0), 0);
-    const totalRevenda = inventory.reduce((acc, item) => acc + (Number(item.resellValue) || 0), 0);
-    const lucro = totalRevenda - totalInvestido;
+    // Cálculos da Análise Mensal
+    const entradas = transacoesFiltradas.filter(t => t.type === 'income').reduce((acc, t) => acc + Number(t.val), 0);
+    const saídas = transacoesFiltradas.filter(t => t.type === 'expense').reduce((acc, t) => acc + Number(t.val), 0);
+    const balanço = entradas - saídas;
   
+    // Resumo Financeiro no PDF
     doc.setFontSize(12);
     doc.setTextColor(0, 0, 0);
-    doc.text(`Investimento Total: ${totalInvestido.toFixed(2)}€`, 14, 50);
-    doc.text(`Valor de Revenda: ${totalRevenda.toFixed(2)}€`, 14, 57);
-    doc.setTextColor(52, 199, 89);
-    doc.text(`Lucro Potencial: ${lucro.toFixed(2)}€`, 14, 64);
+    doc.text(`Total Entradas: ${entradas.toFixed(2)}€`, 14, 50);
+    doc.text(`Total Saídas: ${saídas.toFixed(2)}€`, 14, 57);
+    
+    doc.setTextColor(balanço >= 0 ? 52 : 255, balanço >= 0 ? 199 : 59, balanço >= 0 ? 89 : 48);
+    doc.text(`Balanço Líquido: ${balanço.toFixed(2)}€`, 14, 64);
   
-    // Tabela de Itens
-    const tableRows = inventory.map(item => [
-      item.name,
-      item.category || 'OUTROS',
-      `${Number(item.buyPrice).toFixed(2)}€`,
-      `${Number(item.resellValue).toFixed(2)}€`,
-      `${(item.resellValue - item.buyPrice).toFixed(2)}€`
+    // Tabela de Transações Mensais
+    const tableRows = transacoesFiltradas.map(t => [
+      new Date(t.date).toLocaleDateString('pt-PT'),
+      t.desc,
+      t.acc.toUpperCase(),
+      t.type === 'income' ? `+${Number(t.val).toFixed(2)}€` : `-${Number(t.val).toFixed(2)}€`
     ]);
   
     doc.autoTable({
       startY: 75,
-      head: [['Item', 'Marca', 'Compra', 'Revenda', 'Lucro']],
+      head: [['Data', 'Descrição', 'Conta', 'Valor']],
       body: tableRows,
       theme: 'striped',
-      headStyles: { fillColor: [0, 122, 255], fontWeight: 'bold' },
+      headStyles: { fillColor: [28, 28, 30], fontWeight: 'bold' },
+      columnStyles: { 3: { halign: 'right' } },
       styles: { fontSize: 9 }
     });
   
-    doc.save(`Relatorio_Mensal_${dataAtual}.pdf`);
+    doc.save(`Analise_Mensal_${mesNome}_${reportYear}.pdf`);
     if (typeof triggerHaptic === 'function') triggerHaptic('medium');
   };
   const [editingPrice, setEditingPrice] = useState(null); // Guarda o item para edição rápida
