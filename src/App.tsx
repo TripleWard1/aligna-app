@@ -78,26 +78,16 @@ export default function App() {
     const doc = new jsPDF();
     const dataAtual = new Date().toLocaleDateString('pt-PT');
     
-    // 1. FILTRAGEM MELHORADA
-    // Tentamos filtrar por mês/ano, mas se não encontrar nada, procuramos de forma mais flexível
-    let transacoesFiltradas = list.filter(t => {
+    // 1. FILTRAGEM (Usando os nomes exatos do teu estado 'list')
+    const transacoesFiltradas = list.filter(t => {
       if (!t.date) return false;
       const dataStr = String(t.date);
-      
-      // Verifica se a data contém o ano e o mês selecionados (ex: "2025-12")
       const mesFormatado = reportMonth < 10 ? `0${reportMonth}` : `${reportMonth}`;
       const busca = reportMonth === 0 ? `${reportYear}` : `${reportYear}-${mesFormatado}`;
-      
       return dataStr.includes(busca);
     });
   
-    // Se mesmo assim estiver vazio, vamos buscar todas as transações que existem 
-    // para não te dar um PDF em branco
-    if (transacoesFiltradas.length === 0) {
-      transacoesFiltradas = list.slice(0, 20); // Pega as últimas 20 só para testar
-    }
-  
-    // Ordenar
+    // Ordenar por data
     transacoesFiltradas.sort((a, b) => new Date(b.date) - new Date(a.date));
   
     // Cabeçalho
@@ -109,45 +99,54 @@ export default function App() {
     doc.setFontSize(10);
     doc.setTextColor(142, 142, 147);
     doc.text(`HUGO BARROS | ${mesNome} / ${reportYear}`, 14, 30);
+    doc.text(`EMITIDO EM: ${dataAtual}`, 14, 35);
   
-    // 2. CÁLCULOS
+    // 2. CÁLCULOS (Corrigido para 'val' e 'type')
     const entradas = transacoesFiltradas
       .filter(t => t.type === 'income' || t.type === 'receita')
-      .reduce((acc, t) => acc + (Number(t.val) || 0), 0);
+      .reduce((acc, t) => acc + (parseFloat(t.val) || 0), 0);
       
     const saidas = transacoesFiltradas
       .filter(t => t.type === 'expense' || t.type === 'saída' || t.type === 'gasto')
-      .reduce((acc, t) => acc + (Number(t.val) || 0), 0);
+      .reduce((acc, t) => acc + (parseFloat(t.val) || 0), 0);
     
     const balanco = entradas - saidas;
   
     // Resumo
     doc.setFontSize(12);
     doc.setTextColor(0, 0, 0);
-    doc.text(`Receitas: +${entradas.toFixed(2)}€`, 14, 45);
-    doc.text(`Gastos: -${saidas.toFixed(2)}€`, 14, 52);
+    doc.text(`Total Receitas: +${entradas.toFixed(2)}€`, 14, 50);
+    doc.text(`Total Gastos: -${saidas.toFixed(2)}€`, 14, 57);
+    
     doc.setTextColor(balanco >= 0 ? 52 : 255, balanco >= 0 ? 199 : 59, balanco >= 0 ? 89 : 48);
-    doc.text(`Balanço: ${balanco.toFixed(2)}€`, 14, 60);
+    doc.text(`Resultado Líquido: ${balanco.toFixed(2)}€`, 14, 64);
   
-    // 3. TABELA DISCRIMINADA
-    const tableRows = transacoesFiltradas.map(t => [
-      t.date ? String(t.date).split('-').reverse().join('/') : '---',
-      (t.desc || 'SEM DESCRIÇÃO').toUpperCase(),
-      (t.acc || 'GERAL').toUpperCase(),
-      (t.type === 'income' || t.type === 'receita') ? `+${Number(t.val).toFixed(2)}€` : `-${Number(t.val).toFixed(2)}€`
-    ]);
+    // 3. TABELA (Corrigido: t.desc e t.val)
+    const tableRows = transacoesFiltradas.map(t => {
+      const valorNumerico = parseFloat(t.val) || 0;
+      const isReceita = (t.type === 'income' || t.type === 'receita');
+      
+      return [
+        t.date ? String(t.date).split('-').reverse().join('/') : '---',
+        (t.desc || 'SEM DESCRIÇÃO').toUpperCase(),
+        (t.acc || 'GERAL').toUpperCase(),
+        isReceita ? `+${valorNumerico.toFixed(2)}€` : `-${valorNumerico.toFixed(2)}€`
+      ];
+    });
   
     doc.autoTable({
-      startY: 70,
+      startY: 75,
       head: [['DATA', 'DESCRIÇÃO', 'CONTA', 'VALOR']],
       body: tableRows,
       theme: 'striped',
-      headStyles: { fillColor: [28, 28, 30] },
+      headStyles: { fillColor: [28, 28, 30], halign: 'center' },
       columnStyles: { 3: { halign: 'right', fontStyle: 'bold' } },
+      styles: { fontSize: 9 },
       didParseCell: function(data) {
         if (data.column.index === 3 && data.cell.section === 'body') {
-          if (data.cell.raw.includes('+')) data.cell.styles.textColor = [52, 199, 89];
-          else data.cell.styles.textColor = [255, 59, 48];
+          const texto = data.cell.raw || '';
+          if (texto.includes('+')) data.cell.styles.textColor = [52, 199, 89];
+          else if (texto.includes('-')) data.cell.styles.textColor = [255, 59, 48];
         }
       }
     });
