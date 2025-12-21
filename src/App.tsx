@@ -78,12 +78,18 @@ export default function App() {
     const doc = new jsPDF();
     const dataAtual = new Date().toLocaleDateString('pt-PT');
     
-    // 1. Filtrar as transações (compras/vendas) com base no mês e ano selecionados
+    // 1. Filtragem robusta das transações
     const transacoesFiltradas = list.filter(t => {
+      if (!t.date) return false;
+      // Converte a data para garantir compatibilidade (YYYY-MM-DD)
       const d = new Date(t.date);
       const m = d.getMonth() + 1;
       const y = d.getFullYear();
-      return (reportMonth === 0 || m === reportMonth) && y === reportYear;
+      
+      // Se for "ANO COMPLETO" (reportMonth === 0), filtra apenas pelo ano
+      if (reportMonth === 0) return y === reportYear;
+      // Caso contrário, filtra por mês e ano
+      return m === reportMonth && y === reportYear;
     });
   
     // Cabeçalho
@@ -97,37 +103,52 @@ export default function App() {
     doc.text(`PERÍODO: ${mesNome} / ${reportYear}`, 14, 30);
     doc.text(`PROPRIETÁRIO: HUGO BARROS`, 14, 35);
   
-    // Cálculos da Análise Mensal
-    const entradas = transacoesFiltradas.filter(t => t.type === 'income').reduce((acc, t) => acc + Number(t.val), 0);
-    const saídas = transacoesFiltradas.filter(t => t.type === 'expense').reduce((acc, t) => acc + Number(t.val), 0);
-    const balanço = entradas - saídas;
+    // 2. Cálculos garantindo que os valores são números
+    const entradas = transacoesFiltradas
+      .filter(t => t.type === 'income')
+      .reduce((acc, t) => acc + (Number(t.val) || 0), 0);
+      
+    const saidas = transacoesFiltradas
+      .filter(t => t.type === 'expense' || t.type === 'saída') // Adicionada compatibilidade de nomes
+      .reduce((acc, t) => acc + (Number(t.val) || 0), 0);
+      
+    const balanco = entradas - saidas;
   
-    // Resumo Financeiro no PDF
+    // Resumo Financeiro
     doc.setFontSize(12);
     doc.setTextColor(0, 0, 0);
     doc.text(`Total Entradas: ${entradas.toFixed(2)}€`, 14, 50);
-    doc.text(`Total Saídas: ${saídas.toFixed(2)}€`, 14, 57);
+    doc.text(`Total Saídas: ${saidas.toFixed(2)}€`, 14, 57);
     
-    doc.setTextColor(balanço >= 0 ? 52 : 255, balanço >= 0 ? 199 : 59, balanço >= 0 ? 89 : 48);
-    doc.text(`Balanço Líquido: ${balanço.toFixed(2)}€`, 14, 64);
+    // Cor do Balanço (Verde se positivo, Vermelho se negativo)
+    if (balanco >= 0) doc.setTextColor(52, 199, 89);
+    else doc.setTextColor(255, 59, 48);
+    
+    doc.text(`Balanço Líquido: ${balanco.toFixed(2)}€`, 14, 64);
   
-    // Tabela de Transações Mensais
+    // 3. Montagem da Tabela
     const tableRows = transacoesFiltradas.map(t => [
       new Date(t.date).toLocaleDateString('pt-PT'),
-      t.desc,
-      t.acc.toUpperCase(),
+      t.desc || 'Sem descrição',
+      (t.acc || 'Geral').toUpperCase(),
       t.type === 'income' ? `+${Number(t.val).toFixed(2)}€` : `-${Number(t.val).toFixed(2)}€`
     ]);
   
-    doc.autoTable({
-      startY: 75,
-      head: [['Data', 'Descrição', 'Conta', 'Valor']],
-      body: tableRows,
-      theme: 'striped',
-      headStyles: { fillColor: [28, 28, 30], fontWeight: 'bold' },
-      columnStyles: { 3: { halign: 'right' } },
-      styles: { fontSize: 9 }
-    });
+    if (tableRows.length > 0) {
+      doc.autoTable({
+        startY: 75,
+        head: [['Data', 'Descrição', 'Conta', 'Valor']],
+        body: tableRows,
+        theme: 'striped',
+        headStyles: { fillColor: [28, 28, 30], fontWeight: 'bold' },
+        columnStyles: { 3: { halign: 'right' } },
+        styles: { fontSize: 9 }
+      });
+    } else {
+      doc.setFontSize(10);
+      doc.setTextColor(150, 150, 150);
+      doc.text("Nenhuma transação encontrada para este período.", 14, 80);
+    }
   
     doc.save(`Analise_Mensal_${mesNome}_${reportYear}.pdf`);
     if (typeof triggerHaptic === 'function') triggerHaptic('medium');
