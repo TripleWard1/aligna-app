@@ -76,73 +76,96 @@ export default function App() {
   // --- ESTADOS GERAIS ---
   const gerarRelatorioMensal = () => {
     try {
-      // 1. Verificar se a biblioteca existe
+      // 1. Validar se a biblioteca e os dados existem
       if (typeof jsPDF === 'undefined') {
-        alert("Erro: A biblioteca PDF não carregou. Tenta atualizar a página.");
+        alert("Erro: Biblioteca jsPDF não encontrada.");
         return;
       }
 
-      // 2. Usar 'list' diretamente (o que vês no ecrã)
-      if (!list || list.length === 0) {
-        alert("Não existem dados na lista para exportar.");
+      // IMPORTANTE: Verifica se o teu estado se chama 'list' ou 'transactions'
+      const dadosParaExportar = (typeof list !== 'undefined') ? list : [];
+      
+      if (dadosParaExportar.length === 0) {
+        alert("Não existem dados carregados para exportar.");
         return;
       }
 
       const doc = new jsPDF();
       
-      // Cabeçalho simples
+      // 2. Filtro de Data (DEZEMBRO / 2025)
+      const mesFmt = reportMonth < 10 ? `0${reportMonth}` : `${reportMonth}`;
+      const buscaPeriodo = `${reportYear}-${mesFmt}`;
+
+      const filtrados = dadosParaExportar.filter(t => {
+        const dataStr = String(t.date || "");
+        return dataStr.includes(buscaPeriodo);
+      });
+
+      // Se não encontrar nada no filtro, avisar mas não travar
+      if (filtrados.length === 0) {
+        alert("Nenhum movimento encontrado para o mês selecionado.");
+        return;
+      }
+
+      // 3. Cabeçalho do PDF
       doc.setFontSize(20);
-      doc.text("ALIGNA — RELATÓRIO", 14, 20);
+      doc.text("ALIGNA — DETALHE MENSAL", 14, 20);
       doc.setFontSize(10);
-      doc.text(`PROPRIETÁRIO: HUGO BARROS | DATA: ${new Date().toLocaleDateString()}`, 14, 28);
+      doc.setTextColor(100);
+      doc.text(`HUGO BARROS | ${mesFmt}/${reportYear}`, 14, 28);
 
-      let totalReceitas = 0;
-      let totalGastos = 0;
+      let rct = 0;
+      let gst = 0;
 
-      // 3. Processar linhas e limpar o "NaN"
-      const rows = list.map(t => {
-        // Limpeza radical: mantém apenas números, pontos e vírgulas
-        const valorRaw = String(t.val || "0");
-        const valorLimpo = valorRaw.replace(/[^0-9.,]/g, '').replace(',', '.');
-        const vNum = parseFloat(valorLimpo) || 0;
+      // 4. Mapeamento das linhas (RESOLVE O NaN)
+      const tableRows = filtrados.map(t => {
+        // LIMPEZA TOTAL: remove €, espaços e converte vírgula em ponto
+        const vRaw = String(t.val || "0").replace(/[^\d,.-]/g, '').replace(',', '.');
+        const vNum = parseFloat(vRaw) || 0;
         
-        const isIncome = t.type === 'income' || t.type === 'receita' || vNum > 0;
-        
-        if (isIncome) totalReceitas += Math.abs(vNum); 
-        else totalGastos += Math.abs(vNum);
+        const isReceita = t.type === 'income' || t.type === 'receita';
+        if (isReceita) rct += vNum; else gst += vNum;
 
+        // Garantir que nenhum campo vai vazio (evita o erro Invalid Argument)
         return [
-          t.date || '---',
-          (t.desc || 'TRANSACÇÃO').toUpperCase(),
-          (t.category || 'GERAL').toUpperCase(),
-          isIncome ? `+${Math.abs(vNum).toFixed(2)}€` : `-${Math.abs(vNum).toFixed(2)}€`
+          t.date ? String(t.date).split('-').reverse().join('/') : '---',
+          (t.desc || 'SEM DESCRIÇÃO').toUpperCase(),
+          (CATEGORIES[t.category]?.label || 'GERAL').toUpperCase(),
+          isReceita ? `+${vNum.toFixed(2)}€` : `-${vNum.toFixed(2)}€`
         ];
       });
 
-      // 4. Totais (Corrigindo o NaN)
+      // 5. Totais e Balanço
       doc.setFontSize(12);
-      doc.text(`Receitas: +${totalReceitas.toFixed(2)}€`, 14, 45);
-      doc.text(`Gastos: -${totalGastos.toFixed(2)}€`, 14, 52);
+      doc.setTextColor(0);
+      doc.text(`Total Entradas: +${rct.toFixed(2)}€`, 14, 45);
+      doc.text(`Total Saídas: -${gst.toFixed(2)}€`, 14, 52);
       
-      const bal = totalReceitas - totalGastos;
+      const bal = rct - gst;
       doc.setTextColor(bal >= 0 ? [52, 199, 89] : [255, 59, 48]);
       doc.text(`BALANÇO LÍQUIDO: ${bal.toFixed(2)}€`, 14, 60);
-      doc.setTextColor(0);
 
-      // 5. Gerar Tabela
+      // 6. Desenhar Tabela (Usando a biblioteca autoTable importada no topo)
       doc.autoTable({
         startY: 70,
         head: [['DATA', 'DESCRIÇÃO', 'CATEGORIA', 'VALOR']],
-        body: rows,
+        body: tableRows,
         theme: 'striped',
-        headStyles: { fillColor: [0, 122, 255] }
+        headStyles: { fillColor: [0, 122, 255] },
+        didParseCell: (data) => {
+          if (data.column.index === 3 && data.cell.section === 'body') {
+            const val = data.cell.raw || '';
+            if (val.includes('+')) data.cell.styles.textColor = [52, 199, 89];
+            else if (val.includes('-')) data.cell.styles.textColor = [255, 59, 48];
+          }
+        }
       });
 
-      doc.save("Relatorio_Aligna.pdf");
+      doc.save(`Relatorio_Aligna_${mesFmt}.pdf`);
 
-    } catch (err) {
-      console.error(err);
-      alert("Erro ao gerar: " + err.message);
+    } catch (error) {
+      console.error("Erro Crítico:", error);
+      alert("Erro ao gerar PDF: " + error.message);
     }
   };
   const [editingPrice, setEditingPrice] = useState(null); // Guarda o item para edição rápida
