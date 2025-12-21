@@ -76,92 +76,96 @@ export default function App() {
   // --- ESTADOS GERAIS ---
   const gerarRelatorioMensal = () => {
     try {
-      // 1. Verificação de Dados
+      // 1. Verificação de segurança (Usamos 'list' que é o teu estado do React)
       if (!list || list.length === 0) {
-        alert("Erro: A lista de transações está vazia no sistema.");
+        alert("Erro: A lista de transações não foi carregada.");
         return;
       }
 
       const doc = new jsPDF();
       
-      // 2. Filtro de Data (Ajustado para ser flexível)
+      // 2. Filtro de Data
       const mesFmt = reportMonth < 10 ? `0${reportMonth}` : `${reportMonth}`;
       const buscaPeriodo = `${reportYear}-${mesFmt}`;
 
       const dadosFiltrados = list.filter(t => {
-        // Converte qualquer formato de data para String para comparar
-        const d = t.date?.seconds ? new Date(t.date.seconds * 1000).toISOString() : String(t.date || "");
+        const d = String(t.date || "");
         return d.includes(buscaPeriodo);
       });
 
       if (dadosFiltrados.length === 0) {
-        alert(`Não foram encontrados movimentos para ${mesFmt}/${reportYear} na base de dados.`);
+        alert("Nenhum movimento encontrado para este período.");
         return;
       }
 
-      // 3. Cabeçalho Estilizado
-      doc.setFontSize(22);
-      doc.setTextColor(28, 28, 30);
-      doc.text("ALIGNA — RELATÓRIO MENSAL", 14, 20);
+      // 3. Cabeçalho
+      doc.setFontSize(20);
+      doc.text("ALIGNA — DETALHE MENSAL", 14, 20);
       
       const mesNome = new Date(0, reportMonth - 1).toLocaleString('pt', {month: 'long'}).toUpperCase();
       doc.setFontSize(10);
       doc.setTextColor(100);
-      doc.text(`PROPRIETÁRIO: HUGO BARROS | PERÍODO: ${mesNome} ${reportYear}`, 14, 28);
+      doc.text(`PROPRIETÁRIO: HUGO BARROS | ${mesNome} / ${reportYear}`, 14, 28);
 
-      // 4. Processamento de Valores (Para evitar o erro NaN da imagem anterior)
-      let totalIn = 0;
-      let totalOut = 0;
+      // 4. PROCESSAMENTO PARA EVITAR O 'NaN'
+      let somaEntradas = 0;
+      let somaSaidas = 0;
 
-      const rows = dadosFiltrados.map(t => {
-        // Limpeza de valores: remove "€", troca vírgula por ponto
-        const valorLimpo = String(t.val || "0").replace(/[^0-9.,-]/g, '').replace(',', '.');
+      const tableRows = dadosFiltrados.map(t => {
+        // --- O TRUQUE PARA REMOVER O NaN ---
+        // Pegamos no valor, removemos o "€", removemos espaços e trocamos vírgula por ponto
+        const valorTexto = String(t.val || "0");
+        const valorLimpo = valorTexto.replace('€', '').replace(/\s/g, '').replace(',', '.');
         const vNum = parseFloat(valorLimpo) || 0;
         
-        const eReceita = t.type === 'income' || t.type === 'receita';
-        if (eReceita) totalIn += vNum; else totalOut += vNum;
+        const isIncome = t.type === 'income' || t.type === 'receita';
+        
+        if (isIncome) {
+          somaEntradas += vNum;
+        } else {
+          somaSaidas += vNum;
+        }
 
         return [
           t.date ? String(t.date).split('-').reverse().join('/') : '---',
           (t.desc || 'SEM DESCRIÇÃO').toUpperCase(),
           (CATEGORIES[t.category]?.label || 'GERAL').toUpperCase(),
-          eReceita ? `+${vNum.toFixed(2)}€` : `-${vNum.toFixed(2)}€`
+          isIncome ? `+${vNum.toFixed(2)}€` : `-${vNum.toFixed(2)}€`
         ];
       });
 
-      // 5. Resumo Financeiro
+      // 5. RESUMO (Agora sem NaN)
       doc.setFontSize(12);
       doc.setTextColor(0);
-      doc.text(`Total de Entradas: +${totalIn.toFixed(2)}€`, 14, 45);
-      doc.text(`Total de Saídas: -${totalOut.toFixed(2)}€`, 14, 52);
+      doc.text(`Receitas: +${somaEntradas.toFixed(2)}€`, 14, 45);
+      doc.text(`Gastos: -${somaSaidas.toFixed(2)}€`, 14, 52);
       
-      const balanco = totalIn - totalOut;
-      doc.setTextColor(balanco >= 0 ? [52, 199, 89] : [255, 59, 48]);
-      doc.text(`BALANÇO LÍQUIDO: ${balanco.toFixed(2)}€`, 14, 62);
+      const resultado = somaEntradas - somaSaidas;
+      doc.setTextColor(resultado >= 0 ? [52, 199, 89] : [255, 59, 48]);
+      doc.text(`BALANÇO: ${resultado.toFixed(2)}€`, 14, 60);
 
-      // 6. Tabela de Movimentos
+      // 6. TABELA
       doc.autoTable({
         startY: 70,
         head: [['DATA', 'DESCRIÇÃO', 'CATEGORIA', 'VALOR']],
-        body: rows,
+        body: tableRows,
         theme: 'striped',
         headStyles: { fillColor: [0, 122, 255] },
         columnStyles: { 3: { halign: 'right' } },
         didParseCell: (data) => {
           if (data.column.index === 3 && data.cell.section === 'body') {
-            const val = data.cell.raw || '';
-            if (val.includes('+')) data.cell.styles.textColor = [52, 199, 89];
-            else if (val.includes('-')) data.cell.styles.textColor = [255, 59, 48];
+            const txt = data.cell.raw || '';
+            if (txt.includes('+')) data.cell.styles.textColor = [52, 199, 89];
+            else if (txt.includes('-')) data.cell.styles.textColor = [255, 59, 48];
           }
         }
       });
 
-      doc.save(`Relatorio_Hugo_${mesFmt}_${reportYear}.pdf`);
-      if (typeof triggerHaptic === 'function') triggerHaptic('medium');
+      doc.save(`Analise_${mesFmt}_${reportYear}.pdf`);
 
-    } catch (err) {
-      console.error("Erro PDF:", err);
-      alert("Erro ao gerar PDF. Verifica se tens transações no mês selecionado.");
+    } catch (error) {
+      console.error("Erro no PDF:", error);
+      alert("Erro ao processar valores. Verifica se os valores inseridos são números.");
     }
   };
   const [editingPrice, setEditingPrice] = useState(null); // Guarda o item para edição rápida
