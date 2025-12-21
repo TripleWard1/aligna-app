@@ -158,6 +158,7 @@ export default function App() {
   
     doc.save(`Relatorio_Hugo_${mesNome}.pdf`);
   };
+  
   const [editingPrice, setEditingPrice] = useState(null); // Guarda o item para edição rápida
 const [tempPrice, setTempPrice] = useState(''); // Guarda o valor que estás a digitar
   const [searchTerm, setSearchTerm] = useState(''); // Estado para a barra de pesquisa
