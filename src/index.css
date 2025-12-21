@@ -80,3 +80,8 @@ button {
 .card-animado {
   animation: fadeInUp 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) backwards;
 }
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
