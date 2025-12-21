@@ -71,6 +71,9 @@ export default function App() {
   });
 
   // --- ESTADOS GERAIS ---
+  const [editingPrice, setEditingPrice] = useState(null); // Guarda o item para edição rápida
+const [tempPrice, setTempPrice] = useState(''); // Guarda o valor que estás a digitar
+  const [searchTerm, setSearchTerm] = useState(''); // Estado para a barra de pesquisa
   const [user, setUser] = useState(localStorage.getItem('f_user') || null);
   const [list, setList] = useState([]);
   const [allUsers, setAllUsers] = useState({});
@@ -546,16 +549,62 @@ const isLowBalance = totalBalance < (settings.lowBalanceLimit || 50);
   return (
     <div style={{ padding: '15px', maxWidth: '100%', margin: '0 auto', backgroundColor: '#F8F9FB', minHeight: '100vh', fontFamily: '-apple-system, sans-serif', boxSizing: 'border-box', overflowX: 'hidden' }}>
       
-      {/* Header Mobile */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px' }}>
-        <div style={{ width: '50px', height: '50px', borderRadius: '15px', backgroundColor: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '28px', boxShadow: '0 5px 15px rgba(0,0,0,0.05)' }}>{settings.avatar}</div>
-        <div>
-          <h2 style={{ fontSize: '18px', margin: 0, fontWeight: '900' }}>{user ? user.toUpperCase() : 'UTILIZADOR'}</h2>
-          <p style={{margin: 0, fontSize: '11px', color: (totalBalance < settings.lowBalanceLimit ? '#FF3B30' : '#34C759'), fontWeight: '700'}}>
-            ● {totalBalance < settings.lowBalanceLimit ? 'Saldo Baixo!' : 'Online'}
-          </p>
-        </div>
-      </div>
+      {/* Header Mobile Premium */}
+<div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '25px' }}>
+  {/* Avatar com Sombra Suave */}
+  <div style={{ 
+    width: '52px', 
+    height: '52px', 
+    borderRadius: '16px', 
+    backgroundColor: 'white', 
+    display: 'flex', 
+    alignItems: 'center', 
+    justifyContent: 'center', 
+    fontSize: '28px', 
+    boxShadow: '0 8px 20px rgba(0,0,0,0.06)',
+    border: '1px solid rgba(0,0,0,0.02)'
+  }}>
+    {settings.avatar}
+  </div>
+
+  <div>
+    {/* NOME COM GRADIENTE METÁLICO */}
+    <h2 style={{ 
+      fontSize: '20px', 
+      margin: 0, 
+      fontWeight: '900',
+      letterSpacing: '-0.5px',
+      background: 'linear-gradient(to right, #1C1C1E 30%, #8E8E93 100%)',
+      WebkitBackgroundClip: 'text',
+      WebkitTextFillColor: 'transparent'
+    }}>
+      {user ? user.toUpperCase() : 'UTILIZADOR'}
+    </h2>
+
+    {/* STATUS COM EFEITO GLOW (DINÂMICO) */}
+    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '2px' }}>
+      <div style={{ 
+        width: '7px', 
+        height: '7px', 
+        borderRadius: '50%', 
+        backgroundColor: totalBalance < settings.lowBalanceLimit ? '#FF3B30' : '#34C759',
+        boxShadow: totalBalance < settings.lowBalanceLimit 
+          ? '0 0 8px rgba(255, 59, 48, 0.8)' 
+          : '0 0 8px rgba(52, 199, 89, 0.8)' 
+      }}></div>
+      <span style={{ 
+        margin: 0, 
+        fontSize: '10px', 
+        color: totalBalance < settings.lowBalanceLimit ? '#FF3B30' : '#34C759', 
+        fontWeight: '800',
+        textTransform: 'uppercase',
+        letterSpacing: '0.5px'
+      }}>
+        {totalBalance < settings.lowBalanceLimit ? 'Saldo Baixo!' : 'Online'}
+      </span>
+    </div>
+  </div>
+</div>
 
       {activeTab === 'home' && (
         <>
@@ -1040,6 +1089,29 @@ const isLowBalance = totalBalance < (settings.lowBalanceLimit || 50);
       </h4>
     </div>
       </div> {/* Este é o fecho do Resumo de Valor */}
+      <div style={{ position: 'relative', marginBottom: '20px', zIndex: 1 }}>
+  <input
+    type="text"
+    placeholder="🔍 Pesquisar por nome (ex: Zelda, Game Boy...)"
+    value={searchTerm}
+    onChange={(e) => setSearchTerm(e.target.value)}
+    style={{
+      width: '100%',
+      padding: '14px 15px 14px 45px',
+      borderRadius: '16px',
+      border: 'none',
+      backgroundColor: 'rgba(255,255,255,0.7)',
+      backdropFilter: 'blur(10px)',
+      WebkitBackdropFilter: 'blur(10px)',
+      fontSize: '14px',
+      fontWeight: '600',
+      outline: 'none',
+      boxSizing: 'border-box',
+      boxShadow: '0 4px 12px rgba(0,0,0,0.03)',
+      color: '#1C1C1E'
+    }}
+  />
+</div>
 
 {/* --- PASSO 2: BARRA DE FILTROS --- */}
 <div style={{ 
@@ -1123,20 +1195,43 @@ const isLowBalance = totalBalance < (settings.lowBalanceLimit || 50);
 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '15px' }}>
   {inventory
     .filter(item => {
-      if (!invFilter || invFilter === 'TODOS') return true;
-      return item.category === invFilter;
+      // 1. Filtro de Categoria (Nintendo, Sega, etc)
+      const matchesFilter = !invFilter || invFilter === 'TODOS' || item.category === invFilter;
+      
+      // 2. Filtro de Pesquisa por Texto (searchTerm)
+      const matchesSearch = item.name.toLowerCase().includes((searchTerm || '').toLowerCase());
+      
+      return matchesFilter && matchesSearch;
     })
-    .map(item => (
-              <div key={item.id} style={{ backgroundColor: 'white', borderRadius: '24px', overflow: 'hidden', boxShadow: '0 6px 18px rgba(0,0,0,0.04)', display: 'flex', flexDirection: 'column', border: '1px solid rgba(0,0,0,0.02)' }}>
-                <div style={{ 
-                  height: '140px', 
-                  backgroundColor: '#F8F9FB',
-                  display: 'flex', 
-                  alignItems: 'center', 
-                  justifyContent: 'center',
-                  overflow: 'hidden',
-                  position: 'relative'
-                }}>
+    // 1. Adicionamos o 'index' aqui para contar os cards
+.map((item, index) => ( 
+  <div 
+    key={item.id} 
+    className="card-animado" // 2. Chamamos a regra que criaste no index.css
+    style={{ 
+      // 3. Criamos o efeito dominó (cada card espera um pouco mais que o anterior)
+      animationDelay: `${index * 0.1}s`, 
+      
+      backgroundColor: 'rgba(255, 255, 255, 0.75)', 
+      backdropFilter: 'blur(12px)', 
+      WebkitBackdropFilter: 'blur(12px)', 
+      borderRadius: '24px', 
+      overflow: 'hidden', 
+      boxShadow: '0 8px 32px rgba(0,0,0,0.06)', 
+      display: 'flex', 
+      flexDirection: 'column', 
+      border: '1px solid rgba(255, 255, 255, 0.4)'
+    }}
+  >
+    <div style={{ 
+      height: '140px', 
+      backgroundColor: 'rgba(248, 249, 251, 0.5)', 
+      display: 'flex', 
+      alignItems: 'center', 
+      justifyContent: 'center',
+      overflow: 'hidden',
+      position: 'relative'
+    }}>
                   {item.photo && activeTab === 'inventory' ? (
   <img 
     src={item.photo} 
@@ -1156,8 +1251,23 @@ const isLowBalance = totalBalance < (settings.lowBalanceLimit || 50);
 )}
                   {/* Badge de Lucro Potencial */}
                   {item.resellValue > item.buyPrice && (
-                    <div style={{ position: 'absolute', top: '8px', right: '8px', backgroundColor: '#34C759', color: 'white', fontSize: '8px', fontWeight: '900', padding: '4px 8px', borderRadius: '10px' }}>
-                      +{ (item.resellValue - item.buyPrice).toFixed(0) }€
+                    <div style={{ 
+                      position: 'absolute', 
+                      top: '10px', 
+                      right: '10px', 
+                      backgroundColor: '#34C759', 
+                      color: 'white', 
+                      padding: '4px 10px', 
+                      borderRadius: '12px', 
+                      fontSize: '10px', 
+                      fontWeight: '900',
+                      zIndex: 1,
+                      // --- ADICIONA ESTAS 2 LINHAS PARA O POLIMENTO ---
+                      boxShadow: '0 0 12px rgba(52, 199, 89, 0.6)', 
+                      border: '1px solid rgba(255, 255, 255, 0.3)'
+                    }}>
+                      {/* Aqui deve estar a tua lógica de cálculo, algo como: */}
+                      +{ (Number(item.resellValue) - Number(item.buyPrice)).toFixed(0) }€
                     </div>
                   )}
                 </div>
@@ -1180,10 +1290,28 @@ const isLowBalance = totalBalance < (settings.lowBalanceLimit || 50);
                   </p>
 
                   <div style={{ marginTop: 'auto', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
-                    <div>
-                       <span style={{ display: 'block', fontSize: '8px', fontWeight: '700', color: '#AEAEB2', marginBottom: '2px' }}>VALOR REVENDA</span>
-                       <span style={{ fontSize: '16px', fontWeight: '900', color: '#34C759' }}>{item.resellValue}€</span>
-                    </div>
+                  <div 
+  onClick={() => {
+    // ESTA É A PARTE QUE SUBSTITUI A JANELA BRANCA:
+    setEditingPrice(item); 
+    setTempPrice(item.resellValue); 
+    if (typeof triggerHaptic === 'function') triggerHaptic('light');
+  }}
+  style={{ 
+    cursor: 'pointer', 
+    padding: '4px 8px', 
+    backgroundColor: 'rgba(52, 199, 89, 0.05)', 
+    borderRadius: '8px',
+    marginLeft: '-8px' 
+  }}
+>
+  <span style={{ display: 'block', fontSize: '8px', fontWeight: '800', color: '#AEAEB2', marginBottom: '2px' }}>
+    VALOR REVENDA ✎
+  </span>
+  <span style={{ fontSize: '16px', fontWeight: '900', color: '#34C759' }}>
+    {Number(item.resellValue).toFixed(2)}€
+  </span>
+</div>
                     
                     <div style={{ display: 'flex', gap: '8px' }}>
                       <button onClick={() => handleEditInventory(item)} style={{ border: 'none', background: '#F2F2F7', width: '32px', height: '32px', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '14px' }}>✏️</button>
@@ -1228,6 +1356,52 @@ const isLowBalance = totalBalance < (settings.lowBalanceLimit || 50);
   </div>
 )}
 
+{/* MODAL DE EDIÇÃO RÁPIDA DENTRO DA APP */}
+{editingPrice && (
+  <div style={{
+    position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+    backgroundColor: 'rgba(0,0,0,0.4)', 
+    backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)',
+    display: 'flex', alignItems: 'center', justifyContent: 'center', 
+    zIndex: 4000, padding: '20px'
+  }}>
+    <div className="card-animado" style={{
+      backgroundColor: 'white', padding: '25px', borderRadius: '30px',
+      width: '100%', maxWidth: '320px', boxShadow: '0 20px 40px rgba(0,0,0,0.2)',
+      textAlign: 'center'
+    }}>
+      <p style={{ margin: '0 0 5px 0', fontSize: '10px', fontWeight: '800', color: '#8E8E93', textTransform: 'uppercase' }}>
+        Atualizar Valor
+      </p>
+      <h4 style={{ margin: '0 0 20px 0', fontSize: '14px', fontWeight: '900', color: '#1C1C1E' }}>
+        {editingPrice.name}
+      </h4>
+      <input 
+        autoFocus
+        type="number" 
+        value={tempPrice}
+        onChange={(e) => setTempPrice(e.target.value)}
+        style={{
+          width: '100%', padding: '15px', borderRadius: '15px', border: 'none',
+          backgroundColor: '#F2F2F7', fontSize: '28px', fontWeight: '900',
+          textAlign: 'center', outline: 'none', color: '#34C759', marginBottom: '20px'
+        }}
+      />
+      <div style={{ display: 'flex', gap: '10px' }}>
+        <button onClick={() => setEditingPrice(null)} style={{ flex: 1, padding: '15px', borderRadius: '15px', border: 'none', backgroundColor: '#E5E5EA', fontWeight: '800' }}>Cancelar</button>
+        <button 
+          onClick={() => {
+            const valor = parseFloat(String(tempPrice).replace(',', '.'));
+            update(ref(db, `users/${user}/inventory/${editingPrice.id}`), { resellValue: valor || 0, lastUpdate: Date.now() });
+            setEditingPrice(null);
+            if (typeof triggerHaptic === 'function') triggerHaptic('medium');
+          }}
+          style={{ flex: 1, padding: '15px', borderRadius: '15px', border: 'none', backgroundColor: '#34C759', color: 'white', fontWeight: '900' }}
+        > Gravar </button>
+      </div>
+    </div>
+  </div>
+)}
 {/* Menu Inferior Dinâmico */}
 <div style={{ 
   position: 'fixed', 
@@ -1287,9 +1461,29 @@ const isLowBalance = totalBalance < (settings.lowBalanceLimit || 50);
 </div>
 
       <div style={{ height: '90px' }}></div>
-      <footer style={{ textAlign: 'center', paddingBottom: '30px' }}>
-        <p style={{ fontSize: '9px', color: '#AEAEB2', letterSpacing: '1px' }}>© 2026 ALIGNA — HUGO BARROS</p>
-      </footer>
+      <footer style={{ 
+  textAlign: 'center', 
+  padding: '40px 0 120px 0', // Aumentamos o espaço em baixo para o menu não tapar o texto
+  opacity: 0.5 
+}}>
+  <p style={{ 
+    fontSize: '9px', 
+    color: '#AEAEB2', 
+    letterSpacing: '2px', 
+    fontWeight: '800',
+    textTransform: 'uppercase'
+  }}>
+    © 2026 ALIGNA — HUGO BARROS
+  </p>
+  <div style={{ 
+    width: '40px', 
+    height: '4px', 
+    backgroundColor: '#000', 
+    borderRadius: '2px', 
+    margin: '15px auto 0', 
+    opacity: 0.1 
+  }}></div> {/* Pequena barra estilo iPhone no fundo */}
+</footer>
     </div>
   );
 }
