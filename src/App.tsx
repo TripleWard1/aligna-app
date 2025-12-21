@@ -1377,16 +1377,26 @@ const isLowBalance = totalBalance < (settings.lowBalanceLimit || 50);
         {editingPrice.name}
       </h4>
       <input 
-        autoFocus
-        type="number" 
-        value={tempPrice}
-        onChange={(e) => setTempPrice(e.target.value)}
-        style={{
-          width: '100%', padding: '15px', borderRadius: '15px', border: 'none',
-          backgroundColor: '#F2F2F7', fontSize: '28px', fontWeight: '900',
-          textAlign: 'center', outline: 'none', color: '#34C759', marginBottom: '20px'
-        }}
-      />
+  autoFocus
+  type="number" 
+  value={tempPrice}
+  onChange={(e) => setTempPrice(e.target.value)}
+  style={{
+    width: '100%', 
+    padding: '15px 0', // Ajustamos o padding lateral para 0
+    borderRadius: '15px', 
+    border: 'none',
+    backgroundColor: '#F2F2F7', 
+    fontSize: '28px', 
+    fontWeight: '900',
+    textAlign: 'center', 
+    outline: 'none', 
+    color: '#34C759', 
+    marginBottom: '20px',
+    boxSizing: 'border-box', // Garante que o padding não aumente a largura total
+    display: 'block'
+  }}
+/>
       <div style={{ display: 'flex', gap: '10px' }}>
         <button onClick={() => setEditingPrice(null)} style={{ flex: 1, padding: '15px', borderRadius: '15px', border: 'none', backgroundColor: '#E5E5EA', fontWeight: '800' }}>Cancelar</button>
         <button 
