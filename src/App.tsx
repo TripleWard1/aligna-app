@@ -76,96 +76,94 @@ export default function App() {
   // --- ESTADOS GERAIS ---
   const gerarRelatorioMensal = () => {
     try {
-      // 1. Validar se a biblioteca e os dados existem
-      if (typeof jsPDF === 'undefined') {
-        alert("Erro: Biblioteca jsPDF não encontrada.");
-        return;
-      }
-
-      // IMPORTANTE: Verifica se o teu estado se chama 'list' ou 'transactions'
-      const dadosParaExportar = (typeof list !== 'undefined') ? list : [];
+      // 1. Verificação de emergência: se 'list' não funcionar, tentamos 'transactions'
+      const fonteDados = (typeof list !== 'undefined') ? list : (typeof transactions !== 'undefined' ? transactions : []);
       
-      if (dadosParaExportar.length === 0) {
-        alert("Não existem dados carregados para exportar.");
+      if (fonteDados.length === 0) {
+        alert("Erro: A variável de dados ('list') está vazia ou não foi encontrada.");
         return;
       }
 
       const doc = new jsPDF();
       
-      // 2. Filtro de Data (DEZEMBRO / 2025)
+      // 2. Filtro simplificado (garante que encontra 2025-12)
       const mesFmt = reportMonth < 10 ? `0${reportMonth}` : `${reportMonth}`;
-      const buscaPeriodo = `${reportYear}-${mesFmt}`;
+      const filtroData = `${reportYear}-${mesFmt}`;
 
-      const filtrados = dadosParaExportar.filter(t => {
-        const dataStr = String(t.date || "");
-        return dataStr.includes(buscaPeriodo);
+      const movimentos = fonteDados.filter(t => {
+        const dataOriginal = String(t.date || "");
+        return dataOriginal.includes(filtroData);
       });
 
-      // Se não encontrar nada no filtro, avisar mas não travar
-      if (filtrados.length === 0) {
-        alert("Nenhum movimento encontrado para o mês selecionado.");
+      if (movimentos.length === 0) {
+        alert("Não foram encontrados dados para o período: " + filtroData);
         return;
       }
 
-      // 3. Cabeçalho do PDF
-      doc.setFontSize(20);
-      doc.text("ALIGNA — DETALHE MENSAL", 14, 20);
+      // 3. Desenho do Cabeçalho
+      doc.setFontSize(22);
+      doc.text("ALIGNA — RELATÓRIO MENSAL", 14, 20);
       doc.setFontSize(10);
       doc.setTextColor(100);
-      doc.text(`HUGO BARROS | ${mesFmt}/${reportYear}`, 14, 28);
+      doc.text(`PROPRIETÁRIO: HUGO BARROS | PERÍODO: ${mesFmt}/${reportYear}`, 14, 28);
+      doc.text(`GERADO EM: ${new Date().toLocaleString()}`, 14, 33);
 
-      let rct = 0;
-      let gst = 0;
+      // 4. LÓGICA ANTI-NaN (Calcula valores como o teu ecrã faz)
+      let totalEntradas = 0;
+      let totalSaidas = 0;
 
-      // 4. Mapeamento das linhas (RESOLVE O NaN)
-      const tableRows = filtrados.map(t => {
-        // LIMPEZA TOTAL: remove €, espaços e converte vírgula em ponto
-        const vRaw = String(t.val || "0").replace(/[^\d,.-]/g, '').replace(',', '.');
-        const vNum = parseFloat(vRaw) || 0;
+      const linhasTabela = movimentos.map(t => {
+        // Converte o valor para número ignorando símbolos
+        let valString = String(t.val || "0");
+        let valorNumerico = parseFloat(valString.replace(/[^-0-9.,]/g, '').replace(',', '.')) || 0;
         
-        const isReceita = t.type === 'income' || t.type === 'receita';
-        if (isReceita) rct += vNum; else gst += vNum;
+        // Identifica se é receita ou gasto
+        const isReceita = t.type === 'income' || t.type === 'receita' || valorNumerico > 0;
+        const absVal = Math.abs(valorNumerico);
 
-        // Garantir que nenhum campo vai vazio (evita o erro Invalid Argument)
+        if (isReceita) totalEntradas += absVal;
+        else totalSaidas += absVal;
+
         return [
           t.date ? String(t.date).split('-').reverse().join('/') : '---',
           (t.desc || 'SEM DESCRIÇÃO').toUpperCase(),
           (CATEGORIES[t.category]?.label || 'GERAL').toUpperCase(),
-          isReceita ? `+${vNum.toFixed(2)}€` : `-${vNum.toFixed(2)}€`
+          isReceita ? `+${absVal.toFixed(2)}€` : `-${absVal.toFixed(2)}€`
         ];
       });
 
-      // 5. Totais e Balanço
-      doc.setFontSize(12);
+      // 5. Resumo Financeiro (Igual ao teu Dashboard)
+      doc.setFontSize(14);
       doc.setTextColor(0);
-      doc.text(`Total Entradas: +${rct.toFixed(2)}€`, 14, 45);
-      doc.text(`Total Saídas: -${gst.toFixed(2)}€`, 14, 52);
+      doc.text(`RECEITAS: +${totalEntradas.toFixed(2)}€`, 14, 48);
+      doc.text(`GASTOS: -${totalSaidas.toFixed(2)}€`, 14, 55);
       
-      const bal = rct - gst;
-      doc.setTextColor(bal >= 0 ? [52, 199, 89] : [255, 59, 48]);
-      doc.text(`BALANÇO LÍQUIDO: ${bal.toFixed(2)}€`, 14, 60);
+      const balanco = totalEntradas - totalSaidas;
+      doc.setTextColor(balanco >= 0 ? [52, 199, 89] : [255, 59, 48]);
+      doc.text(`BALANÇO LÍQUIDO: ${balanco.toFixed(2)}€`, 14, 65);
 
-      // 6. Desenhar Tabela (Usando a biblioteca autoTable importada no topo)
+      // 6. Tabela de Movimentos
       doc.autoTable({
-        startY: 70,
+        startY: 75,
         head: [['DATA', 'DESCRIÇÃO', 'CATEGORIA', 'VALOR']],
-        body: tableRows,
+        body: linhasTabela,
         theme: 'striped',
         headStyles: { fillColor: [0, 122, 255] },
+        columnStyles: { 3: { halign: 'right', fontStyle: 'bold' } },
         didParseCell: (data) => {
           if (data.column.index === 3 && data.cell.section === 'body') {
-            const val = data.cell.raw || '';
-            if (val.includes('+')) data.cell.styles.textColor = [52, 199, 89];
-            else if (val.includes('-')) data.cell.styles.textColor = [255, 59, 48];
+            const txt = data.cell.raw || '';
+            if (txt.includes('+')) data.cell.styles.textColor = [52, 199, 89];
+            else if (txt.includes('-')) data.cell.styles.textColor = [255, 59, 48];
           }
         }
       });
 
-      doc.save(`Relatorio_Aligna_${mesFmt}.pdf`);
+      doc.save(`Aligna_Dezembro_2025.pdf`);
 
-    } catch (error) {
-      console.error("Erro Crítico:", error);
-      alert("Erro ao gerar PDF: " + error.message);
+    } catch (err) {
+      console.error("Erro Interno:", err);
+      alert("Erro ao processar: " + err.message);
     }
   };
   const [editingPrice, setEditingPrice] = useState(null); // Guarda o item para edição rápida
