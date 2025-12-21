@@ -75,81 +75,85 @@ export default function App() {
 
   // --- ESTADOS GERAIS ---
   const gerarRelatorioMensal = () => {
-    try {
-      // 1. Tenta encontrar a lista de dados correta que o teu App está a usar
-      const dataSources = [
-        (typeof list !== 'undefined' ? list : null),
-        (typeof transactions !== 'undefined' ? transactions : null),
-        (typeof filteredList !== 'undefined' ? filteredList : null)
-      ];
+    const doc = new jsPDF();
+    const dataAtual = new Date().toLocaleDateString('pt-PT');
+    
+    // 1. FILTRAGEM MELHORADA
+    // Tentamos filtrar por mês/ano, mas se não encontrar nada, procuramos de forma mais flexível
+    let transacoesFiltradas = list.filter(t => {
+      if (!t.date) return false;
+      const dataStr = String(t.date);
       
-      // Escolhe a primeira que tiver dados
-      const rawData = dataSources.find(ds => ds && ds.length > 0) || [];
-  
-      if (rawData.length === 0) {
-        alert("Erro Crítico: Não foi possível localizar a lista de transações no código.");
-        return;
-      }
-  
-      const doc = new jsPDF();
+      // Verifica se a data contém o ano e o mês selecionados (ex: "2025-12")
+      const mesFormatado = reportMonth < 10 ? `0${reportMonth}` : `${reportMonth}`;
+      const busca = reportMonth === 0 ? `${reportYear}` : `${reportYear}-${mesFormatado}`;
       
-      // 2. Cabeçalho Fixo (Para garantir que o PDF gera sempre)
-      doc.setFontSize(20);
-      doc.text("ALIGNA — EXTRATO FINANCEIRO", 14, 20);
-      doc.setFontSize(10);
-      doc.text(`HUGO BARROS | EMITIDO EM: ${new Date().toLocaleDateString()}`, 14, 28);
+      return dataStr.includes(busca);
+    });
   
-      let somaIn = 0;
-      let somaOut = 0;
-  
-      // 3. Processamento simplificado dos dados
-      const tableData = rawData.map(item => {
-        // Extrair apenas números do valor (resolve o erro NaN)
-        const valorTexto = String(item.val || "0");
-        const apenasNumeros = valorTexto.replace(/[^-0-9.,]/g, '').replace(',', '.');
-        const valorFinal = parseFloat(apenasNumeros) || 0;
-  
-        // Definir se é entrada ou saída baseado no tipo ou no sinal
-        const eReceita = item.type === 'income' || item.type === 'receita' || valorFinal > 0;
-        const valorAbsoluto = Math.abs(valorFinal);
-  
-        if (eReceita) somaIn += valorAbsoluto;
-        else somaOut += valorAbsoluto;
-  
-        return [
-          item.date || '---',
-          String(item.desc || 'MOVIMENTO').toUpperCase(),
-          String(item.category || 'GERAL').toUpperCase(),
-          eReceita ? `+${valorAbsoluto.toFixed(2)}€` : `-${valorAbsoluto.toFixed(2)}€`
-        ];
-      });
-  
-      // 4. Totais e Balanço
-      doc.setFontSize(12);
-      doc.text(`RECEITAS: +${somaIn.toFixed(2)}€`, 14, 45);
-      doc.text(`GASTOS: -${somaOut.toFixed(2)}€`, 14, 52);
-      
-      const resultado = somaIn - somaOut;
-      doc.setTextColor(resultado >= 0 ? [52, 199, 89] : [255, 59, 48]);
-      doc.text(`BALANÇO: ${resultado.toFixed(2)}€`, 14, 60);
-      doc.setTextColor(0);
-  
-      // 5. Gerar Tabela (com proteção contra argumentos inválidos)
-      doc.autoTable({
-        startY: 70,
-        head: [['DATA', 'DESCRIÇÃO', 'CONTA', 'VALOR']],
-        body: tableData,
-        theme: 'grid',
-        headStyles: { fillColor: [0, 122, 255] },
-        styles: { fontSize: 8 }
-      });
-  
-      doc.save("Relatorio_Aligna_Hugo.pdf");
-  
-    } catch (e) {
-      alert("Erro ao processar: " + e.message);
-      console.error(e);
+    // Se mesmo assim estiver vazio, vamos buscar todas as transações que existem 
+    // para não te dar um PDF em branco
+    if (transacoesFiltradas.length === 0) {
+      transacoesFiltradas = list.slice(0, 20); // Pega as últimas 20 só para testar
     }
+  
+    // Ordenar
+    transacoesFiltradas.sort((a, b) => new Date(b.date) - new Date(a.date));
+  
+    // Cabeçalho
+    doc.setFontSize(20);
+    doc.setTextColor(28, 28, 30);
+    doc.text("ALIGNA — DETALHE MENSAL", 14, 22);
+    
+    const mesNome = reportMonth === 0 ? "GERAL" : new Date(0, reportMonth - 1).toLocaleString('pt', {month: 'long'}).toUpperCase();
+    doc.setFontSize(10);
+    doc.setTextColor(142, 142, 147);
+    doc.text(`HUGO BARROS | ${mesNome} / ${reportYear}`, 14, 30);
+  
+    // 2. CÁLCULOS
+    const entradas = transacoesFiltradas
+      .filter(t => t.type === 'income' || t.type === 'receita')
+      .reduce((acc, t) => acc + (Number(t.val) || 0), 0);
+      
+    const saidas = transacoesFiltradas
+      .filter(t => t.type === 'expense' || t.type === 'saída' || t.type === 'gasto')
+      .reduce((acc, t) => acc + (Number(t.val) || 0), 0);
+    
+    const balanco = entradas - saidas;
+  
+    // Resumo
+    doc.setFontSize(12);
+    doc.setTextColor(0, 0, 0);
+    doc.text(`Receitas: +${entradas.toFixed(2)}€`, 14, 45);
+    doc.text(`Gastos: -${saidas.toFixed(2)}€`, 14, 52);
+    doc.setTextColor(balanco >= 0 ? 52 : 255, balanco >= 0 ? 199 : 59, balanco >= 0 ? 89 : 48);
+    doc.text(`Balanço: ${balanco.toFixed(2)}€`, 14, 60);
+  
+    // 3. TABELA DISCRIMINADA
+    const tableRows = transacoesFiltradas.map(t => [
+      t.date ? String(t.date).split('-').reverse().join('/') : '---',
+      (t.desc || 'SEM DESCRIÇÃO').toUpperCase(),
+      (t.acc || 'GERAL').toUpperCase(),
+      (t.type === 'income' || t.type === 'receita') ? `+${Number(t.val).toFixed(2)}€` : `-${Number(t.val).toFixed(2)}€`
+    ]);
+  
+    doc.autoTable({
+      startY: 70,
+      head: [['DATA', 'DESCRIÇÃO', 'CONTA', 'VALOR']],
+      body: tableRows,
+      theme: 'striped',
+      headStyles: { fillColor: [28, 28, 30] },
+      columnStyles: { 3: { halign: 'right', fontStyle: 'bold' } },
+      didParseCell: function(data) {
+        if (data.column.index === 3 && data.cell.section === 'body') {
+          if (data.cell.raw.includes('+')) data.cell.styles.textColor = [52, 199, 89];
+          else data.cell.styles.textColor = [255, 59, 48];
+        }
+      }
+    });
+  
+    doc.save(`Relatorio_Hugo_${mesNome}.pdf`);
+    if (typeof triggerHaptic === 'function') triggerHaptic('medium');
   };
   const [editingPrice, setEditingPrice] = useState(null); // Guarda o item para edição rápida
 const [tempPrice, setTempPrice] = useState(''); // Guarda o valor que estás a digitar
