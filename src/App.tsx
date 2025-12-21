@@ -75,33 +75,24 @@ export default function App() {
 
   // --- ESTADOS GERAIS ---
   const gerarRelatorioMensal = () => {
-    // Verificação de segurança: Se a biblioteca não carregou, tentamos usar o objeto global
-    const { jsPDF } = window.jspdf || {};
-    if (!jsPDF) {
-      alert("Erro: A biblioteca PDF ainda está a carregar. Aguarda 2 segundos e tenta de novo.");
-      return;
-    }
-  
+    // Criamos o documento diretamente usando a classe importada no topo
     const doc = new jsPDF();
     const dataAtual = new Date().toLocaleDateString('pt-PT');
     
-    // 1. FILTRAGEM INFALÍVEL
+    // 1. FILTRAGEM
     const mesFormatado = reportMonth < 10 ? `0${reportMonth}` : `${reportMonth}`;
     const buscaPeriodo = reportMonth === 0 ? `${reportYear}` : `${reportYear}-${mesFormatado}`;
   
     const transacoesFiltradas = list.filter(t => {
       if (!t.date) return false;
-      // Verifica se a data da transação começa com o período selecionado
       return String(t.date).startsWith(buscaPeriodo);
     });
   
-    // Ordenar por data
     transacoesFiltradas.sort((a, b) => new Date(b.date) - new Date(a.date));
   
     // 2. CÁLCULOS (Limpando o campo 'val')
     const limparEConverter = (valor) => {
       if (!valor) return 0;
-      // Remove tudo o que não seja número, ponto ou vírgula
       const numerico = String(valor).replace(/[^0-9.,-]/g, '').replace(',', '.');
       return parseFloat(numerico) || 0;
     };
@@ -133,16 +124,15 @@ export default function App() {
     doc.text(`Gastos: -${totalGastos.toFixed(2)}€`, 14, 52);
     
     doc.setTextColor(balancoFinal >= 0 ? 52 : 255, balancoFinal >= 0 ? 199 : 59, balancoFinal >= 0 ? 89 : 48);
-    doc.setFont("helvetica", "bold");
     doc.text(`BALANÇO LÍQUIDO: ${balancoFinal.toFixed(2)}€`, 14, 62);
   
-    // 3. TABELA DETALHADA
+    // 3. TABELA (Nomes dos campos: desc, val, acc)
     const linhasTabela = transacoesFiltradas.map(t => {
       const v = limparEConverter(t.val);
       return [
         t.date ? t.date.split('-').reverse().join('/') : '---',
-        (t.desc || 'Sem Descrição').toUpperCase(),
-        (t.acc || 'Carteira').toUpperCase(),
+        (t.desc || 'SEM DESCRIÇÃO').toUpperCase(),
+        (t.acc || 'CARTEIRA').toUpperCase(),
         t.type === 'income' ? `+${v.toFixed(2)}€` : `-${v.toFixed(2)}€`
       ];
     });
@@ -152,7 +142,7 @@ export default function App() {
         startY: 70,
         head: [['DATA', 'DESCRIÇÃO', 'CONTA', 'VALOR']],
         body: linhasTabela,
-        theme: 'grid',
+        theme: 'striped',
         headStyles: { fillColor: [28, 28, 30], halign: 'center' },
         columnStyles: { 3: { halign: 'right' } },
         styles: { fontSize: 8 },
@@ -163,10 +153,6 @@ export default function App() {
           }
         }
       });
-    } else {
-      doc.setFontSize(10);
-      doc.setTextColor(150, 150, 150);
-      doc.text("Não foram encontrados movimentos para este período.", 14, 80);
     }
   
     doc.save(`Analise_HugoBarros_${mesNome}.pdf`);
