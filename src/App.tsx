@@ -75,92 +75,101 @@ export default function App() {
 
   // --- ESTADOS GERAIS ---
   const gerarRelatorioMensal = () => {
+    // Verificação de segurança: Se a biblioteca não carregou, tentamos usar o objeto global
+    const { jsPDF } = window.jspdf || {};
+    if (!jsPDF) {
+      alert("Erro: A biblioteca PDF ainda está a carregar. Aguarda 2 segundos e tenta de novo.");
+      return;
+    }
+  
     const doc = new jsPDF();
     const dataAtual = new Date().toLocaleDateString('pt-PT');
     
-    // 1. FILTRAGEM (Usando reportMonth e reportYear que já tens no estado)
+    // 1. FILTRAGEM INFALÍVEL
+    const mesFormatado = reportMonth < 10 ? `0${reportMonth}` : `${reportMonth}`;
+    const buscaPeriodo = reportMonth === 0 ? `${reportYear}` : `${reportYear}-${mesFormatado}`;
+  
     const transacoesFiltradas = list.filter(t => {
       if (!t.date) return false;
-      const dataStr = String(t.date);
-      const mesFormatado = reportMonth < 10 ? `0${reportMonth}` : `${reportMonth}`;
-      const busca = reportMonth === 0 ? `${reportYear}` : `${reportYear}-${mesFormatado}`;
-      return dataStr.includes(busca);
+      // Verifica se a data da transação começa com o período selecionado
+      return String(t.date).startsWith(buscaPeriodo);
     });
   
-    // Ordenar pela data mais recente
+    // Ordenar por data
     transacoesFiltradas.sort((a, b) => new Date(b.date) - new Date(a.date));
   
-    // Cabeçalho
-    doc.setFontSize(20);
-    doc.setTextColor(28, 28, 30);
-    doc.text("ALIGNA — DETALHE MENSAL", 14, 22);
-    
-    const mesNome = reportMonth === 0 ? "GERAL" : new Date(0, reportMonth - 1).toLocaleString('pt', {month: 'long'}).toUpperCase();
-    doc.setFontSize(10);
-    doc.setTextColor(142, 142, 147);
-    doc.text(`HUGO BARROS | ${mesNome} / ${reportYear}`, 14, 30);
-  
-    // 2. CÁLCULOS DE TOTAIS (Limpando o campo 'val')
-    const obterValor = (v) => {
-      if (!v) return 0;
-      // Remove o símbolo € e espaços, e troca vírgula por ponto
-      const limpo = String(v).replace('€', '').replace(/\s/g, '').replace(',', '.');
-      return parseFloat(limpo) || 0;
+    // 2. CÁLCULOS (Limpando o campo 'val')
+    const limparEConverter = (valor) => {
+      if (!valor) return 0;
+      // Remove tudo o que não seja número, ponto ou vírgula
+      const numerico = String(valor).replace(/[^0-9.,-]/g, '').replace(',', '.');
+      return parseFloat(numerico) || 0;
     };
   
-    const entradas = transacoesFiltradas
+    const totalReceitas = transacoesFiltradas
       .filter(t => t.type === 'income')
-      .reduce((acc, t) => acc + obterValor(t.val), 0);
+      .reduce((acc, t) => acc + limparEConverter(t.val), 0);
       
-    const saidas = transacoesFiltradas
+    const totalGastos = transacoesFiltradas
       .filter(t => t.type === 'expense')
-      .reduce((acc, t) => acc + obterValor(t.val), 0);
+      .reduce((acc, t) => acc + limparEConverter(t.val), 0);
     
-    const balanco = entradas - saidas;
+    const balancoFinal = totalReceitas - totalGastos;
+  
+    // Design do Cabeçalho
+    doc.setFontSize(22);
+    doc.setTextColor(28, 28, 30);
+    doc.text("ALIGNA — RELATÓRIO", 14, 22);
+    
+    const mesNome = reportMonth === 0 ? "ANO COMPLETO" : new Date(0, reportMonth - 1).toLocaleString('pt', {month: 'long'}).toUpperCase();
+    doc.setFontSize(10);
+    doc.setTextColor(142, 142, 147);
+    doc.text(`${mesNome} ${reportYear} | PROPRIETÁRIO: HUGO BARROS`, 14, 30);
   
     // Resumo Financeiro
     doc.setFontSize(12);
     doc.setTextColor(0, 0, 0);
-    doc.text(`Total Receitas: +${entradas.toFixed(2)}€`, 14, 45);
-    doc.text(`Total Gastos: -${saidas.toFixed(2)}€`, 14, 52);
+    doc.text(`Receitas: +${totalReceitas.toFixed(2)}€`, 14, 45);
+    doc.text(`Gastos: -${totalGastos.toFixed(2)}€`, 14, 52);
     
-    doc.setTextColor(balanco >= 0 ? 52 : 255, balanco >= 0 ? 199 : 59, balanco >= 0 ? 89 : 48);
-    doc.text(`Resultado Líquido: ${balanco.toFixed(2)}€`, 14, 60);
+    doc.setTextColor(balancoFinal >= 0 ? 52 : 255, balancoFinal >= 0 ? 199 : 59, balancoFinal >= 0 ? 89 : 48);
+    doc.setFont("helvetica", "bold");
+    doc.text(`BALANÇO LÍQUIDO: ${balancoFinal.toFixed(2)}€`, 14, 62);
   
-    // 3. MONTAGEM DA TABELA (Campos: desc, val, acc)
-    const tableRows = transacoesFiltradas.map(t => {
-      const valor = obterValor(t.val);
-      const isReceita = t.type === 'income';
-      
+    // 3. TABELA DETALHADA
+    const linhasTabela = transacoesFiltradas.map(t => {
+      const v = limparEConverter(t.val);
       return [
-        t.date ? String(t.date).split('-').reverse().join('/') : '---',
+        t.date ? t.date.split('-').reverse().join('/') : '---',
         (t.desc || 'Sem Descrição').toUpperCase(),
         (t.acc || 'Carteira').toUpperCase(),
-        isReceita ? `+${valor.toFixed(2)}€` : `-${valor.toFixed(2)}€`
+        t.type === 'income' ? `+${v.toFixed(2)}€` : `-${v.toFixed(2)}€`
       ];
     });
   
-    doc.autoTable({
-      startY: 70,
-      head: [['DATA', 'DESCRIÇÃO', 'CONTA', 'VALOR']],
-      body: tableRows,
-      theme: 'striped',
-      headStyles: { fillColor: [28, 28, 30], halign: 'center' },
-      columnStyles: { 
-        1: { cellWidth: 'auto' },
-        3: { halign: 'right', fontStyle: 'bold' } 
-      },
-      styles: { fontSize: 8 },
-      didParseCell: function(data) {
-        if (data.column.index === 3 && data.cell.section === 'body') {
-          const txt = data.cell.raw || '';
-          if (txt.includes('+')) data.cell.styles.textColor = [52, 199, 89];
-          else if (txt.includes('-')) data.cell.styles.textColor = [255, 59, 48];
+    if (linhasTabela.length > 0) {
+      doc.autoTable({
+        startY: 70,
+        head: [['DATA', 'DESCRIÇÃO', 'CONTA', 'VALOR']],
+        body: linhasTabela,
+        theme: 'grid',
+        headStyles: { fillColor: [28, 28, 30], halign: 'center' },
+        columnStyles: { 3: { halign: 'right' } },
+        styles: { fontSize: 8 },
+        didParseCell: (data) => {
+          if (data.column.index === 3 && data.cell.section === 'body') {
+            if (data.cell.raw.includes('+')) data.cell.styles.textColor = [52, 199, 89];
+            else data.cell.styles.textColor = [255, 59, 48];
+          }
         }
-      }
-    });
+      });
+    } else {
+      doc.setFontSize(10);
+      doc.setTextColor(150, 150, 150);
+      doc.text("Não foram encontrados movimentos para este período.", 14, 80);
+    }
   
-    doc.save(`Relatorio_Hugo_${mesNome}.pdf`);
+    doc.save(`Analise_HugoBarros_${mesNome}.pdf`);
     if (typeof triggerHaptic === 'function') triggerHaptic('medium');
   };
   const [editingPrice, setEditingPrice] = useState(null); // Guarda o item para edição rápida
