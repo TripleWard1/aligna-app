@@ -76,66 +76,69 @@ export default function App() {
   // --- ESTADOS GERAIS ---
   const gerarRelatorioMensal = () => {
     const doc = new jsPDF();
-    const dataAtual = new Date().toLocaleDateString('pt-PT');
     
-    // 1. FILTRAGEM MELHORADA
-    // Tentamos filtrar por mês/ano, mas se não encontrar nada, procuramos de forma mais flexível
+    // 1. FILTRAGEM (Mantida igual ao teu pedido)
     let transacoesFiltradas = list.filter(t => {
       if (!t.date) return false;
       const dataStr = String(t.date);
-      
-      // Verifica se a data contém o ano e o mês selecionados (ex: "2025-12")
       const mesFormatado = reportMonth < 10 ? `0${reportMonth}` : `${reportMonth}`;
       const busca = reportMonth === 0 ? `${reportYear}` : `${reportYear}-${mesFormatado}`;
-      
       return dataStr.includes(busca);
     });
   
-    // Se mesmo assim estiver vazio, vamos buscar todas as transações que existem 
-    // para não te dar um PDF em branco
     if (transacoesFiltradas.length === 0) {
-      transacoesFiltradas = list.slice(0, 20); // Pega as últimas 20 só para testar
+      transacoesFiltradas = list.slice(0, 20);
     }
   
-    // Ordenar
     transacoesFiltradas.sort((a, b) => new Date(b.date) - new Date(a.date));
   
-    // Cabeçalho
+    // --- FUNÇÃO AUXILIAR PARA CORRIGIR O NaN ---
+    const limparValor = (valor) => {
+      if (!valor) return 0;
+      // Remove o símbolo €, espaços e troca vírgula por ponto
+      const str = String(valor).replace('€', '').replace(/\s/g, '').replace(',', '.');
+      return parseFloat(str) || 0;
+    };
+  
+    // 2. CÁLCULOS (Corrigidos para evitar NaN)
+    const entradas = transacoesFiltradas
+      .filter(t => t.type === 'income' || t.type === 'receita')
+      .reduce((acc, t) => acc + limparValor(t.val || t.value || t.amount), 0);
+      
+    const saidas = transacoesFiltradas
+      .filter(t => t.type === 'expense' || t.type === 'saída' || t.type === 'gasto')
+      .reduce((acc, t) => acc + limparValor(t.val || t.value || t.amount), 0);
+    
+    const balanco = entradas - saidas;
+  
+    // Cabeçalho e Resumo
     doc.setFontSize(20);
-    doc.setTextColor(28, 28, 30);
     doc.text("ALIGNA — DETALHE MENSAL", 14, 22);
     
     const mesNome = reportMonth === 0 ? "GERAL" : new Date(0, reportMonth - 1).toLocaleString('pt', {month: 'long'}).toUpperCase();
     doc.setFontSize(10);
-    doc.setTextColor(142, 142, 147);
     doc.text(`HUGO BARROS | ${mesNome} / ${reportYear}`, 14, 30);
   
-    // 2. CÁLCULOS
-    const entradas = transacoesFiltradas
-      .filter(t => t.type === 'income' || t.type === 'receita')
-      .reduce((acc, t) => acc + (Number(t.val) || 0), 0);
-      
-    const saidas = transacoesFiltradas
-      .filter(t => t.type === 'expense' || t.type === 'saída' || t.type === 'gasto')
-      .reduce((acc, t) => acc + (Number(t.val) || 0), 0);
-    
-    const balanco = entradas - saidas;
-  
-    // Resumo
     doc.setFontSize(12);
-    doc.setTextColor(0, 0, 0);
     doc.text(`Receitas: +${entradas.toFixed(2)}€`, 14, 45);
     doc.text(`Gastos: -${saidas.toFixed(2)}€`, 14, 52);
     doc.setTextColor(balanco >= 0 ? 52 : 255, balanco >= 0 ? 199 : 59, balanco >= 0 ? 89 : 48);
     doc.text(`Balanço: ${balanco.toFixed(2)}€`, 14, 60);
+    doc.setTextColor(0, 0, 0);
   
-    // 3. TABELA DISCRIMINADA
-    const tableRows = transacoesFiltradas.map(t => [
-      t.date ? String(t.date).split('-').reverse().join('/') : '---',
-      (t.desc || 'SEM DESCRIÇÃO').toUpperCase(),
-      (t.acc || 'GERAL').toUpperCase(),
-      (t.type === 'income' || t.type === 'receita') ? `+${Number(t.val).toFixed(2)}€` : `-${Number(t.val).toFixed(2)}€`
-    ]);
+    // 3. TABELA (Corrigida descrição e valores)
+    const tableRows = transacoesFiltradas.map(t => {
+      const v = limparValor(t.val || t.value || t.amount);
+      const eReceita = t.type === 'income' || t.type === 'receita';
+      
+      return [
+        t.date ? String(t.date).split('-').reverse().join('/') : '---',
+        // Se 'desc' estiver vazio, tenta 'description' ou 'label'
+        (t.desc || t.description || t.label || 'MOVIMENTO').toUpperCase(),
+        (t.category || t.acc || 'GERAL').toUpperCase(),
+        eReceita ? `+${v.toFixed(2)}€` : `-${v.toFixed(2)}€`
+      ];
+    });
   
     doc.autoTable({
       startY: 70,
@@ -146,14 +149,14 @@ export default function App() {
       columnStyles: { 3: { halign: 'right', fontStyle: 'bold' } },
       didParseCell: function(data) {
         if (data.column.index === 3 && data.cell.section === 'body') {
-          if (data.cell.raw.includes('+')) data.cell.styles.textColor = [52, 199, 89];
-          else data.cell.styles.textColor = [255, 59, 48];
+          const txt = data.cell.raw || '';
+          if (txt.includes('+')) data.cell.styles.textColor = [52, 199, 89];
+          else if (txt.includes('-')) data.cell.styles.textColor = [255, 59, 48];
         }
       }
     });
   
     doc.save(`Relatorio_Hugo_${mesNome}.pdf`);
-    if (typeof triggerHaptic === 'function') triggerHaptic('medium');
   };
   const [editingPrice, setEditingPrice] = useState(null); // Guarda o item para edição rápida
 const [tempPrice, setTempPrice] = useState(''); // Guarda o valor que estás a digitar
