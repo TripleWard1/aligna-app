@@ -75,83 +75,84 @@ export default function App() {
 
   // --- ESTADOS GERAIS ---
   const gerarRelatorioMensal = () => {
-    const doc = new jsPDF();
-    
-    // 1. FILTRAGEM SIMPLIFICADA
-    // Criamos o formato "2025-12" para comparar com a data da lista
-    const mesFormatado = reportMonth < 10 ? `0${reportMonth}` : `${reportMonth}`;
-    const busca = reportMonth === 0 ? `${reportYear}` : `${reportYear}-${mesFormatado}`;
-  
-    const transacoesFiltradas = list.filter(t => {
-      if (!t.date) return false;
-      return String(t.date).includes(busca);
-    });
-  
-    // Ordenar para que a tabela faça sentido
-    transacoesFiltradas.sort((a, b) => new Date(b.date) - new Date(a.date));
-  
-    // 2. CABEÇALHO
-    doc.setFontSize(22);
-    doc.text("ALIGNA — ANÁLISE MENSAL", 14, 20);
-    
-    const mesNome = reportMonth === 0 ? "GERAL" : new Date(0, reportMonth - 1).toLocaleString('pt', {month: 'long'}).toUpperCase();
-    doc.setFontSize(10);
-    doc.setTextColor(100);
-    doc.text(`PROPRIETÁRIO: HUGO BARROS | PERÍODO: ${mesNome} / ${reportYear}`, 14, 28);
-  
-    // 3. CÁLCULOS
-    let totalIn = 0;
-    let totalOut = 0;
-  
-    const tableRows = transacoesFiltradas.map(t => {
-      const valor = parseFloat(String(t.val).replace(',', '.')) || 0;
-      const isReceita = t.type === 'income' || t.type === 'receita';
+    try {
+      const doc = new jsPDF();
       
-      if (isReceita) totalIn += valor;
-      else totalOut += valor;
+      // 1. FILTRAGEM (Garante que apanha os dados de Dezembro 2025)
+      const mesFmt = reportMonth < 10 ? `0${reportMonth}` : `${reportMonth}`;
+      const busca = reportMonth === 0 ? `${reportYear}` : `${reportYear}-${mesFmt}`;
   
-      return [
-        t.date ? String(t.date).split('-').reverse().join('/') : '',
-        (t.desc || 'SEM DESCRIÇÃO').toUpperCase(),
-        (t.acc || 'GERAL').toUpperCase(),
-        isReceita ? `+${valor.toFixed(2)}€` : `-${valor.toFixed(2)}€`
-      ];
-    });
+      // Filtramos a 'list' que é onde estão os teus dados reais
+      const dadosParaPDF = list.filter(t => t.date && String(t.date).includes(busca));
   
-    // Resumo Financeiro no PDF
-    doc.setFontSize(12);
-    doc.setTextColor(0);
-    doc.text(`Total Receitas: +${totalIn.toFixed(2)}€`, 14, 45);
-    doc.text(`Total Gastos: -${totalOut.toFixed(2)}€`, 14, 52);
-    
-    const balanco = totalIn - totalOut;
-    doc.setTextColor(balanco >= 0 ? [52, 199, 89] : [255, 59, 48]);
-    doc.text(`BALANÇO LÍQUIDO: ${balanco.toFixed(2)}€`, 14, 60);
+      if (dadosParaPDF.length === 0) {
+        alert("Não existem dados para exportar neste mês selecionado.");
+        return;
+      }
   
-    // 4. DESENHAR A TABELA (Forçar a exibição)
-    if (tableRows.length > 0) {
+      // 2. CABEÇALHO
+      doc.setFontSize(20);
+      doc.text("ALIGNA — ANÁLISE MENSAL", 14, 20);
+      
+      const mesNome = reportMonth === 0 ? "GERAL" : new Date(0, reportMonth - 1).toLocaleString('pt', {month: 'long'}).toUpperCase();
+      doc.setFontSize(10);
+      doc.setTextColor(100);
+      doc.text(`PROPRIETÁRIO: HUGO BARROS | ${mesNome} / ${reportYear}`, 14, 28);
+  
+      // 3. PROCESSAMENTO DE LINHAS E CÁLCULOS
+      let rct = 0;
+      let gst = 0;
+  
+      const tableRows = dadosParaPDF.map(t => {
+        // Limpeza do valor (remove € e converte para número)
+        const vOriginal = String(t.val || "0").replace('€', '').replace(',', '.');
+        const vNum = parseFloat(vOriginal) || 0;
+        
+        if (t.type === 'income') rct += vNum;
+        else gst += vNum;
+  
+        return [
+          t.date ? String(t.date).split('-').reverse().join('/') : '',
+          (t.desc || 'Sem Descrição').toUpperCase(),
+          (t.acc || 'Carteira').toUpperCase(),
+          t.type === 'income' ? `+${vNum.toFixed(2)}€` : `-${vNum.toFixed(2)}€`
+        ];
+      });
+  
+      // Totais no topo do PDF
+      doc.setFontSize(12);
+      doc.setTextColor(0);
+      doc.text(`Total Receitas: +${rct.toFixed(2)}€`, 14, 45);
+      doc.text(`Total Gastos: -${gst.toFixed(2)}€`, 14, 52);
+      
+      const bal = rct - gst;
+      doc.setTextColor(bal >= 0 ? [52, 199, 89] : [255, 59, 48]);
+      doc.text(`BALANÇO LÍQUIDO: ${bal.toFixed(2)}€`, 14, 60);
+  
+      // 4. GERAR TABELA
       doc.autoTable({
         startY: 70,
         head: [['DATA', 'DESCRIÇÃO', 'CONTA', 'VALOR']],
         body: tableRows,
         theme: 'striped',
-        headStyles: { fillColor: [28, 28, 30] },
+        headStyles: { fillColor: [0, 122, 255] }, // Azul igual ao teu botão
         columnStyles: { 3: { halign: 'right' } },
         didParseCell: (data) => {
           if (data.column.index === 3 && data.cell.section === 'body') {
-            const txt = data.cell.raw || '';
-            if (txt.includes('+')) data.cell.styles.textColor = [52, 199, 89];
-            else if (txt.includes('-')) data.cell.styles.textColor = [255, 59, 48];
+            const c = data.cell.raw;
+            if (c.includes('+')) data.cell.styles.textColor = [52, 199, 89];
+            else if (c.includes('-')) data.cell.styles.textColor = [255, 59, 48];
           }
         }
       });
-    } else {
-      doc.setTextColor(150);
-      doc.text("Nenhuma transação encontrada para este filtro no sistema.", 14, 80);
-    }
   
-    doc.save(`Analise_${mesNome}_Hugo.pdf`);
-    if (typeof triggerHaptic === 'function') triggerHaptic('medium');
+      doc.save(`Relatorio_Aligna_${mesNome}.pdf`);
+      if (typeof triggerHaptic === 'function') triggerHaptic('medium');
+  
+    } catch (error) {
+      console.error("Erro ao gerar PDF:", error);
+      alert("Ocorreu um erro ao gerar o ficheiro. Verifica a consola.");
+    }
   };
   const [editingPrice, setEditingPrice] = useState(null); // Guarda o item para edição rápida
 const [tempPrice, setTempPrice] = useState(''); // Guarda o valor que estás a digitar
