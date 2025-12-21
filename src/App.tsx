@@ -76,87 +76,106 @@ export default function App() {
   // --- ESTADOS GERAIS ---
   const gerarRelatorioMensal = () => {
     try {
-      // 1. IDENTIFICAÇÃO DA FONTE DE DADOS
-      // No teu Código Principal, a variável chama-se 'transactions'
-      const fonteDados = (typeof transactions !== 'undefined') ? transactions : list;
-  
-      if (!fonteDados || fonteDados.length === 0) {
-        alert("Erro: Não foi possível encontrar a lista de transações (transactions/list).");
+      // 1. ACESSO DIRETO AO ESTADO DO REACT
+      // No teu código, a variável de estado que guarda as transações chama-se 'list'
+      if (!list || list.length === 0) {
+        alert("Não existem transações registadas na base de dados.");
         return;
       }
-  
+
       const doc = new jsPDF();
+      
+      // 2. FILTRAGEM PELO MÊS SELECIONADO NA APP
       const mesFmt = reportMonth < 10 ? `0${reportMonth}` : `${reportMonth}`;
       const busca = reportMonth === 0 ? `${reportYear}` : `${reportYear}-${mesFmt}`;
-  
-      // 2. FILTRAGEM
-      const dadosParaPDF = fonteDados.filter(t => {
-        const dataStr = t.date?.seconds 
-          ? new Date(t.date.seconds * 1000).toISOString() 
-          : String(t.date || "");
+
+      const dadosParaPDF = list.filter(t => {
+        // Garantir que a data é tratada como string para a busca
+        const dataStr = String(t.date || "");
         return dataStr.includes(busca);
       });
-  
-      // 3. CABEÇALHO
+
+      if (dadosParaPDF.length === 0) {
+        alert("Não existem dados para exportar no mês de " + 
+          new Date(0, reportMonth - 1).toLocaleString('pt', {month: 'long'}));
+        return;
+      }
+
+      // 3. CABEÇALHO DO PDF
       doc.setFontSize(20);
+      doc.setTextColor(28, 28, 30);
       doc.text("ALIGNA — DETALHE MENSAL", 14, 20);
       
       const mesNome = reportMonth === 0 ? "GERAL" : new Date(0, reportMonth - 1).toLocaleString('pt', {month: 'long'}).toUpperCase();
       doc.setFontSize(10);
-      doc.setTextColor(100);
+      doc.setTextColor(142, 142, 147);
       doc.text(`HUGO BARROS | ${mesNome} / ${reportYear}`, 14, 28);
-  
-      // 4. PROCESSAMENTO DAS LINHAS
-      let rct = 0;
-      let gst = 0;
-  
+      doc.text(`EMITIDO EM: ${new Date().toLocaleDateString('pt-PT')}`, 14, 33);
+
+      // 4. CÁLCULOS FINANCEIROS
+      let totalReceitas = 0;
+      let totalGastos = 0;
+
       const tableRows = dadosParaPDF.map(t => {
-        const vLimp = String(t.val || "0").replace(/[^0-9.,]/g, '').replace(',', '.');
-        const vNum = parseFloat(vLimp) || 0;
+        // Limpa o valor (tira o € se existir e converte para número)
+        const valorLimpo = String(t.val || "0").replace('€', '').replace(',', '.').trim();
+        const vNum = parseFloat(valorLimpo) || 0;
         
-        const isIncome = t.type === 'income' || t.type === 'receita';
-        if (isIncome) rct += vNum; else gst += vNum;
-  
+        const isReceita = t.type === 'income' || t.type === 'receita';
+        if (isReceita) totalReceitas += vNum; else totalGastos += vNum;
+
+        // Formata a data de AAAA-MM-DD para DD/MM/AAAA
+        const dataFormatada = t.date ? String(t.date).split('-').reverse().join('/') : '---';
+        
+        // Vai buscar o nome da categoria usando o objeto CATEGORIES que tens no código
+        const categoriaNome = CATEGORIES[t.category]?.label || t.category || 'OUTROS';
+
         return [
-          t.date ? String(t.date).split('-').reverse().join('/') : '---',
-          (t.desc || 'TRANSACÇÃO').toUpperCase(),
-          (t.acc || 'GERAL').toUpperCase(),
-          isIncome ? `+${vNum.toFixed(2)}€` : `-${vNum.toFixed(2)}€`
+          dataFormatada,
+          (t.desc || 'SEM DESCRIÇÃO').toUpperCase(),
+          categoriaNome.toUpperCase(),
+          isReceita ? `+${vNum.toFixed(2)}€` : `-${vNum.toFixed(2)}€`
         ];
       });
-  
-      // Totais no PDF
+
+      // 5. RESUMO NO PDF
       doc.setFontSize(12);
-      doc.setTextColor(0);
-      doc.text(`Total Entradas: +${rct.toFixed(2)}€`, 14, 45);
-      doc.text(`Total Saídas: -${gst.toFixed(2)}€`, 14, 52);
+      doc.setTextColor(0, 0, 0);
+      doc.text(`Total Entradas: +${totalReceitas.toFixed(2)}€`, 14, 48);
+      doc.text(`Total Saídas: -${totalGastos.toFixed(2)}€`, 14, 55);
       
-      const bal = rct - gst;
-      doc.setTextColor(bal >= 0 ? [52, 199, 89] : [255, 59, 48]);
-      doc.text(`BALANÇO LÍQUIDO: ${bal.toFixed(2)}€`, 14, 60);
-  
-      // 5. TABELA DISCRIMINADA
+      const balanco = totalReceitas - totalGastos;
+      doc.setTextColor(balanco >= 0 ? [52, 199, 89] : [255, 59, 48]);
+      doc.setFont("helvetica", "bold");
+      doc.text(`BALANÇO LÍQUIDO: ${balanco.toFixed(2)}€`, 14, 63);
+
+      // 6. GERAR TABELA
       doc.autoTable({
         startY: 70,
-        head: [['DATA', 'DESCRIÇÃO', 'CONTA', 'VALOR']],
+        head: [['DATA', 'DESCRIÇÃO', 'CATEGORIA', 'VALOR']],
         body: tableRows,
         theme: 'striped',
-        headStyles: { fillColor: [0, 122, 255] },
-        columnStyles: { 3: { halign: 'right', fontStyle: 'bold' } },
+        headStyles: { fillColor: [0, 122, 255], halign: 'center' },
+        columnStyles: { 
+          0: { cellWidth: 25 },
+          3: { halign: 'right', fontStyle: 'bold' } 
+        },
+        styles: { fontSize: 9 },
         didParseCell: (data) => {
           if (data.column.index === 3 && data.cell.section === 'body') {
-            const val = data.cell.raw || '';
-            if (val.includes('+')) data.cell.styles.textColor = [52, 199, 89];
-            else if (val.includes('-')) data.cell.styles.textColor = [255, 59, 48];
+            const texto = data.cell.raw || '';
+            if (texto.includes('+')) data.cell.styles.textColor = [52, 199, 89];
+            else if (texto.includes('-')) data.cell.styles.textColor = [255, 59, 48];
           }
         }
       });
-  
-      doc.save(`Analise_Aligna_${mesNome}.pdf`);
-  
+
+      doc.save(`Aligna_Relatorio_${mesNome}.pdf`);
+      if (typeof triggerHaptic === 'function') triggerHaptic('medium');
+
     } catch (error) {
-      console.error("Erro no PDF:", error);
-      alert("Ocorreu um erro técnico. Verifica se as bibliotecas jsPDF estão no topo do ficheiro.");
+      console.error("Erro crítico no PDF:", error);
+      alert("Erro ao gerar PDF: Certifica-te que preencheste todos os campos das tuas transações.");
     }
   };
   const [editingPrice, setEditingPrice] = useState(null); // Guarda o item para edição rápida
