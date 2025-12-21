@@ -76,94 +76,79 @@ export default function App() {
   // --- ESTADOS GERAIS ---
   const gerarRelatorioMensal = () => {
     try {
-      // 1. Verificação de emergência: se 'list' não funcionar, tentamos 'transactions'
-      const fonteDados = (typeof list !== 'undefined') ? list : (typeof transactions !== 'undefined' ? transactions : []);
+      // 1. Tenta encontrar a lista de dados correta que o teu App está a usar
+      const dataSources = [
+        (typeof list !== 'undefined' ? list : null),
+        (typeof transactions !== 'undefined' ? transactions : null),
+        (typeof filteredList !== 'undefined' ? filteredList : null)
+      ];
       
-      if (fonteDados.length === 0) {
-        alert("Erro: A variável de dados ('list') está vazia ou não foi encontrada.");
+      // Escolhe a primeira que tiver dados
+      const rawData = dataSources.find(ds => ds && ds.length > 0) || [];
+  
+      if (rawData.length === 0) {
+        alert("Erro Crítico: Não foi possível localizar a lista de transações no código.");
         return;
       }
-
+  
       const doc = new jsPDF();
       
-      // 2. Filtro simplificado (garante que encontra 2025-12)
-      const mesFmt = reportMonth < 10 ? `0${reportMonth}` : `${reportMonth}`;
-      const filtroData = `${reportYear}-${mesFmt}`;
-
-      const movimentos = fonteDados.filter(t => {
-        const dataOriginal = String(t.date || "");
-        return dataOriginal.includes(filtroData);
-      });
-
-      if (movimentos.length === 0) {
-        alert("Não foram encontrados dados para o período: " + filtroData);
-        return;
-      }
-
-      // 3. Desenho do Cabeçalho
-      doc.setFontSize(22);
-      doc.text("ALIGNA — RELATÓRIO MENSAL", 14, 20);
+      // 2. Cabeçalho Fixo (Para garantir que o PDF gera sempre)
+      doc.setFontSize(20);
+      doc.text("ALIGNA — EXTRATO FINANCEIRO", 14, 20);
       doc.setFontSize(10);
-      doc.setTextColor(100);
-      doc.text(`PROPRIETÁRIO: HUGO BARROS | PERÍODO: ${mesFmt}/${reportYear}`, 14, 28);
-      doc.text(`GERADO EM: ${new Date().toLocaleString()}`, 14, 33);
-
-      // 4. LÓGICA ANTI-NaN (Calcula valores como o teu ecrã faz)
-      let totalEntradas = 0;
-      let totalSaidas = 0;
-
-      const linhasTabela = movimentos.map(t => {
-        // Converte o valor para número ignorando símbolos
-        let valString = String(t.val || "0");
-        let valorNumerico = parseFloat(valString.replace(/[^-0-9.,]/g, '').replace(',', '.')) || 0;
-        
-        // Identifica se é receita ou gasto
-        const isReceita = t.type === 'income' || t.type === 'receita' || valorNumerico > 0;
-        const absVal = Math.abs(valorNumerico);
-
-        if (isReceita) totalEntradas += absVal;
-        else totalSaidas += absVal;
-
+      doc.text(`HUGO BARROS | EMITIDO EM: ${new Date().toLocaleDateString()}`, 14, 28);
+  
+      let somaIn = 0;
+      let somaOut = 0;
+  
+      // 3. Processamento simplificado dos dados
+      const tableData = rawData.map(item => {
+        // Extrair apenas números do valor (resolve o erro NaN)
+        const valorTexto = String(item.val || "0");
+        const apenasNumeros = valorTexto.replace(/[^-0-9.,]/g, '').replace(',', '.');
+        const valorFinal = parseFloat(apenasNumeros) || 0;
+  
+        // Definir se é entrada ou saída baseado no tipo ou no sinal
+        const eReceita = item.type === 'income' || item.type === 'receita' || valorFinal > 0;
+        const valorAbsoluto = Math.abs(valorFinal);
+  
+        if (eReceita) somaIn += valorAbsoluto;
+        else somaOut += valorAbsoluto;
+  
         return [
-          t.date ? String(t.date).split('-').reverse().join('/') : '---',
-          (t.desc || 'SEM DESCRIÇÃO').toUpperCase(),
-          (CATEGORIES[t.category]?.label || 'GERAL').toUpperCase(),
-          isReceita ? `+${absVal.toFixed(2)}€` : `-${absVal.toFixed(2)}€`
+          item.date || '---',
+          String(item.desc || 'MOVIMENTO').toUpperCase(),
+          String(item.category || 'GERAL').toUpperCase(),
+          eReceita ? `+${valorAbsoluto.toFixed(2)}€` : `-${valorAbsoluto.toFixed(2)}€`
         ];
       });
-
-      // 5. Resumo Financeiro (Igual ao teu Dashboard)
-      doc.setFontSize(14);
-      doc.setTextColor(0);
-      doc.text(`RECEITAS: +${totalEntradas.toFixed(2)}€`, 14, 48);
-      doc.text(`GASTOS: -${totalSaidas.toFixed(2)}€`, 14, 55);
+  
+      // 4. Totais e Balanço
+      doc.setFontSize(12);
+      doc.text(`RECEITAS: +${somaIn.toFixed(2)}€`, 14, 45);
+      doc.text(`GASTOS: -${somaOut.toFixed(2)}€`, 14, 52);
       
-      const balanco = totalEntradas - totalSaidas;
-      doc.setTextColor(balanco >= 0 ? [52, 199, 89] : [255, 59, 48]);
-      doc.text(`BALANÇO LÍQUIDO: ${balanco.toFixed(2)}€`, 14, 65);
-
-      // 6. Tabela de Movimentos
+      const resultado = somaIn - somaOut;
+      doc.setTextColor(resultado >= 0 ? [52, 199, 89] : [255, 59, 48]);
+      doc.text(`BALANÇO: ${resultado.toFixed(2)}€`, 14, 60);
+      doc.setTextColor(0);
+  
+      // 5. Gerar Tabela (com proteção contra argumentos inválidos)
       doc.autoTable({
-        startY: 75,
-        head: [['DATA', 'DESCRIÇÃO', 'CATEGORIA', 'VALOR']],
-        body: linhasTabela,
-        theme: 'striped',
+        startY: 70,
+        head: [['DATA', 'DESCRIÇÃO', 'CONTA', 'VALOR']],
+        body: tableData,
+        theme: 'grid',
         headStyles: { fillColor: [0, 122, 255] },
-        columnStyles: { 3: { halign: 'right', fontStyle: 'bold' } },
-        didParseCell: (data) => {
-          if (data.column.index === 3 && data.cell.section === 'body') {
-            const txt = data.cell.raw || '';
-            if (txt.includes('+')) data.cell.styles.textColor = [52, 199, 89];
-            else if (txt.includes('-')) data.cell.styles.textColor = [255, 59, 48];
-          }
-        }
+        styles: { fontSize: 8 }
       });
-
-      doc.save(`Aligna_Dezembro_2025.pdf`);
-
-    } catch (err) {
-      console.error("Erro Interno:", err);
-      alert("Erro ao processar: " + err.message);
+  
+      doc.save("Relatorio_Aligna_Hugo.pdf");
+  
+    } catch (e) {
+      alert("Erro ao processar: " + e.message);
+      console.error(e);
     }
   };
   const [editingPrice, setEditingPrice] = useState(null); // Guarda o item para edição rápida
