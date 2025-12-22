@@ -266,6 +266,7 @@ export default function App() {
     doc.save(`Relatorio_Hugo_${mesNome}.pdf`);
   };
   const [pokemonToDelete, setPokemonToDelete] = useState(null);
+  
   const [editingPrice, setEditingPrice] = useState(null); // Guarda o item para edição rápida
 const [tempPrice, setTempPrice] = useState(''); // Guarda o valor que estás a digitar
   const [searchTerm, setSearchTerm] = useState(''); // Estado para a barra de pesquisa
@@ -282,6 +283,8 @@ const [isSearching, setIsSearching] = useState(false);
   
   const [editingId, setEditingId] = useState(null);
   const [sortOrder, setSortOrder] = useState('entry'); 
+  const [sortBy, setSortBy] = useState('recent'); // Default: Recentemente Adicionada
+  const [filterSet, setFilterSet] = useState('all');
 
   const [formData, setFormData] = useState({
     desc: '', val: '', cat: 'alimentacao', acc: 'carteira', toAcc: 'carteira', assetType: 'ETF', perf: '', date: new Date().toISOString().split('T')[0]
@@ -301,6 +304,8 @@ const [isSearching, setIsSearching] = useState(false);
   const [regEmail, setRegEmail] = useState('');
   const [regPass, setRegPass] = useState('');
 
+
+  
   const [settings, setSettings] = useState({ 
     lowBalanceLimit: 50, currency: '€', privacyMode: false, avatar: AVATARS[0], 
     email: '', password: '', accounts: { 'carteira': { label: 'Carteira', icon: '👛' } } 
@@ -491,6 +496,7 @@ const handlePokemonSubmit = async (data) => {
     }
   }, 1000); // Espera exatamente 1 segundo (a animação)
 };
+
 
   const handleEditInventory = (item) => {
     setInvData({ ...item }); 
@@ -712,6 +718,23 @@ const handlePokemonSubmit = async (data) => {
     };
     // ... resto do código do login
     const knownProfiles = JSON.parse(localStorage.getItem('known_profiles') || '[]');
+    const filteredCards = pokemonCards
+    ? pokemonCards
+        .filter(card => {
+          const matchesName = card.name?.toLowerCase().includes((searchTerm || '').toLowerCase());
+          const matchesSet = filterSet === 'all' || card.set === filterSet;
+          return matchesName && matchesSet;
+        })
+        .sort((a, b) => {
+          if (sortBy === 'expensive') return (Number(b.marketValue) || 0) - (Number(a.marketValue) || 0);
+          if (sortBy === 'cheapest') return (Number(a.marketValue) || 0) - (Number(b.marketValue) || 0);
+          if (sortBy === 'recent') return (b.timestamp || 0) - (a.timestamp || 0);
+          return 0;
+        })
+    : [];
+
+  const uniqueSets = pokemonCards ? [...new Set(pokemonCards.map(c => c.set).filter(Boolean))] : [];
+  // === FIM DA LÓGICA ===
 
     return (
       <div style={{ 
@@ -1853,6 +1876,8 @@ const handlePokemonSubmit = async (data) => {
         </div>
       </div>
     </div>
+
+
 
     {/* GRELHA DE CARTAS GUARDADAS - CORRIGIDA */}
 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '16px', position: 'relative', zIndex: 5 }}>
