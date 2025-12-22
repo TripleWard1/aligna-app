@@ -64,6 +64,13 @@ export default function App() {
   const [invFilter, setInvFilter] = useState('TODOS'); 
   const [viewPhoto, setViewPhoto] = useState(null); 
   const [inventory, setInventory] = useState([]);
+  // --- ESTADOS POKÉMON ---
+  const [pokemonCards, setPokemonCards] = useState([]);
+  const [showAddPokemon, setShowAddPokemon] = useState(false);
+  const [pokemonSearchTerm, setPokemonSearchTerm] = useState('');
+  const [pokemonData, setPokemonData] = useState({ 
+    name: '', number: '', set: '', rarity: '', buyPrice: '', marketValue: '', photo: '', condition: 'Near Mint' 
+  });
   const [showAddInventory, setShowAddInventory] = useState(false);
   const [invData, setInvData] = useState({ 
     name: '', 
@@ -213,6 +220,10 @@ const [tempPrice, setTempPrice] = useState(''); // Guarda o valor que estás a d
           const data = snap.val();
           setInventory(data ? Object.keys(data).map(id => ({ ...data[id], id })) : []);
         });
+        onValue(ref(db, `users/${user}/pokemonCollection`), (snap) => {
+          const data = snap.val();
+          setPokemonCards(data ? Object.keys(data).map(id => ({ ...data[id], id })) : []);
+        });
       });
     }
   }, [user]);
@@ -324,6 +335,42 @@ const isLowBalance = totalBalance < (settings.lowBalanceLimit || 50);
   };
 
   const content = getDynamicContent();
+  // --- FUNÇÕES POKÉMON (NOVO) ---
+  const searchPokemonCard = async (name) => {
+    if (!name) return;
+    try {
+      const response = await fetch(`https://api.pokemontcg.io/v2/cards?q=name:"${name}"&pageSize=1`);
+      const data = await response.json();
+      
+      if (data.data && data.data[0]) {
+        const card = data.data[0];
+        setPokemonData({
+          ...pokemonData,
+          name: card.name,
+          number: card.number,
+          set: card.set.name,
+          photo: card.images.small,
+          marketValue: card.tcgplayer?.prices?.holofoil?.market || card.tcgplayer?.prices?.normal?.market || ''
+        });
+        if (typeof triggerHaptic === 'function') triggerHaptic('medium');
+      }
+    } catch (err) {
+      console.error("Erro ao procurar carta:", err);
+    }
+  };
+
+  const handlePokemonSubmit = (e) => {
+    e.preventDefault();
+    push(ref(db, `users/${user}/pokemonCollection`), {
+      ...pokemonData,
+      buyPrice: parseFloat(pokemonData.buyPrice) || 0,
+      marketValue: parseFloat(pokemonData.marketValue) || 0,
+      timestamp: Date.now()
+    });
+    setPokemonData({ name: '', number: '', set: '', rarity: '', buyPrice: '', marketValue: '', photo: '', condition: 'Near Mint' });
+    setShowAddPokemon(false);
+    if (typeof triggerHaptic === 'function') triggerHaptic('success');
+  };
   const handleInventorySubmit = (e) => {
     e.preventDefault();
 
@@ -1437,7 +1484,107 @@ const isLowBalance = totalBalance < (settings.lowBalanceLimit || 50);
           </div>
 </div>
 )}
+{/* --- ABA POKÉMON (NOVO) --- */}
+{activeTab === 'pokemon' && (
+  <div style={{ paddingBottom: '20px', minHeight: '100vh', padding: '10px' }}>
+    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+      <h3 style={{ fontWeight: '900', margin: 0, fontSize: '18px' }}>🃏 Pokémon TCG</h3>
+      <button 
+        onClick={() => setShowAddPokemon(!showAddPokemon)} 
+        style={{ backgroundColor: '#FF3B30', color: 'white', border: 'none', borderRadius: '12px', padding: '8px 15px', fontWeight: '800', fontSize: '12px' }}
+      >
+        {showAddPokemon ? 'Fechar' : '+ Nova Carta'}
+        {showAddPokemon && (
+      <form onSubmit={handlePokemonSubmit} style={{ backgroundColor: 'white', padding: '20px', borderRadius: '24px', marginBottom: '20px', boxShadow: '0 8px 20px rgba(0,0,0,0.05)' }}>
+        <div style={{ display: 'flex', gap: '8px', marginBottom: '10px' }}>
+          <input 
+            placeholder="Nome da Carta (ex: Charizard)" 
+            value={pokemonData.name}
+            onChange={e => setPokemonData({...pokemonData, name: e.target.value})}
+            style={{ flex: 1, padding: '12px', borderRadius: '12px', border: 'none', backgroundColor: '#F2F2F7' }}
+          />
+          <button 
+            type="button" 
+            onClick={() => searchPokemonCard(pokemonData.name)}
+            style={{ backgroundColor: '#1C1C1E', color: 'white', border: 'none', borderRadius: '12px', padding: '0 15px', fontWeight: '800' }}
+          >🔍</button>
+        </div>
 
+        {pokemonData.photo && (
+          <div style={{ textAlign: 'center', marginBottom: '15px' }}>
+            <img src={pokemonData.photo} style={{ height: '120px', borderRadius: '8px' }} alt="Preview" />
+          </div>
+        )}
+
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '10px' }}>
+          <input placeholder="Preço Compra €" type="number" value={pokemonData.buyPrice} onChange={e => setPokemonData({...pokemonData, buyPrice: e.target.value})} style={{ padding: '12px', borderRadius: '12px', border: 'none', backgroundColor: '#F2F2F7' }} />
+          <input placeholder="Valor Mercado €" type="number" value={pokemonData.marketValue} onChange={e => setPokemonData({...pokemonData, marketValue: e.target.value})} style={{ padding: '12px', borderRadius: '12px', border: 'none', backgroundColor: '#F2F2F7' }} />
+        </div>
+
+        <button type="submit" style={{ width: '100%', padding: '15px', backgroundColor: '#FF3B30', color: 'white', border: 'none', borderRadius: '15px', fontWeight: '900' }}>
+          Adicionar à Coleção
+        </button>
+      </form>
+    )}
+      </button>
+    </div>
+
+    {/* Dashboard de Valor Pokémon */}
+    <div style={{ background: 'linear-gradient(135deg, #FF3B30 0%, #1C1C1E 100%)', color: 'white', padding: '24px', borderRadius: '28px', marginBottom: '25px', display: 'flex', justifyContent: 'space-between', boxShadow: '0 10px 20px rgba(255,59,48,0.2)' }}>
+      <div>
+        <p style={{ margin: 0, fontSize: '10px', fontWeight: '800', opacity: 0.8, letterSpacing: '0.5px' }}>VALOR DA COLEÇÃO</p>
+        <h4 style={{ margin: '4px 0 0 0', fontSize: '24px', fontWeight: '900' }}>
+          {pokemonCards.reduce((acc, c) => acc + (Number(c.marketValue) || 0), 0).toFixed(2)}€
+        </h4>
+      </div>
+      <div style={{ textAlign: 'right' }}>
+        <p style={{ margin: 0, fontSize: '10px', fontWeight: '800', opacity: 0.8, letterSpacing: '0.5px' }}>ROI ESTIMADO</p>
+        <h4 style={{ margin: '4px 0 0 0', fontSize: '18px', fontWeight: '900', color: '#34C759' }}>
+          +{(pokemonCards.reduce((acc, c) => acc + (Number(c.marketValue) || 0), 0) - pokemonCards.reduce((acc, c) => acc + (Number(c.buyPrice) || 0), 0)).toFixed(2)}€
+        </h4>
+      </div>
+    </div>
+
+    {/* Grelha de Cartas Estilo Dex */}
+    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '15px' }}>
+      {pokemonCards.map((card) => (
+        <div key={card.id} style={{ backgroundColor: 'white', borderRadius: '20px', overflow: 'hidden', boxShadow: '0 4px 12px rgba(0,0,0,0.05)', display: 'flex', flexDirection: 'column', border: '1px solid rgba(0,0,0,0.02)' }}>
+          <div style={{ height: '180px', backgroundColor: '#F8F9FB', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
+            <img 
+              src={card.photo || 'https://images.pokemontcg.io/swsh1/logo.png'} 
+              style={{ width: '100%', height: '100%', objectFit: 'contain', padding: '10px' }} 
+              alt={card.name} 
+            />
+            <div style={{ position: 'absolute', bottom: '8px', right: '8px', backgroundColor: 'rgba(0,0,0,0.6)', color: 'white', padding: '2px 6px', borderRadius: '6px', fontSize: '8px', fontWeight: '800' }}>
+              {card.condition || 'NM'}
+            </div>
+          </div>
+          <div style={{ padding: '12px' }}>
+            <p style={{ margin: 0, fontWeight: '900', fontSize: '12px', color: '#1C1C1E', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{card.name}</p>
+            <p style={{ margin: '2px 0 8px 0', fontSize: '9px', color: '#8E8E93', fontWeight: '700' }}>{card.set} • {card.number}</p>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 'auto' }}>
+              <span style={{ fontSize: '14px', fontWeight: '900', color: '#34C759' }}>{Number(card.marketValue).toFixed(2)}€</span>
+              <button 
+                onClick={() => { if(window.confirm('Eliminar carta da coleção?')) remove(ref(db, `users/${user}/pokemonCollection/${card.id}`)); }} 
+                style={{ border: 'none', background: '#FFF5F5', width: '28px', height: '28px', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px' }}
+              >
+                🗑️
+              </button>
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+
+    {/* Mensagem se estiver vazio */}
+    {pokemonCards.length === 0 && (
+      <div style={{ textAlign: 'center', padding: '40px', opacity: 0.3 }}>
+        <span style={{ fontSize: '50px' }}>🃏</span>
+        <p style={{ fontWeight: '800', fontSize: '12px', marginTop: '10px' }}>A TUA COLECÇÃO ESTÁ VAZIA</p>
+      </div>
+    )}
+  </div>
+)}
 {/* PASSO 2: Galeria Full Screen (Colado Aqui) */}
 {viewPhoto && (
   <div 
@@ -1572,6 +1719,19 @@ const isLowBalance = totalBalance < (settings.lowBalanceLimit || 50);
       opacity: activeTab === 'inventory' ? 1 : 0.3,
       filter: activeTab === 'inventory' ? 'drop-shadow(0 0 8px rgba(52,199,89,0.5))' : 'none'
     }}>📦</button>
+{/* Botão POKÉMON (Pokébola Real) */}
+<button onClick={() => { triggerHaptic('light'); setActiveTab('pokemon'); setSelectedDetail(null); }} 
+    style={{ 
+      background: 'none', border: 'none', padding: 0, cursor: 'pointer', transition: '0.3s',
+      transform: activeTab === 'pokemon' ? 'scale(1.2)' : 'scale(1)',
+      filter: activeTab === 'pokemon' ? 'drop-shadow(0 0 8px rgba(255, 59, 48, 0.6))' : 'grayscale(1) opacity(0.4)'
+    }}>
+    <img 
+      src="https://upload.wikimedia.org/wikipedia/commons/5/53/Pok%C3%A9_Ball_icon.svg" 
+      alt="Pokémon"
+      style={{ width: '26px', height: '26px', display: 'block' }}
+    />
+  </button>
 
   {/* Botão DEFINIÇÕES */}
   <button onClick={() => { triggerHaptic('light'); setActiveTab('settings'); setSelectedDetail(null); }} 
