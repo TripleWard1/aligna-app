@@ -169,6 +169,8 @@ export default function App() {
   const [editingPrice, setEditingPrice] = useState(null); // Guarda o item para edição rápida
 const [tempPrice, setTempPrice] = useState(''); // Guarda o valor que estás a digitar
   const [searchTerm, setSearchTerm] = useState(''); // Estado para a barra de pesquisa
+  const [searchResults, setSearchResults] = useState([]);
+const [isSearching, setIsSearching] = useState(false);
   const [user, setUser] = useState(localStorage.getItem('f_user') || null);
   const [list, setList] = useState([]);
   const [allUsers, setAllUsers] = useState({});
@@ -335,27 +337,41 @@ const isLowBalance = totalBalance < (settings.lowBalanceLimit || 50);
   };
 
   const content = getDynamicContent();
-  // --- FUNÇÕES POKÉMON (NOVO) ---
-  const searchPokemonCard = async (name) => {
-    if (!name) return;
+  // --- FUNÇÕES POKÉMON (ATUALIZADO PARA SELEÇÃO MÚLTIPLA) ---
+  const searchPokemonCard = async (query) => {
+    if (!query) return;
+    setIsSearching(true);
+    setSearchResults([]);
+    
     try {
-      const response = await fetch(`https://api.pokemontcg.io/v2/cards?q=name:"${name}"&pageSize=1`);
+      // Extraímos apenas o número se existir (ex: de "191/182" tiramos "191")
+      const onlyNumbers = query.replace(/\D/g, "");
+      // Limpa o texto de símbolos que dão erro de ligação
+      const cleanText = query.replace(/[0-9]/g, "").replace(/['’"“”]/g, "").trim();
+      
+      let q = "";
+      if (onlyNumbers && cleanText) {
+        q = `name:${cleanText}* number:${onlyNumbers}`;
+      } else if (onlyNumbers) {
+        q = `number:${onlyNumbers}`;
+      } else {
+        q = `name:${cleanText}*`;
+      }
+
+      // Esta URL força a API a procurar primeiro as cartas de 2025
+      const response = await fetch(`https://api.pokemontcg.io/v2/cards?q=${q}&orderBy=-set.releaseDate&pageSize=15`);
       const data = await response.json();
       
-      if (data.data && data.data[0]) {
-        const card = data.data[0];
-        setPokemonData({
-          ...pokemonData,
-          name: card.name,
-          number: card.number,
-          set: card.set.name,
-          photo: card.images.small,
-          marketValue: card.tcgplayer?.prices?.holofoil?.market || card.tcgplayer?.prices?.normal?.market || ''
-        });
-        if (typeof triggerHaptic === 'function') triggerHaptic('medium');
+      if (data.data && data.data.length > 0) {
+        setSearchResults(data.data);
+      } else {
+        alert("Nenhuma carta encontrada. Tente apenas o número (ex: 191)");
       }
     } catch (err) {
-      console.error("Erro ao procurar carta:", err);
+      console.error("Erro na busca:", err);
+      alert("Erro de ligação. Tente novamente.");
+    } finally {
+      setIsSearching(false);
     }
   };
 
@@ -1484,52 +1500,109 @@ const isLowBalance = totalBalance < (settings.lowBalanceLimit || 50);
           </div>
 </div>
 )}
-{/* --- ABA POKÉMON (NOVO) --- */}
+{/* --- ABA POKÉMON CORRIGIDA --- */}
+{/* --- ABA POKÉMON CORRIGIDA E COMPLETA --- */}
 {activeTab === 'pokemon' && (
-  <div style={{ paddingBottom: '20px', minHeight: '100vh', padding: '10px' }}>
+  <div style={{ paddingBottom: '120px', minHeight: '100vh', padding: '10px' }}>
+    
+    {/* Cabeçalho */}
     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
       <h3 style={{ fontWeight: '900', margin: 0, fontSize: '18px' }}>🃏 Pokémon TCG</h3>
       <button 
         onClick={() => setShowAddPokemon(!showAddPokemon)} 
-        style={{ backgroundColor: '#FF3B30', color: 'white', border: 'none', borderRadius: '12px', padding: '8px 15px', fontWeight: '800', fontSize: '12px' }}
+        style={{ backgroundColor: '#FF3B30', color: 'white', border: 'none', borderRadius: (typeof theme !== 'undefined' && theme.borderRadius) || '12px', padding: '8px 15px', fontWeight: '800', fontSize: '12px' }}
       >
         {showAddPokemon ? 'Fechar' : '+ Nova Carta'}
-        {showAddPokemon && (
-      <form onSubmit={handlePokemonSubmit} style={{ backgroundColor: 'white', padding: '20px', borderRadius: '24px', marginBottom: '20px', boxShadow: '0 8px 20px rgba(0,0,0,0.05)' }}>
-        <div style={{ display: 'flex', gap: '8px', marginBottom: '10px' }}>
-          <input 
-            placeholder="Nome da Carta (ex: Charizard)" 
-            value={pokemonData.name}
-            onChange={e => setPokemonData({...pokemonData, name: e.target.value})}
-            style={{ flex: 1, padding: '12px', borderRadius: '12px', border: 'none', backgroundColor: '#F2F2F7' }}
-          />
-          <button 
-            type="button" 
-            onClick={() => searchPokemonCard(pokemonData.name)}
-            style={{ backgroundColor: '#1C1C1E', color: 'white', border: 'none', borderRadius: '12px', padding: '0 15px', fontWeight: '800' }}
-          >🔍</button>
-        </div>
-
-        {pokemonData.photo && (
-          <div style={{ textAlign: 'center', marginBottom: '15px' }}>
-            <img src={pokemonData.photo} style={{ height: '120px', borderRadius: '8px' }} alt="Preview" />
-          </div>
-        )}
-
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '10px' }}>
-          <input placeholder="Preço Compra €" type="number" value={pokemonData.buyPrice} onChange={e => setPokemonData({...pokemonData, buyPrice: e.target.value})} style={{ padding: '12px', borderRadius: '12px', border: 'none', backgroundColor: '#F2F2F7' }} />
-          <input placeholder="Valor Mercado €" type="number" value={pokemonData.marketValue} onChange={e => setPokemonData({...pokemonData, marketValue: e.target.value})} style={{ padding: '12px', borderRadius: '12px', border: 'none', backgroundColor: '#F2F2F7' }} />
-        </div>
-
-        <button type="submit" style={{ width: '100%', padding: '15px', backgroundColor: '#FF3B30', color: 'white', border: 'none', borderRadius: '15px', fontWeight: '900' }}>
-          Adicionar à Coleção
-        </button>
-      </form>
-    )}
       </button>
     </div>
 
-    {/* Dashboard de Valor Pokémon */}
+    {/* Pesquisa e Seleção de Variações */}
+    {isSearching && (
+      <div style={{ textAlign: 'center', padding: '10px', color: '#FF3B30', fontWeight: '800', fontSize: '12px' }}>
+        🔎 A procurar na Pokédex...
+      </div>
+    )}
+
+    {searchResults.length > 0 && (
+      <div style={{ display: 'flex', gap: '10px', overflowX: 'auto', padding: '10px', backgroundColor: '#f0f0f0', borderRadius: '15px', marginBottom: '15px' }}>
+        {searchResults.map(card => (
+          <div key={card.id} style={{ textAlign: 'center' }}>
+            <img 
+              src={card.images.small} 
+              style={{ height: '120px', borderRadius: '8px', cursor: 'pointer' }} 
+              onClick={() => {
+                const prices = card.tcgplayer?.prices;
+                const mkt = prices?.holofoil?.market || prices?.normal?.market || prices?.reverseHolofoil?.market || card.cardmarket?.prices?.averageSellPrice || 0;
+                setPokemonData({
+                  ...pokemonData,
+                  name: card.name,
+                  set: card.set.name,
+                  photo: card.images.small,
+                  marketValue: mkt.toFixed(2)
+                });
+                setSearchResults([]);
+              }}
+            />
+            <p style={{ fontSize: '8px', fontWeight: '800', marginTop: '5px' }}>{card.set.name}</p>
+          </div>
+        ))}
+      </div>
+    )}
+
+    {/* Formulário de Adição */}
+    {showAddPokemon && (
+      <div style={{ backgroundColor: '#FF3B30', padding: '15px', borderRadius: '24px', marginBottom: '20px', boxShadow: '0 8px 20px rgba(0,0,0,0.1)' }}>
+        <div style={{ backgroundColor: 'white', padding: '20px', borderRadius: '20px' }}>
+          <div style={{ display: 'flex', gap: '8px', marginBottom: '10px' }}>
+            <input 
+              placeholder="Nome ou Número (ex: Houndoom 191)" 
+              value={pokemonData.name}
+              onChange={e => setPokemonData({...pokemonData, name: e.target.value})}
+              onFocus={(e) => e.stopPropagation()}
+              style={{ flex: 1, padding: '12px', borderRadius: '12px', border: 'none', backgroundColor: '#F2F2F7', fontSize: '14px' }}
+            />
+            <button 
+              type="button" 
+              onClick={() => searchPokemonCard(pokemonData.name)}
+              style={{ backgroundColor: '#1C1C1E', color: 'white', border: 'none', borderRadius: '12px', padding: '0 15px', fontWeight: '800' }}
+            >🔍</button>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '15px' }}>
+            <input 
+              placeholder="Compra €" 
+              type="number" 
+              value={pokemonData.buyPrice} 
+              onChange={e => setPokemonData({...pokemonData, buyPrice: e.target.value})} 
+              style={{ padding: '12px', borderRadius: '12px', border: 'none', backgroundColor: '#F2F2F7', fontSize: '14px' }} 
+            />
+            <input 
+              placeholder="Mercado €" 
+              type="number" 
+              value={pokemonData.marketValue} 
+              onChange={e => setPokemonData({...pokemonData, marketValue: e.target.value})} 
+              style={{ padding: '12px', borderRadius: '12px', border: 'none', backgroundColor: '#F2F2F7', fontSize: '14px' }} 
+            />
+          </div>
+
+          {pokemonData.photo && (
+            <div style={{ textAlign: 'center', marginBottom: '15px' }}>
+              <img src={pokemonData.photo} style={{ height: '120px', borderRadius: '8px' }} alt="Preview" />
+            </div>
+          )}
+
+          <button 
+            type="button"
+            onClick={handlePokemonSubmit} 
+            style={{ width: '100%', padding: '15px', backgroundColor: '#FF3B30', color: 'white', border: 'none', borderRadius: '15px', fontWeight: '900' }}
+          >
+            Adicionar à Coleção
+          </button>
+        </div>
+      </div>
+    )}
+
+    {/* Dashboard de Valor Único */}
     <div style={{ background: 'linear-gradient(135deg, #FF3B30 0%, #1C1C1E 100%)', color: 'white', padding: '24px', borderRadius: '28px', marginBottom: '25px', display: 'flex', justifyContent: 'space-between', boxShadow: '0 10px 20px rgba(255,59,48,0.2)' }}>
       <div>
         <p style={{ margin: 0, fontSize: '10px', fontWeight: '800', opacity: 0.8, letterSpacing: '0.5px' }}>VALOR DA COLEÇÃO</p>
@@ -1552,21 +1625,19 @@ const isLowBalance = totalBalance < (settings.lowBalanceLimit || 50);
           <div style={{ height: '180px', backgroundColor: '#F8F9FB', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
             <img 
               src={card.photo || 'https://images.pokemontcg.io/swsh1/logo.png'} 
-              style={{ width: '100%', height: '100%', objectFit: 'contain', padding: '10px' }} 
-              alt={card.name} 
+              style={{ width: '100%', height: '100%', objectFit: 'contain', padding: '10px', cursor: 'pointer' }} 
+              alt={card.name}
+              onClick={() => setViewPhoto(card.photo)}
             />
-            <div style={{ position: 'absolute', bottom: '8px', right: '8px', backgroundColor: 'rgba(0,0,0,0.6)', color: 'white', padding: '2px 6px', borderRadius: '6px', fontSize: '8px', fontWeight: '800' }}>
-              {card.condition || 'NM'}
-            </div>
           </div>
           <div style={{ padding: '12px' }}>
             <p style={{ margin: 0, fontWeight: '900', fontSize: '12px', color: '#1C1C1E', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{card.name}</p>
-            <p style={{ margin: '2px 0 8px 0', fontSize: '9px', color: '#8E8E93', fontWeight: '700' }}>{card.set} • {card.number}</p>
+            <p style={{ margin: '2px 0 8px 0', fontSize: '9px', color: '#8E8E93', fontWeight: '700' }}>{card.set}</p>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 'auto' }}>
               <span style={{ fontSize: '14px', fontWeight: '900', color: '#34C759' }}>{Number(card.marketValue).toFixed(2)}€</span>
               <button 
-                onClick={() => { if(window.confirm('Eliminar carta da coleção?')) remove(ref(db, `users/${user}/pokemonCollection/${card.id}`)); }} 
-                style={{ border: 'none', background: '#FFF5F5', width: '28px', height: '28px', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px' }}
+                onClick={() => { if(window.confirm('Eliminar carta?')) remove(ref(db, `users/${user}/pokemonCollection/${card.id}`)); }} 
+                style={{ border: 'none', background: '#FFF5F5', width: '28px', height: '28px', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
               >
                 🗑️
               </button>
@@ -1576,16 +1647,19 @@ const isLowBalance = totalBalance < (settings.lowBalanceLimit || 50);
       ))}
     </div>
 
-    {/* Mensagem se estiver vazio */}
+    {/* Mensagem de Vazio */}
     {pokemonCards.length === 0 && (
       <div style={{ textAlign: 'center', padding: '40px', opacity: 0.3 }}>
         <span style={{ fontSize: '50px' }}>🃏</span>
         <p style={{ fontWeight: '800', fontSize: '12px', marginTop: '10px' }}>A TUA COLECÇÃO ESTÁ VAZIA</p>
       </div>
     )}
+    
+    <div style={{ height: '90px' }}></div>
   </div>
 )}
-{/* PASSO 2: Galeria Full Screen (Colado Aqui) */}
+
+{/* --- GALERIA FULL SCREEN --- */}
 {viewPhoto && (
   <div 
     onClick={() => setViewPhoto(null)} 
@@ -1611,6 +1685,7 @@ const isLowBalance = totalBalance < (settings.lowBalanceLimit || 50);
         boxShadow: '0 20px 60px rgba(0,0,0,0.5)',
         objectFit: 'contain'
       }} 
+      alt="Full View"
     />
     <p style={{ position: 'absolute', top: '40px', color: 'white', fontWeight: '800', fontSize: '10px', letterSpacing: '1px' }}>TOCA PARA FECHAR</p>
   </div>
