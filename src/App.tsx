@@ -1810,100 +1810,93 @@ const isLowBalance = totalBalance < (settings.lowBalanceLimit || 50);
     {/* Dashboard Pokédex Redesenhado */}
     <div style={{ marginBottom: '25px', position: 'relative' }}>
       
-      {/* Modal de Sincronização */}
-      {isSyncing && (
-        <div style={{
-          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-          backgroundColor: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(5px)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          zIndex: 9999, padding: '20px'
-        }}>
-          <div style={{
-            background: '#1a1a1a', padding: '30px', borderRadius: '24px',
-            border: '2px solid #ee1515', textAlign: 'center', boxShadow: '0 0 30px #ee1515'
-          }}>
-            <div style={{ 
-  width: '60px', 
-  height: '60px', 
-  margin: '0 auto 20px auto',
-  position: 'relative',
-  animation: 'spin 2s linear infinite' // Faz a pokebola girar enquanto sincroniza
-}}>
-  <div style={{
-    width: '100%', height: '100%',
-    borderRadius: '50%',
-    background: 'linear-gradient(to bottom, #ee1515 45%, #111 45%, #111 55%, #fff 55%)',
-    border: '3px solid #111',
-    boxShadow: 'inset -4px -4px 0 rgba(0,0,0,0.1), 0 0 15px rgba(238, 21, 21, 0.4)'
-  }}>
-    {/* Botão Central da Pokébola */}
-    <div style={{
-      position: 'absolute', top: '50%', left: '50%',
-      transform: 'translate(-50%, -50%)',
-      width: '15px', height: '15px',
-      backgroundColor: '#fff',
-      border: '3px solid #111',
-      borderRadius: '50%',
-      zIndex: 10
-    }} />
-  </div>
-</div>
-            <h3 style={{ color: '#fff', margin: '0 0 10px 0', fontWeight: '900' }}>Sincronizando...</h3>
-            <p style={{ color: '#8e8e93', fontSize: '12px', margin: '0 0 20px 0' }}>A atualizar preços via Satélite Pokédex</p>
-            <button 
-              onClick={() => setIsSyncing(false)}
-              style={{ background: '#ee1515', color: '#fff', border: 'none', padding: '10px 20px', borderRadius: '12px', fontWeight: '900' }}
-            >
-              OK
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Card do Dashboard */}
-      <div style={{ 
-        background: 'linear-gradient(135deg, #ee1515 0%, #222 40%, #111 100%)',
-        borderRadius: '24px', margin: '0 10px 20px 10px', padding: '2px',
-        boxShadow: '0 10px 30px rgba(0,0,0,0.3)', position: 'relative'
+      {/* MODAL DE SINCRONIZAÇÃO (VERSÃO ÚNICA E CORRIGIDA) */}
+    {isSyncing && (
+      <div style={{
+        position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+        backgroundColor: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(8px)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        zIndex: 9999
       }}>
-        <div style={{ background: '#1a1a1a', borderRadius: '22px', padding: '20px', position: 'relative', overflow: 'hidden' }}>
-          
-          {/* MUDANÇA 1: Agora chama a função de atualização real */}
-          <button 
-            onClick={refreshAllPrices} 
-            style={{
-              position: 'absolute', top: '15px', right: '15px',
-              background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
-              borderRadius: '50%', width: '38px', height: '38px', display: 'flex',
-              alignItems: 'center', justifyContent: 'center', cursor: 'pointer', zIndex: 10
-            }}
-          >
-            <span style={{ fontSize: '16px' }}>🔄</span>
-          </button>
-
-          <div style={{ position: 'relative', zIndex: 1 }}>
-            <p style={{ margin: 0, fontSize: '10px', fontWeight: '900', color: '#ee1515', letterSpacing: '2px', textTransform: 'uppercase' }}>
-              Valor da Pokédex
-            </p>
-            
-            {/* MUDANÇA 2: Agora usa o valor animado */}
-            <h4 style={{ margin: '5px 0 18px 0', fontSize: '34px', fontWeight: '900', color: '#fff', fontFamily: 'monospace' }}>
-              {Number(displayValue).toFixed(2)}<span style={{color: '#ee1515', fontSize: '20px'}}>€</span>
-            </h4>
-
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-              <span style={{ fontSize: '9px', fontWeight: '900', color: '#ffcc00', letterSpacing: '1px' }}>COLLECTION_EXP</span>
-              <span style={{ fontSize: '10px', fontWeight: '900', color: '#ffcc00' }}>LVL {Math.floor(pokemonCards.length / 5)}</span>
-            </div>
-            <div style={{ height: '8px', background: '#333', borderRadius: '4px', overflow: 'hidden', border: '1px solid #000' }}>
+        <div style={{
+          background: '#1a1a1a', padding: '40px', borderRadius: '30px',
+          border: '2px solid #ee1515', textAlign: 'center', boxShadow: '0 0 40px rgba(238, 21, 21, 0.3)'
+        }}>
+          <div style={{ 
+            width: '80px', height: '80px', margin: '0 auto 20px auto', 
+            position: 'relative', 
+            animation: 'spin 1.5s linear infinite' 
+          }}>
+            <div style={{
+              width: '100%', height: '100%', borderRadius: '50%',
+              background: 'linear-gradient(to bottom, #ee1515 45%, #111 45%, #111 55%, #fff 55%)',
+              border: '4px solid #111',
+              boxShadow: 'inset -4px -4px 0 rgba(0,0,0,0.2)'
+            }}>
               <div style={{ 
-                width: `${Math.min((pokemonCards.length % 5) * 20, 100)}%`, 
-                height: '100%', background: '#ffcc00', boxShadow: '0 0 10px rgba(255, 204, 0, 0.4)' 
+                position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', 
+                width: '18px', height: '18px', backgroundColor: '#fff', border: '4px solid #111', borderRadius: '50%', zIndex: 10 
               }} />
             </div>
           </div>
+          <h3 style={{ color: '#fff', margin: '0 0 5px 0', fontWeight: '900', letterSpacing: '1px' }}>SINCRONIZANDO...</h3>
+          <p style={{ color: '#8e8e93', fontSize: '11px' }}>A atualizar preços via Satélite Pokédex</p>
+          <button 
+            onClick={() => setIsSyncing(false)}
+            style={{ marginTop: '20px', background: '#ee1515', color: '#fff', border: 'none', padding: '8px 20px', borderRadius: '12px', fontWeight: '900', cursor: 'pointer' }}
+          >
+            FECHAR
+          </button>
         </div>
       </div>
+    )}
+
+    {/* DASHBOARD DA POKÉDEX (DESIGN PREMIUM) */}
+    <div style={{ 
+      background: 'linear-gradient(135deg, #ee1515 0%, #222 40%, #111 100%)',
+      borderRadius: '24px', margin: '0 10px 20px 10px', padding: '2px',
+      boxShadow: '0 10px 30px rgba(0,0,0,0.3)', position: 'relative', zIndex: 1
+    }}>
+      <div style={{ background: '#1a1a1a', borderRadius: '22px', padding: '20px', position: 'relative', overflow: 'hidden' }}>
+        
+        {/* BOTÃO REFRESH */}
+        <button 
+          onClick={refreshAllPrices} 
+          style={{
+            position: 'absolute', top: '15px', right: '15px',
+            background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
+            borderRadius: '50%', width: '38px', height: '38px', display: 'flex',
+            alignItems: 'center', justifyContent: 'center', cursor: 'pointer', zIndex: 10
+          }}
+        >
+          <span style={{ fontSize: '16px' }}>🔄</span>
+        </button>
+
+        <div style={{ position: 'relative', zIndex: 1 }}>
+          <p style={{ margin: 0, fontSize: '10px', fontWeight: '900', color: '#ee1515', letterSpacing: '2px', textTransform: 'uppercase' }}>
+            Valor da Pokédex
+          </p>
+          
+          {/* CORREÇÃO DOS PREÇOS: Cálculo em tempo real para evitar erros */}
+          <h4 style={{ margin: '5px 0 18px 0', fontSize: '34px', fontWeight: '900', color: '#fff', fontFamily: 'monospace' }}>
+            {pokemonCards.reduce((acc, card) => acc + (parseFloat(card.marketValue) || 0), 0).toFixed(2)}
+            <span style={{color: '#ee1515', fontSize: '20px'}}>€</span>
+          </h4>
+
+          {/* BARRA DE PROGRESSO EXP */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+            <span style={{ fontSize: '9px', fontWeight: '900', color: '#ffcc00', letterSpacing: '1px' }}>COLLECTION_EXP</span>
+            <span style={{ fontSize: '10px', fontWeight: '900', color: '#ffcc00' }}>LVL {Math.floor(pokemonCards.length / 5)}</span>
+          </div>
+          <div style={{ height: '8px', background: '#333', borderRadius: '4px', overflow: 'hidden', border: '1px solid #000' }}>
+            <div style={{ 
+              width: `${Math.min((pokemonCards.length % 5) * 20, 100)}%`, 
+              height: '100%', background: '#ffcc00', boxShadow: '0 0 10px rgba(255, 204, 0, 0.4)' 
+            }} />
+          </div>
+        </div>
+      </div>
+    </div>
 
       {/* Rodapé do Dashboard */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '0 15px' }}>
