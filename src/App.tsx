@@ -1497,16 +1497,70 @@ const isLowBalance = totalBalance < (settings.lowBalanceLimit || 50);
 {/* --- ABA POKÉMON CORRIGIDA --- */}
 {/* --- ABA POKÉMON CORRIGIDA E COMPLETA --- */}
 {activeTab === 'pokemon' && (
-  <div style={{ paddingBottom: '120px', minHeight: '100vh', padding: '10px' }}>
+  <div style={{ 
+    paddingBottom: '120px', 
+    minHeight: '100vh', 
+    padding: '20px',
+    backgroundColor: '#fdfdfd',
+    // Fundo com padrão de grade técnica (estilo interface de computador Pokémon)
+    backgroundImage: `radial-gradient(#e5e7eb 1px, transparent 1px)`,
+    backgroundSize: '20px 20px',
+    position: 'relative'
+  }}>
     
-    {/* Cabeçalho */}
-    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-      <h3 style={{ fontWeight: '900', margin: 0, fontSize: '18px' }}>🃏 Pokémon TCG</h3>
+    {/* Cabeçalho com Pokébola Real */}
+    <div style={{ 
+      display: 'flex', 
+      justifyContent: 'space-between', 
+      alignItems: 'center', 
+      marginBottom: '30px',
+      background: 'white',
+      padding: '15px 25px',
+      borderRadius: '20px',
+      boxShadow: '0 10px 25px rgba(0,0,0,0.05)',
+      border: '1px solid #f1f1f1'
+    }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+        {/* Pokébola Real em CSS (Baseada no seu código salvo) */}
+        <div style={{ 
+          width: '40px', height: '40px', borderRadius: '50%', 
+          background: 'linear-gradient(180deg, #ee1515 50%, white 50%)', 
+          border: '3px solid #1c1c1e', position: 'relative',
+          boxShadow: 'inset -4px -4px 0 rgba(0,0,0,0.1)'
+        }}>
+          <div style={{ position: 'absolute', top: '50%', left: '0', width: '100%', height: '3px', backgroundColor: '#1c1c1e', transform: 'translateY(-50%)' }} />
+          <div style={{ 
+            position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
+            width: '12px', height: '12px', borderRadius: '50%', backgroundColor: 'white', border: '3px solid #1c1c1e',
+            display: 'flex', alignItems: 'center', justifyContent: 'center'
+          }}>
+            <div style={{ width: '4px', height: '4px', borderRadius: '50%', border: '1px solid #1c1c1e' }} />
+          </div>
+        </div>
+        <h3 style={{ fontWeight: '900', margin: 0, fontSize: '22px', color: '#1c1c1e', letterSpacing: '-1px', textTransform: 'uppercase' }}>
+          POKÉDEX
+        </h3>
+      </div>
+      
+      {/* Botão Nova Carta Estilizado */}
       <button 
         onClick={() => setShowAddPokemon(!showAddPokemon)} 
-        style={{ backgroundColor: '#FF3B30', color: 'white', border: 'none', borderRadius: (typeof theme !== 'undefined' && theme.borderRadius) || '12px', padding: '8px 15px', fontWeight: '800', fontSize: '12px' }}
+        style={{ 
+          backgroundColor: '#ee1515', 
+          color: 'white', 
+          border: 'none', 
+          borderRadius: '12px', 
+          padding: '12px 20px', 
+          fontWeight: '900', 
+          fontSize: '12px',
+          textTransform: 'uppercase',
+          letterSpacing: '1px',
+          boxShadow: '0 4px 0 #b10f0f', // Efeito 3D de botão real
+          cursor: 'pointer',
+          active: { transform: 'translateY(2px)', boxShadow: '0 2px 0 #b10f0f' }
+        }}
       >
-        {showAddPokemon ? 'Fechar' : '+ Nova Carta'}
+        {showAddPokemon ? 'FECHAR' : 'ADICIONAR CARTA'}
       </button>
     </div>
 
@@ -1586,7 +1640,7 @@ const isLowBalance = totalBalance < (settings.lowBalanceLimit || 50);
             </div>
           )}
 
-          <button 
+<button 
             type="button"
             onClick={handlePokemonSubmit} 
             style={{ width: '100%', padding: '15px', backgroundColor: '#FF3B30', color: 'white', border: 'none', borderRadius: '15px', fontWeight: '900' }}
@@ -1597,78 +1651,236 @@ const isLowBalance = totalBalance < (settings.lowBalanceLimit || 50);
       </div>
     )}
 
-    {/* Dashboard de Valor Único */}
-    <div style={{ background: 'linear-gradient(135deg, #FF3B30 0%, #1C1C1E 100%)', color: 'white', padding: '24px', borderRadius: '28px', marginBottom: '25px', display: 'flex', justifyContent: 'space-between', boxShadow: '0 10px 20px rgba(255,59,48,0.2)' }}>
-      <div>
-        <p style={{ margin: 0, fontSize: '10px', fontWeight: '800', opacity: 0.8, letterSpacing: '0.5px' }}>VALOR DA COLEÇÃO</p>
-        <h4 style={{ margin: '4px 0 0 0', fontSize: '24px', fontWeight: '900' }}>
-          {pokemonCards.reduce((acc, c) => acc + (Number(c.marketValue) || 0), 0).toFixed(2)}€
-        </h4>
-      </div>
-      <div style={{ textAlign: 'right' }}>
-        <p style={{ margin: 0, fontSize: '10px', fontWeight: '800', opacity: 0.8, letterSpacing: '0.5px' }}>ROI ESTIMADO</p>
-        <h4 style={{ margin: '4px 0 0 0', fontSize: '18px', fontWeight: '900', color: '#34C759' }}>
-          +{(pokemonCards.reduce((acc, c) => acc + (Number(c.marketValue) || 0), 0) - pokemonCards.reduce((acc, c) => acc + (Number(c.buyPrice) || 0), 0)).toFixed(2)}€
-        </h4>
+    {/* COLA O PASSO 2 AQUI (Substituindo o antigo Dashboard) */}
+    {/* Dashboard Pokédex OS - Redesign Premium */}
+
+    <div style={{ 
+      background: '#222', 
+      borderRadius: '24px', 
+      marginBottom: '35px', 
+      position: 'relative', 
+      padding: '2px', // Borda de destaque
+      background: 'linear-gradient(135deg, #ee1515 0%, #222 40%, #111 100%)',
+      boxShadow: '0 15px 35px rgba(0,0,0,0.3)'
+    }}>
+      <div style={{ 
+        background: '#1a1a1a', 
+        borderRadius: '22px', 
+        padding: '25px', 
+        position: 'relative',
+        overflow: 'hidden'
+      }}>
+        {/* --- ADICIONA ESTE BLOCO AQUI --- */}
+        {/* Elemento Decorativo: Scanner de Dados */}
+        <div style={{ 
+          position: 'absolute', top: 0, left: 0, width: '100%', height: '100%',
+          backgroundImage: 'linear-gradient(rgba(52, 217, 100, 0.05) 1px, transparent 1px)',
+          backgroundSize: '100% 4px', pointerEvents: 'none', zIndex: 0
+        }} />
+        
+        {/* Slot de Cartão de Memória Pokédex */}
+        <div style={{ 
+          position: 'absolute', left: '0', top: '50%', transform: 'translateY(-50%)',
+          width: '4px', height: '40px', background: '#ee1515', borderRadius: '0 2px 2px 0', boxShadow: '0 0 10px #ee1515'
+        }} />
+        {/* --------------------------------- */}
+        {/* Elemento Decorativo: Scanner de Dados */}
+        <div style={{ 
+          position: 'absolute', top: 0, left: 0, width: '100%', height: '100%',
+          backgroundImage: 'linear-gradient(rgba(52, 217, 100, 0.03) 1px, transparent 1px)',
+          backgroundSize: '100% 4px', pointerEvents: 'none'
+        }} />
+
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', position: 'relative', zIndex: 1 }}>
+          
+          {/* Lado Esquerdo: Valuation com Estilo Digital */}
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+              <div style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#ee1515', boxShadow: '0 0 10px #ee1515' }} />
+              <p style={{ margin: 0, fontSize: '10px', fontWeight: '900', color: '#ee1515', letterSpacing: '2px', textTransform: 'uppercase' }}>
+                Valor da Pokedex
+              </p>
+            </div>
+            <h4 style={{ 
+              margin: 0, 
+              fontSize: '38px', 
+              fontWeight: '900', 
+              color: '#fff', 
+              textShadow: '0 0 15px rgba(255,255,255,0.2)',
+              fontFamily: 'monospace' 
+            }}>
+              {pokemonCards.reduce((acc, c) => acc + (Number(c.marketValue) || 0), 0).toFixed(2)}<span style={{ fontSize: '20px', color: '#ee1515' }}>€</span>
+            </h4>
+          </div>
+
+          {/* Lado Direito: Profit Estilo "Level Up" */}
+          <div style={{ textAlign: 'right' }}>
+            <p style={{ margin: 0, fontSize: '10px', fontWeight: '900', color: '#8e8e93', letterSpacing: '1px', marginBottom: '8px' }}>
+              LUCRO TOTAL
+            </p>
+            <div style={{ 
+              background: 'linear-gradient(90deg, rgba(76, 217, 100, 0.1), rgba(76, 217, 100, 0.2))',
+              padding: '8px 15px',
+              borderRadius: '12px',
+              border: '1px solid #4cd964',
+              boxShadow: '0 0 15px rgba(76, 217, 100, 0.2)'
+            }}>
+              <h4 style={{ margin: 0, fontSize: '22px', fontWeight: '900', color: '#4cd964' }}>
+                +{(pokemonCards.reduce((acc, c) => acc + (Number(c.marketValue) || 0), 0) - pokemonCards.reduce((acc, c) => acc + (Number(c.buyPrice) || 0), 0)).toFixed(2)}€
+              </h4>
+            </div>
+          </div>
+        </div>
+
+        {/* Barra de Status Inferior (Real Pokémon Element) */}
+        <div style={{ 
+          marginTop: '20px', 
+          height: '6px', 
+          background: '#333', 
+          borderRadius: '3px', 
+          display: 'flex', 
+          overflow: 'hidden',
+          border: '1px solid #000'
+        }}>
+          <div style={{ width: '70%', background: '#ee1515', boxShadow: '0 0 10px #ee1515' }} />
+          <div style={{ width: '10%', background: '#ffcc00' }} />
+          <div style={{ width: '20%', background: '#333' }} />
+        </div>
       </div>
     </div>
+{/* --- ADICIONA ESTE BLOCO AQUI --- */}
+<div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '15px', padding: '0 10px' }}>
+      <div style={{ fontSize: '9px', fontWeight: '900', color: '#1c1c1e', background: '#eee', padding: '3px 8px', borderRadius: '4px', letterSpacing: '1px' }}>
+        DATA_SCAN: ACTIVE
+      </div>
+      <div style={{ flex: 1, height: '1px', background: 'linear-gradient(90deg, #eee, transparent)' }} />
+      <div style={{ fontSize: '9px', fontWeight: '900', color: '#ee1515', letterSpacing: '1px' }}>REG: PALDEA_SEC_01</div>
+    </div>
+    {/* --------------------------------- */}
 
+    {/* Grelha de Cartas Estilo Dex */}
     {/* Grelha de Cartas Estilo Dex */}
     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '15px' }}>
       {pokemonCards.map((card) => (
-        <div key={card.id} style={{ backgroundColor: 'white', borderRadius: '20px', overflow: 'hidden', boxShadow: '0 4px 12px rgba(0,0,0,0.05)', display: 'flex', flexDirection: 'column', border: '1px solid rgba(0,0,0,0.02)' }}>
-          <div style={{ height: '180px', backgroundColor: '#F8F9FB', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
+        <div key={card.id} style={{ 
+          backgroundColor: 'white', 
+          borderRadius: '28px', 
+          padding: '12px',
+          boxShadow: '0 8px 24px rgba(0,0,0,0.04)',
+          display: 'flex', 
+          flexDirection: 'column',
+          transition: 'transform 0.2s'
+        }}>
+          <div style={{ position: 'relative', height: '180px', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '12px' }}>
             <img 
-              src={card.photo || 'https://images.pokemontcg.io/swsh1/logo.png'} 
-              style={{ width: '100%', height: '100%', objectFit: 'contain', padding: '10px', cursor: 'pointer' }} 
+              src={card.photo} 
+              style={{ width: '100%', height: '100%', objectFit: 'contain', filter: 'drop-shadow(0 12px 15px rgba(0,0,0,0.15))' }} 
               alt={card.name}
               onClick={() => setViewPhoto(card.photo)}
             />
+            <div style={{ 
+              position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
+              background: 'linear-gradient(135deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 50%, rgba(255,255,255,0.1) 100%)',
+              borderRadius: '12px', pointerEvents: 'none'
+            }} />
           </div>
-          <div style={{ padding: '12px' }}>
-            <p style={{ margin: 0, fontWeight: '900', fontSize: '12px', color: '#1C1C1E', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{card.name}</p>
-            <p style={{ margin: '2px 0 4px 0', fontSize: '9px', color: '#8E8E93', fontWeight: '700' }}>{card.set}</p>
-
-            {/* AQUI ESTÁ O NOVO BLOCO DE RARIDADE */}
+          
+          <div style={{ padding: '0 4px' }}>
+            <p style={{ margin: 0, fontWeight: '900', fontSize: '13px', color: '#1c1c1e', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{card.name}</p>
+            
             {card.rarity && (
               <div style={{ 
-                display: 'inline-block',
-                padding: '2px 6px',
-                borderRadius: '4px',
-                backgroundColor: '#F2F2F7',
-                fontSize: '8px',
-                fontWeight: '800',
-                color: '#FF3B30',
-                marginBottom: '8px',
-                textTransform: 'uppercase'
+                fontSize: '7px', fontWeight: '900', color: '#ee1515', background: '#fff0f0', 
+                padding: '3px 7px', borderRadius: '6px', display: 'inline-block', 
+                marginTop: '5px', textTransform: 'uppercase', letterSpacing: '0.5px' 
               }}>
                 ✨ {card.rarity}
               </div>
             )}
 
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 'auto' }}>
-              <span style={{ fontSize: '14px', fontWeight: '900', color: '#34C759' }}>{Number(card.marketValue).toFixed(2)}€</span>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '12px' }}>
+              <span style={{ fontSize: '16px', fontWeight: '900', color: '#1c1c1e' }}>{Number(card.marketValue).toFixed(2)}€</span>
               <button 
-  onClick={() => setPokemonToDelete(card)} // Em vez de deletar logo, abre o modal
-  style={{ border: 'none', background: '#FFF5F5', width: '28px', height: '28px', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
->
-  🗑️
-</button>
+                onClick={() => setPokemonToDelete(card)}
+                style={{ 
+                  background: '#1c1c1e', border: '1px solid #ee1515', padding: '5px 8px', 
+                  borderRadius: '6px', color: '#ee1515', fontSize: '8px', fontWeight: '900', cursor: 'pointer' 
+                }}
+              >
+                DISCARD
+              </button>
             </div>
           </div>
         </div>
       ))}
     </div>
 
-    {/* Mensagem de Vazio */}
+    {/* Mensagem de Vazio Estilizada */}
     {pokemonCards.length === 0 && (
-      <div style={{ textAlign: 'center', padding: '40px', opacity: 0.3 }}>
-        <span style={{ fontSize: '50px' }}>🃏</span>
-        <p style={{ fontWeight: '800', fontSize: '12px', marginTop: '10px' }}>A TUA COLECÇÃO ESTÁ VAZIA</p>
+      <div style={{ 
+        textAlign: 'center', 
+        padding: '60px 20px', 
+        backgroundColor: '#F2F2F7', 
+        borderRadius: '30px', 
+        border: '2px dashed #D1D1D6', 
+        marginTop: '20px' 
+      }}>
+        <div style={{ 
+          width: '60px', 
+          height: '60px', 
+          margin: '0 auto 15px', 
+          background: '#D1D1D6', 
+          borderRadius: '15px', 
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: 'center',
+          position: 'relative'
+        }}>
+          <div style={{ width: '30px', height: '4px', backgroundColor: 'white', borderRadius: '2px', position: 'absolute', top: '15px' }} />
+          <div style={{ width: '40px', height: '25px', border: '3px solid white', borderRadius: '8px', marginTop: '10px' }} />
+        </div>
+        
+        <p style={{ fontWeight: '900', fontSize: '13px', color: '#8E8E93', textTransform: 'uppercase', letterSpacing: '1px', margin: '0 0 5px 0' }}>
+          Sem Cartas Detetadas
+        </p>
+        <p style={{ fontSize: '11px', color: '#AEAEC0', fontWeight: '600', margin: 0 }}>
+          Utiliza a pesquisa para iniciar a tua coleção
+        </p>
       </div>
     )}
-    
-    <div style={{ height: '90px' }}></div>
+
+    {/* ESTES FECHOS SÃO O QUE FALTAVA PARA TIRAR O ERRO REDO: */}
+    <div style={{ height: '100px' }}></div>
+  </div>
+)}
+
+{/* --- GALERIA FULL SCREEN --- */}
+{viewPhoto && (
+  <div 
+    onClick={() => setViewPhoto(null)} 
+    style={{
+      position: 'fixed',
+      top: 0, left: 0, right: 0, bottom: 0,
+      backgroundColor: 'rgba(0,0,0,0.9)',
+      backdropFilter: 'blur(15px)',
+      zIndex: 3000, 
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: '20px'
+    }}
+  >
+    <img 
+      src={viewPhoto} 
+      style={{ 
+        maxWidth: '100%', 
+        maxHeight: '85vh', 
+        borderRadius: '24px', 
+        boxShadow: '0 20px 60px rgba(0,0,0,0.5)',
+        objectFit: 'contain'
+      }} 
+      alt="Full View"
+    />
   </div>
 )}
 
