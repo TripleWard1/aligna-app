@@ -1760,51 +1760,112 @@ const isLowBalance = totalBalance < (settings.lowBalanceLimit || 50);
 
     {/* Grelha de Cartas Estilo Dex */}
     {/* Grelha de Cartas Estilo Dex */}
-    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '15px' }}>
+    {/* Grelha de Cartas com Marca de Água Dinâmica */}
+    {/* Grelha de Cartas com Marca de Água Colorida e Vibrante */}
+    {/* Grelha de Cartas com Contraste de Texto Otimizado */}
+    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '16px' }}>
       {pokemonCards.map((card) => (
         <div key={card.id} style={{ 
-          backgroundColor: 'white', 
-          borderRadius: '28px', 
+          backgroundColor: '#ffffff', 
+          borderRadius: '24px 4px 24px 4px', 
           padding: '12px',
-          boxShadow: '0 8px 24px rgba(0,0,0,0.04)',
+          boxShadow: '0 10px 25px rgba(0,0,0,0.08)',
+          border: '1px solid #e5e7eb',
+          position: 'relative',
           display: 'flex', 
           flexDirection: 'column',
-          transition: 'transform 0.2s'
+          overflow: 'hidden' 
         }}>
-          <div style={{ position: 'relative', height: '180px', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '12px' }}>
+          
+          {/* MARCA DE ÁGUA COLORIDA VIBRANTE */}
+          <div style={{
+            position: 'absolute',
+            top: '-5%', left: '-5%', right: '-5%', bottom: '-5%',
+            backgroundImage: `url(${card.photo})`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            opacity: 0.85, // Bem visível com cor
+            filter: 'saturate(1.4) blur(2px)',
+            zIndex: 0,
+            pointerEvents: 'none',
+          }} />
+
+          {/* CAMADA DE LEGIBILIDADE (Gradiente para escurecer o fundo atrás do texto) */}
+          <div style={{
+            position: 'absolute',
+            bottom: 0, left: 0, right: 0, height: '50%',
+            background: 'linear-gradient(to top, rgba(255,255,255,0.95) 20%, rgba(255,255,255,0.4) 100%)',
+            zIndex: 1
+          }} />
+
+          {/* Moldura da Imagem Central */}
+          <div style={{ 
+            position: 'relative', 
+            height: '160px', 
+            backgroundColor: 'rgba(255, 255, 255, 0.7)', 
+            backdropFilter: 'blur(8px)',
+            borderRadius: '16px 4px 16px 4px',
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'center', 
+            marginBottom: '12px',
+            border: '1px solid rgba(255, 255, 255, 0.9)',
+            zIndex: 2,
+            boxShadow: '0 4px 15px rgba(0,0,0,0.05)'
+          }}>
             <img 
               src={card.photo} 
-              style={{ width: '100%', height: '100%', objectFit: 'contain', filter: 'drop-shadow(0 12px 15px rgba(0,0,0,0.15))' }} 
+              style={{ width: '85%', height: '85%', objectFit: 'contain', filter: 'drop-shadow(0 8px 12px rgba(0,0,0,0.2))' }} 
               alt={card.name}
               onClick={() => setViewPhoto(card.photo)}
             />
-            <div style={{ 
-              position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
-              background: 'linear-gradient(135deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 50%, rgba(255,255,255,0.1) 100%)',
-              borderRadius: '12px', pointerEvents: 'none'
-            }} />
           </div>
           
-          <div style={{ padding: '0 4px' }}>
-            <p style={{ margin: 0, fontWeight: '900', fontSize: '13px', color: '#1c1c1e', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{card.name}</p>
+          {/* BLOCO DE TEXTO COM ALTA LEGIBILIDADE */}
+          <div style={{ padding: '0 4px', zIndex: 3, position: 'relative' }}>
+            <p style={{ 
+              margin: 0, 
+              fontWeight: '900', 
+              fontSize: '12px', 
+              color: '#000', // Preto puro para máximo contraste
+              textTransform: 'uppercase', 
+              letterSpacing: '0.3px',
+              textShadow: '0 1px 2px rgba(255,255,255,0.8)' // "Recorta" o texto do fundo
+            }}>{card.name}</p>
             
             {card.rarity && (
               <div style={{ 
-                fontSize: '7px', fontWeight: '900', color: '#ee1515', background: '#fff0f0', 
-                padding: '3px 7px', borderRadius: '6px', display: 'inline-block', 
-                marginTop: '5px', textTransform: 'uppercase', letterSpacing: '0.5px' 
+                fontSize: '8px', fontWeight: '900', color: '#ee1515', 
+                background: '#fff', padding: '3px 8px', 
+                borderRadius: '6px', marginTop: '6px', display: 'inline-block',
+                border: '1px solid rgba(238,21,21,0.3)',
+                boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
               }}>
-                ✨ {card.rarity}
+                {card.rarity}
               </div>
             )}
 
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '12px' }}>
-              <span style={{ fontSize: '16px', fontWeight: '900', color: '#1c1c1e' }}>{Number(card.marketValue).toFixed(2)}€</span>
+            <div style={{ 
+              display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', 
+              marginTop: '15px', paddingTop: '10px', borderTop: '1px solid rgba(0,0,0,0.05)'
+            }}>
+              <div>
+                <span style={{ fontSize: '9px', fontWeight: '900', color: '#636366', display: 'block' }}>MARKET VALUE</span>
+                <span style={{ 
+                  fontSize: '17px', 
+                  fontWeight: '900', 
+                  color: '#1c1c1e',
+                  textShadow: '0 1px 2px rgba(255,255,255,0.5)'
+                }}>{Number(card.marketValue).toFixed(2)}€</span>
+              </div>
+              
               <button 
                 onClick={() => setPokemonToDelete(card)}
                 style={{ 
-                  background: '#1c1c1e', border: '1px solid #ee1515', padding: '5px 8px', 
-                  borderRadius: '6px', color: '#ee1515', fontSize: '8px', fontWeight: '900', cursor: 'pointer' 
+                  background: '#000', border: 'none', padding: '8px 14px', 
+                  borderRadius: '10px', color: '#fff', fontSize: '9px', 
+                  fontWeight: '900', cursor: 'pointer',
+                  boxShadow: '0 4px 8px rgba(0,0,0,0.2)'
                 }}
               >
                 DISCARD
