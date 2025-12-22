@@ -469,72 +469,28 @@ const isLowBalance = totalBalance < (settings.lowBalanceLimit || 50);
     }
 };
 
-  const handlePokemonSubmit = (e) => {
-    e.preventDefault();
-    
-    // Pequena correção: Garantimos que os valores são tratados como números 
-    // e limpamos possíveis vírgulas que o utilizador possa ter digitado por engano.
-    const cleanBuyPrice = typeof pokemonData.buyPrice === 'string' 
-      ? parseFloat(pokemonData.buyPrice.replace(',', '.')) 
-      : parseFloat(pokemonData.buyPrice);
+const handlePokemonSubmit = async (data) => {
+  setIsSyncing(true); // Ativa a Pokébola
 
-    const cleanMarketValue = typeof pokemonData.marketValue === 'string' 
-      ? parseFloat(pokemonData.marketValue.replace(',', '.')) 
-      : parseFloat(pokemonData.marketValue);
-
-    push(ref(db, `users/${user}/pokemonCollection`), {
-      ...pokemonData,
-      buyPrice: cleanBuyPrice || 0,
-      marketValue: cleanMarketValue || 0,
-      timestamp: Date.now()
-    });
-
-    // Mantive exatamente o teu reset original
-    setPokemonData({ 
-      name: '', 
-      number: '', 
-      set: '', 
-      rarity: '', 
-      buyPrice: '', 
-      marketValue: '', 
-      photo: '', 
-      condition: 'Near Mint' 
-    });
-
-    setShowAddPokemon(false);
-    
-    if (typeof triggerHaptic === 'function') triggerHaptic('success');
-};
-  const handleInventorySubmit = (e) => {
-    e.preventDefault();
-
-    // feedback tátil e sonoro ao guardar
-    if (typeof triggerHaptic === 'function') triggerHaptic('medium');
-    if (audio) audio.play().catch(err => console.log("Som aguarda interação"));
-
-    const itemData = {
-      name: invData.name,
-      // Garante que a categoria (tag) é gravada na base de dados
-      category: invData.category || 'OUTROS', 
-      buyPrice: parseFloat(invData.buyPrice) || 0,
-      resellValue: parseFloat(invData.resellValue) || 0,
-      photo: invData.photo || '',
-      timestamp: invData.timestamp || Date.now(),
-      lastUpdate: Date.now() 
-    };
-
-    if (invData.id) {
-      // Se tiver ID, atualiza o item existente
-      update(ref(db, `users/${user}/inventory/${invData.id}`), itemData);
-    } else {
-      // Se não tiver, cria um novo
-      push(ref(db, `users/${user}/inventory`), itemData);
+  setTimeout(async () => {
+    try {
+      const pokemonRef = ref(db, `users/${user}/pokemonCollection`);
+      await push(pokemonRef, {
+        ...data,
+        timestamp: Date.now()
+      });
+      
+      // Fecha tudo após o sucesso
+      setIsSyncing(false);
+      setShowAddPokemon(false);
+      setPokemonData({}); 
+    } catch (error) {
+      console.error("Erro:", error);
+      setIsSyncing(false);
+      alert("Erro ao guardar.");
     }
-
-    // Limpa o formulário e reseta todos os campos, incluindo a categoria
-    setInvData({ name: '', buyPrice: '', resellValue: '', photo: '', category: 'OUTROS' });
-    setShowAddInventory(false);
-  };
+  }, 1000); // Espera exatamente 1 segundo (a animação)
+};
 
   const handleEditInventory = (item) => {
     setInvData({ ...item }); 
@@ -1645,6 +1601,11 @@ const isLowBalance = totalBalance < (settings.lowBalanceLimit || 50);
     backgroundSize: '20px 20px',
     position: 'relative'
   }}>
+
+    {/* ESTILO DA ANIMAÇÃO (COLOQUEI AQUI PARA FUNCIONAR O SPIN) */}
+    <style>{`
+      @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+    `}</style>
     
     {/* CABEÇALHO COM POKÉBOLA REAL */}
     <div style={{ 
@@ -1692,7 +1653,7 @@ const isLowBalance = totalBalance < (settings.lowBalanceLimit || 50);
       </button>
     </div>
 
-    {/* PESQUISA E SELEÇÃO DE RESULTADOS (O QUE EU TINHA APAGADO) */}
+    {/* PESQUISA E SELEÇÃO DE RESULTADOS */}
     {isSearching && (
       <div style={{ textAlign: 'center', padding: '10px', color: '#FF3B30', fontWeight: '800', fontSize: '12px' }}>
         🔎 A procurar na Pokédex...
@@ -1729,7 +1690,7 @@ const isLowBalance = totalBalance < (settings.lowBalanceLimit || 50);
       </div>
     )}
 
-    {/* --- FORMULÁRIO POKÉDEX: GRAVAÇÃO GARANTIDA --- */}
+   {/* FORMULÁRIO POKÉDEX - LIMPO E CORRIGIDO */}
 {showAddPokemon && (
   <div style={{ 
     backgroundColor: '#FF3B30', padding: '20px', borderRadius: '32px', 
@@ -1741,17 +1702,17 @@ const isLowBalance = totalBalance < (settings.lowBalanceLimit || 50);
       <div style={{ display: 'flex', gap: '10px', marginBottom: '12px' }}>
         <input 
           placeholder="Nome da Carta (ex: Houndoom 191)" 
-          value={pokemonData.name}
+          value={pokemonData.name || ''}
           onChange={e => setPokemonData({...pokemonData, name: e.target.value})}
-          style={{ flex: 1, padding: '15px', borderRadius: '14px', border: 'none', backgroundColor: '#F2F2F7', fontSize: '14px', fontWeight: '700' }}
+          style={{ flex: 1, padding: '15px', borderRadius: '14px', border: 'none', backgroundColor: '#F2F2F7', fontSize: '14px', fontWeight: '700', outline: 'none' }}
         />
-        <button type="button" onClick={() => searchPokemonCard(pokemonData.name)} style={{ backgroundColor: '#1C1C1E', color: 'white', border: 'none', borderRadius: '14px', width: '50px' }}>🔍</button>
+        <button type="button" onClick={() => searchPokemonCard(pokemonData.name)} style={{ backgroundColor: '#1C1C1E', color: 'white', border: 'none', borderRadius: '14px', width: '50px', cursor: 'pointer' }}>🔍</button>
       </div>
 
       {/* SET E RARIDADE */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '12px' }}>
-        <input placeholder="Set (ex: 151)" value={pokemonData.set} onChange={e => setPokemonData({...pokemonData, set: e.target.value})} style={{ padding: '14px', borderRadius: '14px', border: 'none', backgroundColor: '#F2F2F7', fontSize: '13px', fontWeight: '600' }} />
-        <select value={pokemonData.rarity} onChange={e => setPokemonData({...pokemonData, rarity: e.target.value})} style={{ padding: '14px', borderRadius: '14px', border: 'none', backgroundColor: '#F2F2F7', fontSize: '13px', fontWeight: '700', color: '#FF3B30' }}>
+        <input placeholder="Set (ex: 151)" value={pokemonData.set || ''} onChange={e => setPokemonData({...pokemonData, set: e.target.value})} style={{ padding: '14px', borderRadius: '14px', border: 'none', backgroundColor: '#F2F2F7', fontSize: '13px', fontWeight: '600' }} />
+        <select value={pokemonData.rarity || ''} onChange={e => setPokemonData({...pokemonData, rarity: e.target.value})} style={{ padding: '14px', borderRadius: '14px', border: 'none', backgroundColor: '#F2F2F7', fontSize: '13px', fontWeight: '700', color: '#FF3B30', outline: 'none' }}>
           <option value="">Raridade (Badge)</option>
           <option value="Special Illustration Rare">Special Illustration Rare</option>
           <option value="Illustration Rare">Illustration Rare</option>
@@ -1759,70 +1720,68 @@ const isLowBalance = totalBalance < (settings.lowBalanceLimit || 50);
           <option value="Hyper Rare">Hyper Rare</option>
           <option value="ACE SPEC">ACE SPEC</option>
           <option value="Holo Rare">Holo Rare</option>
+          <option value="Promo">Promo</option>
         </select>
       </div>
 
-      {/* VALORES TÉCNICOS */}
+      {/* VALORES TÉCNICOS - APENAS O NECESSÁRIO */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '12px' }}>
         <div>
-          <label style={{ fontSize: '10px', fontWeight: '900', color: '#8E8E93' }}>7 DAY AVERAGE €</label>
-          <input type="text" value={pokemonData.avg7Day || ''} onChange={e => setPokemonData({...pokemonData, avg7Day: e.target.value})} style={{ width: '100%', padding: '12px', borderRadius: '12px', border: 'none', backgroundColor: '#F2F2F7', fontSize: '13px', fontWeight: '800' }} />
+          <label style={{ fontSize: '10px', fontWeight: '900', color: '#8E8E93', marginLeft: '5px' }}>7 DAY AVERAGE €</label>
+          <input 
+            type="number" 
+            placeholder="0.00"
+            value={pokemonData.avg7Day || ''} 
+            onChange={e => setPokemonData({...pokemonData, avg7Day: e.target.value})} 
+            style={{ width: '100%', padding: '12px', borderRadius: '12px', border: 'none', backgroundColor: '#F2F2F7', fontSize: '13px', fontWeight: '800' }} 
+          />
         </div>
         <div>
-          <label style={{ fontSize: '10px', fontWeight: '900', color: '#8E8E93' }}>PRICE TREND</label>
-          <input placeholder="Ex: +5.20%" value={pokemonData.priceTrend || ''} onChange={e => setPokemonData({...pokemonData, priceTrend: e.target.value})} style={{ width: '100%', padding: '12px', borderRadius: '12px', border: 'none', backgroundColor: '#F2F2F7', fontSize: '13px', fontWeight: '800' }} />
+          <label style={{ fontSize: '10px', fontWeight: '900', color: '#8E8E93', marginLeft: '5px' }}>MARKET VALUE €</label>
+          <input 
+            type="number" 
+            placeholder="0.00"
+            value={pokemonData.marketValue || ''} 
+            onChange={e => setPokemonData({...pokemonData, marketValue: e.target.value})} 
+            style={{ width: '100%', padding: '12px', borderRadius: '12px', border: 'none', backgroundColor: '#F2F2F7', fontSize: '13px', fontWeight: '800' }} 
+          />
         </div>
       </div>
-
-      <div style={{ marginBottom: '12px' }}>
-        <label style={{ fontSize: '10px', fontWeight: '900', color: '#8E8E93' }}>MARKET VALUE €</label>
-        <input type="text" value={pokemonData.marketValue || ''} onChange={e => setPokemonData({...pokemonData, marketValue: e.target.value})} style={{ width: '100%', padding: '12px', borderRadius: '12px', border: 'none', backgroundColor: '#F2F2F7', fontSize: '13px', fontWeight: '800' }} />
-      </div>
       
-      <input placeholder="URL da Imagem de Alta Qualidade" value={pokemonData.photo} onChange={e => setPokemonData({...pokemonData, photo: e.target.value})} style={{ width: '100%', padding: '15px', borderRadius: '14px', border: 'none', backgroundColor: '#F2F2F7', fontSize: '13px', marginBottom: '20px' }} />
+      <input 
+        placeholder="URL da Imagem" 
+        value={pokemonData.photo || ''} 
+        onChange={e => setPokemonData({...pokemonData, photo: e.target.value})} 
+        style={{ width: '100%', padding: '15px', borderRadius: '14px', border: 'none', backgroundColor: '#F2F2F7', fontSize: '13px', marginBottom: '20px' }} 
+      />
 
-      {/* BOTÃO ADICIONAR COM FIX DE GRAVAÇÃO */}
       <button 
         type="button"
-        onClick={async () => {
-          if (!pokemonData.name) return alert("Dá um nome à carta!");
-          
-          setIsSyncing(true); // Mostra a Pokébola
-          
-          try {
-            // Criamos o objeto limpo para a base de dados
-            const finalCard = {
-              name: pokemonData.name,
-              set: pokemonData.set || "",
-              rarity: pokemonData.rarity || "Common",
-              marketValue: pokemonData.marketValue || "0",
-              avg7Day: pokemonData.avg7Day || "0",
-              priceTrend: pokemonData.priceTrend || "0%",
-              photo: pokemonData.photo || "",
-              dateAdded: new Date().toISOString()
+        onClick={() => {
+          if (!pokemonData.name) return alert("Nome é obrigatório");
+          setIsSyncing(true);
+          setTimeout(() => {
+            // CONVERSÃO DE SEGURANÇA PARA EVITAR NaN
+            const valorLimpo = String(pokemonData.marketValue).replace(',', '.');
+            const finalData = {
+              ...pokemonData,
+              marketValue: parseFloat(valorLimpo) || 0,
+              avg7Day: parseFloat(String(pokemonData.avg7Day).replace(',', '.')) || 0
             };
-
-            // CHAMADA À FUNÇÃO (Passando o objeto finalCard explicitamente)
-            await handlePokemonSubmit(finalCard); 
-
-            // Se a função handlePokemonSubmit for bem sucedida:
+            handlePokemonSubmit(finalData); 
             setIsSyncing(false);
+            setPokemonData({}); 
             setShowAddPokemon(false);
-            setPokemonData({ name: '', set: '', rarity: '', marketValue: '', avg7Day: '', priceTrend: '', photo: '' });
-
-          } catch (err) {
-            console.error("Erro ao salvar:", err);
-            setIsSyncing(false);
-            alert("Erro na base de dados. Verifica se estás logado.");
-          }
+          }, 1000);
         }} 
         style={{ 
-          width: '100%', padding: '18px', backgroundColor: '#FF3B30', color: 'white', 
-          border: 'none', borderRadius: '18px', fontWeight: '1000', textTransform: 'uppercase', 
-          boxShadow: '0 6px 0 #b10f0f', cursor: 'pointer'
+          width: '100%', padding: '20px', backgroundColor: '#FF3B30', color: 'white', 
+          border: 'none', borderRadius: '20px', fontSize: '18px', fontWeight: '900',
+          textTransform: 'uppercase', letterSpacing: '1px', cursor: 'pointer',
+          boxShadow: '0 8px 20px rgba(255, 59, 48, 0.3)'
         }}
       >
-        Adicionar à Pokédex
+        ADICIONAR À POKÉDEX
       </button>
     </div>
   </div>
@@ -1830,16 +1789,29 @@ const isLowBalance = totalBalance < (settings.lowBalanceLimit || 50);
 
     {/* DASHBOARD ULTRA CHARIZARD EDITION */}
     <div style={{ marginBottom: '30px', position: 'relative' }}>
-      {/* ANIMAÇÃO DE SYNC (POKÉBOLA) */}
+      
+      {/* ANIMAÇÃO DE SYNC (POKÉBOLA) INTEGRADA */}
       {isSyncing && (
-        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(10px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999 }}>
-          <div style={{ background: '#1a1a1a', padding: '40px', borderRadius: '35px', border: '3px solid #ee1515', textAlign: 'center' }}>
-            <div style={{ width: '90px', height: '90px', margin: '0 auto 25px auto', position: 'relative', animation: 'spin 1.2s linear infinite' }}>
-              <div style={{ width: '100%', height: '100%', borderRadius: '50%', background: 'linear-gradient(to bottom, #ee1515 45%, #111 45%, #111 55%, #fff 55%)', border: '5px solid #111' }}>
-                <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: '20px', height: '20px', backgroundColor: '#fff', border: '5px solid #111', borderRadius: '50%', zIndex: 10 }} />
-              </div>
+        <div style={{ 
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, 
+          backgroundColor: 'rgba(255,255,255,0.9)', backdropFilter: 'blur(10px)', 
+          display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999 
+        }}>
+          <div style={{ textAlign: 'center' }}>
+            <div style={{ 
+              width: '80px', height: '80px', borderRadius: '50%', 
+              background: 'linear-gradient(180deg, #ee1515 50%, white 50%)', 
+              border: '4px solid #1c1c1e', position: 'relative',
+              animation: 'spin 0.8s linear infinite',
+              boxShadow: '0 10px 30px rgba(0,0,0,0.1)'
+            }}>
+              <div style={{ position: 'absolute', top: '50%', left: 0, width: '100%', height: '4px', backgroundColor: '#1c1c1e', transform: 'translateY(-50%)' }} />
+              <div style={{ 
+                position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
+                width: '20px', height: '20px', borderRadius: '50%', backgroundColor: 'white', border: '4px solid #1c1c1e'
+              }} />
             </div>
-            <h2 style={{ color: '#fff', fontWeight: '1000' }}>DATA SYNCING...</h2>
+            <p style={{ marginTop: '20px', fontWeight: '900', color: '#ee1515', letterSpacing: '2px' }}>A GUARDAR...</p>
           </div>
         </div>
       )}
@@ -1865,7 +1837,6 @@ const isLowBalance = totalBalance < (settings.lowBalanceLimit || 50);
             </div>
           </div>
 
-          {/* STATUS E BARRA DE EXP */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: '20px' }}>
              <div style={{ background: 'rgba(255, 255, 255, 0.1)', padding: '10px 22px', borderRadius: '16px', borderLeft: '4px solid #007AFF' }}>
                <p style={{ margin: 0, fontSize: '11px', color: '#fff', fontWeight: '1000' }}>MASTER TRAINER RANK</p>
@@ -1883,29 +1854,42 @@ const isLowBalance = totalBalance < (settings.lowBalanceLimit || 50);
       </div>
     </div>
 
-    {/* GRELHA DE CARTAS */}
-    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '16px' }}>
-      {pokemonCards.map((card) => (
-        <div key={card.id} style={{ backgroundColor: '#ffffff', borderRadius: '24px 4px 24px 4px', padding: '12px', boxShadow: '0 10px 25px rgba(0,0,0,0.08)', border: '1px solid #e5e7eb', position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
-          <div style={{ position: 'absolute', top: '-5%', left: '-5%', right: '-5%', bottom: '-5%', backgroundImage: `url(${card.photo})`, backgroundSize: 'cover', backgroundPosition: 'center', opacity: 0.85, filter: 'saturate(1.4) blur(2px)', zIndex: 0 }} />
-          <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: '50%', background: 'linear-gradient(to top, rgba(255,255,255,0.95) 20%, rgba(255,255,255,0.4) 100%)', zIndex: 1 }} />
-          <div style={{ position: 'relative', height: '160px', backgroundColor: 'rgba(255, 255, 255, 0.7)', backdropFilter: 'blur(8px)', borderRadius: '16px 4px 16px 4px', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '12px', zIndex: 2 }}>
-            <img src={card.photo} style={{ width: '85%', height: '85%', objectFit: 'contain' }} alt={card.name} onClick={() => setViewPhoto(card.photo)} />
+    {/* GRELHA DE CARTAS GUARDADAS - CORRIGIDA */}
+<div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '16px', position: 'relative', zIndex: 5 }}>
+  {pokemonCards && pokemonCards.map((card) => (
+    <div key={card.id} style={{ backgroundColor: '#ffffff', borderRadius: '24px 4px 24px 4px', padding: '12px', boxShadow: '0 10px 25px rgba(0,0,0,0.08)', border: '1px solid #e5e7eb', position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+      
+      {/* Fundo Artístico */}
+      <div style={{ position: 'absolute', top: '-5%', left: '-5%', right: '-5%', bottom: '-5%', backgroundImage: `url(${card.photo})`, backgroundSize: 'cover', backgroundPosition: 'center', opacity: 0.15, filter: 'blur(4px)', zIndex: 0 }} />
+      
+      <div style={{ position: 'relative', height: '160px', backgroundColor: 'rgba(255, 255, 255, 0.7)', backdropFilter: 'blur(8px)', borderRadius: '16px 4px 16px 4px', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '12px', zIndex: 2 }}>
+        <img src={card.photo} style={{ width: '85%', height: '85%', objectFit: 'contain', filter: 'drop-shadow(0 5px 15px rgba(0,0,0,0.2))' }} alt={card.name} onClick={() => setViewPhoto(card.photo)} />
+      </div>
+
+      <div style={{ padding: '0 4px', zIndex: 3, position: 'relative' }}>
+        <p style={{ margin: 0, fontWeight: '900', fontSize: '12px', color: '#000', textTransform: 'uppercase', height: '30px', overflow: 'hidden' }}>{card.name}</p>
+        
+        {/* CORREÇÃO DA BADGE: Usando card.rarity que vem do formulário */}
+        {card.rarity && (
+          <span style={{ fontSize: '8px', fontWeight: '900', color: '#ee1515', background: '#fff', padding: '3px 8px', borderRadius: '6px', marginTop: '6px', display: 'inline-block', border: '1px solid #eee', textTransform: 'uppercase' }}>
+            {card.rarity}
+          </span>
+        )}
+        
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: '15px' }}>
+          <div>
+            <span style={{ fontSize: '8px', fontWeight: '900', color: '#636366', display: 'block', textTransform: 'uppercase' }}>Market Value</span>
+            {/* CORREÇÃO DO PREÇO: Garantindo que é número para evitar NaN */}
+            <span style={{ fontSize: '17px', fontWeight: '900', color: '#1c1c1e' }}>
+              {card.marketValue ? Number(card.marketValue).toFixed(2) : "0.00"}€
+            </span>
           </div>
-          <div style={{ padding: '0 4px', zIndex: 3, position: 'relative' }}>
-            <p style={{ margin: 0, fontWeight: '900', fontSize: '12px', color: '#000', textTransform: 'uppercase' }}>{card.name}</p>
-            <span style={{ fontSize: '8px', fontWeight: '900', color: '#ee1515', background: '#fff', padding: '3px 8px', borderRadius: '6px', marginTop: '6px', display: 'inline-block' }}>{card.rarity}</span>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: '15px' }}>
-              <div>
-                <span style={{ fontSize: '9px', fontWeight: '900', color: '#636366', display: 'block' }}>MARKET VALUE</span>
-                <span style={{ fontSize: '17px', fontWeight: '900', color: '#1c1c1e' }}>{Number(card.marketValue).toFixed(2)}€</span>
-              </div>
-              <button onClick={() => setPokemonToDelete(card)} style={{ background: '#000', border: 'none', padding: '8px 14px', borderRadius: '10px', color: '#fff', fontSize: '9px', fontWeight: '900' }}>DISCARD</button>
-            </div>
-          </div>
+          <button onClick={() => setPokemonToDelete(card)} style={{ background: '#000', border: 'none', padding: '8px 12px', borderRadius: '10px', color: '#fff', fontSize: '8px', fontWeight: '900' }}>DISCARD</button>
         </div>
-      ))}
+      </div>
     </div>
+  ))}
+</div>
 
     {/* MODAIS (GALERIA, DELETE, EDIÇÃO) */}
     {viewPhoto && (
