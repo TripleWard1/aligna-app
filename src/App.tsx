@@ -1331,56 +1331,72 @@ const isLowBalance = totalBalance < (settings.lowBalanceLimit || 50);
       </button>
     </div>
 
-    {/* Resumo de Valor do Inventário */}
+    {/* --- RESUMO DE VALOR (DESIGN PREMIUM) --- */}
     <div style={{ 
-      position: 'relative',
-      zIndex: 1,
-      background: 'linear-gradient(135deg, #1C1C1E 0%, #2C2C2E 100%)', 
-      color: 'white', 
-      padding: '24px', 
-      borderRadius: '28px', 
-      marginBottom: '25px', 
-      display: 'flex', 
-      justifyContent: 'space-between',
-      boxShadow: '0 10px 20px rgba(0,0,0,0.15)'
-    }}> {/* LADO ESQUERDO: INVESTIMENTO */}
-    <div style={{ textAlign: 'left' }}>
-      <p style={{ margin: 0, fontSize: '10px', fontWeight: '800', opacity: 0.6, letterSpacing: '0.5px' }}>INVESTIMENTO TOTAL</p>
-      <h4 style={{ margin: '4px 0 0 0', fontSize: '20px', fontWeight: '900' }}>
-        {inventory.reduce((acc, item) => acc + (Number(item.buyPrice) || 0), 0).toFixed(2)}€
-      </h4>
+  position: 'relative', padding: '20px', marginBottom: '30px', zIndex: 1,
+  background: 'rgba(255, 255, 255, 0.1)', backdropFilter: 'blur(20px)',
+  borderRadius: '30px', border: '1px solid rgba(255,255,255,0.2)',
+  boxShadow: '0 20px 50px rgba(0,0,0,0.15)', overflow: 'hidden'
+}}>
+  {/* Estrela Decorativa (Estilo Super Mario) */}
+  <div style={{ position: 'absolute', left: '-10px', top: '50%', transform: 'translateY(-50%)', fontSize: '30px', filter: 'drop-shadow(0 0 10px gold)' }}>⭐</div>
+  
+  <div style={{ display: 'flex', gap: '15px', position: 'relative', zIndex: 2 }}>
+    {/* Card Investimento */}
+    <div style={{ 
+      flex: 1, background: 'linear-gradient(145deg, #2c2c2e, #1c1c1e)', 
+      padding: '20px', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.1)',
+      textAlign: 'center', boxShadow: 'inset 0 0 20px rgba(0,0,0,0.5)'
+    }}>
+      <p style={{ margin: 0, fontSize: '10px', fontWeight: '900', color: '#8E8E93', letterSpacing: '1px' }}>INVESTIMENTO</p>
+      <h2 style={{ margin: '5px 0 0 0', fontSize: '24px', color: '#fff' }}>
+        {inventory.reduce((acc, item) => acc + (Number(item.buyPrice) || 0), 0).toFixed(2)}<span style={{fontSize: '14px', opacity: 0.6}}>€</span>
+      </h2>
     </div>
 
-    {/* LADO DIREITO: VALOR DE REVENDA */}
-    <div style={{ textAlign: 'right' }}>
-      <p style={{ margin: 0, fontSize: '10px', fontWeight: '800', opacity: 0.6, letterSpacing: '0.5px' }}>VALOR REVENDA</p>
-      <h4 style={{ margin: '4px 0 0 0', fontSize: '20px', fontWeight: '900', color: '#34C759' }}>
-        {inventory.reduce((acc, item) => acc + (Number(item.resellValue) || 0), 0).toFixed(2)}€
-      </h4>
+    {/* Card Revenda */}
+    <div style={{ 
+      flex: 1, background: 'linear-gradient(145deg, #1c1c1e, #2c2c2e)', 
+      padding: '20px', borderRadius: '20px', border: '1px solid rgba(50, 215, 75, 0.3)',
+      textAlign: 'center', boxShadow: '0 0 20px rgba(50, 215, 75, 0.1)'
+    }}>
+      <p style={{ margin: 0, fontSize: '10px', fontWeight: '900', color: '#32D74B', letterSpacing: '1px' }}>VALOR REVENDA</p>
+      <h2 style={{ margin: '5px 0 0 0', fontSize: '24px', color: '#32D74B', textShadow: '0 0 10px rgba(50,215,75,0.4)' }}>
+        {inventory.reduce((acc, item) => acc + (Number(item.resellValue) || 0), 0).toFixed(2)}<span style={{fontSize: '14px'}}>€</span>
+      </h2>
     </div>
-      </div> {/* Este é o fecho do Resumo de Valor */}
+  </div>
+
+  {/* Moedas de Ouro (Decoração no fundo) */}
+  <div style={{ position: 'absolute', right: '10px', bottom: '-5px', fontSize: '24px', opacity: 0.8 }}>🪙🪙</div>
+</div>
+
+    {/* --- BARRA DE PESQUISA ESTILO APPLE --- */}
+    <div style={{ position: 'relative', marginBottom: '25px', zIndex: 1 }}>
+      <div style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', fontSize: '16px', opacity: 0.5 }}>🔍</div>
+      <input
+        type="text"
+        placeholder="Procurar na coleção... (Exemplo: Game Boy Advance)"
+        value={searchTerm}
+        onChange={(e) => setSearchTerm(e.target.value)}
+        style={{
+          width: '100%',
+          padding: '16px 16px 16px 48px',
+          borderRadius: '18px',
+          border: '1px solid rgba(0,0,0,0.05)',
+          backgroundColor: '#FFF',
+          fontSize: '15px',
+          fontWeight: '600',
+          outline: 'none',
+          boxSizing: 'border-box',
+          boxShadow: '0 4px 15px rgba(0,0,0,0.04)',
+          color: '#1C1C1E',
+          transition: 'all 0.2s ease'
+        }}
+      />
+    </div>{/* Este é o fecho do Resumo de Valor */}
       <div style={{ position: 'relative', marginBottom: '20px', zIndex: 1 }}>
-  <input
-    type="text"
-    placeholder="🔍 Pesquisar por nome (ex: Zelda, Game Boy...)"
-    value={searchTerm}
-    onChange={(e) => setSearchTerm(e.target.value)}
-    style={{
-      width: '100%',
-      padding: '14px 15px 14px 45px',
-      borderRadius: '16px',
-      border: 'none',
-      backgroundColor: 'rgba(255,255,255,0.7)',
-      backdropFilter: 'blur(10px)',
-      WebkitBackdropFilter: 'blur(10px)',
-      fontSize: '14px',
-      fontWeight: '600',
-      outline: 'none',
-      boxSizing: 'border-box',
-      boxShadow: '0 4px 12px rgba(0,0,0,0.03)',
-      color: '#1C1C1E'
-    }}
-  />
+  
 </div>
 
 {/* --- PASSO 2: BARRA DE FILTROS --- */}
