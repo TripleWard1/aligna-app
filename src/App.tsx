@@ -165,7 +165,7 @@ export default function App() {
   
     doc.save(`Relatorio_Hugo_${mesNome}.pdf`);
   };
-  
+  const [pokemonToDelete, setPokemonToDelete] = useState(null);
   const [editingPrice, setEditingPrice] = useState(null); // Guarda o item para edição rápida
 const [tempPrice, setTempPrice] = useState(''); // Guarda o valor que estás a digitar
   const [searchTerm, setSearchTerm] = useState(''); // Estado para a barra de pesquisa
@@ -344,36 +344,30 @@ const isLowBalance = totalBalance < (settings.lowBalanceLimit || 50);
     setSearchResults([]);
     
     try {
-      // Extraímos apenas o número se existir (ex: de "191/182" tiramos "191")
       const onlyNumbers = query.replace(/\D/g, "");
-      // Limpa o texto de símbolos que dão erro de ligação
       const cleanText = query.replace(/[0-9]/g, "").replace(/['’"“”]/g, "").trim();
       
-      let q = "";
-      if (onlyNumbers && cleanText) {
-        q = `name:${cleanText}* number:${onlyNumbers}`;
-      } else if (onlyNumbers) {
-        q = `number:${onlyNumbers}`;
-      } else {
-        q = `name:${cleanText}*`;
-      }
+      // Criamos uma query que foca no número 191 e ordena pelas mais RECENTES
+      let q = onlyNumbers ? `number:${onlyNumbers}` : `name:${cleanText}*`;
+      
+      // Mudamos a URL para ordenar por Data de Lançamento Decrescente (-set.releaseDate)
+      const url = `https://api.pokemontcg.io/v2/cards?q=${q}&orderBy=-set.releaseDate&pageSize=20`;
 
-      // Esta URL força a API a procurar primeiro as cartas de 2025
-      const response = await fetch(`https://api.pokemontcg.io/v2/cards?q=${q}&orderBy=-set.releaseDate&pageSize=15`);
+      const response = await fetch(url);
       const data = await response.json();
       
       if (data.data && data.data.length > 0) {
         setSearchResults(data.data);
       } else {
-        alert("Nenhuma carta encontrada. Tente apenas o número (ex: 191)");
+        alert("Nenhuma carta encontrada. Tente: Houndoom 191");
       }
     } catch (err) {
-      console.error("Erro na busca:", err);
-      alert("Erro de ligação. Tente novamente.");
+      console.error("Erro:", err);
+      alert("A ligação demorou demasiado. Tente apenas o número '191'.");
     } finally {
       setIsSearching(false);
     }
-  };
+};
 
   const handlePokemonSubmit = (e) => {
     e.preventDefault();
@@ -1538,7 +1532,8 @@ const isLowBalance = totalBalance < (settings.lowBalanceLimit || 50);
                   name: card.name,
                   set: card.set.name,
                   photo: card.images.small,
-                  marketValue: mkt.toFixed(2)
+                  marketValue: mkt.toFixed(2),
+                  rarity: card.rarity
                 });
                 setSearchResults([]);
               }}
@@ -1632,15 +1627,33 @@ const isLowBalance = totalBalance < (settings.lowBalanceLimit || 50);
           </div>
           <div style={{ padding: '12px' }}>
             <p style={{ margin: 0, fontWeight: '900', fontSize: '12px', color: '#1C1C1E', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{card.name}</p>
-            <p style={{ margin: '2px 0 8px 0', fontSize: '9px', color: '#8E8E93', fontWeight: '700' }}>{card.set}</p>
+            <p style={{ margin: '2px 0 4px 0', fontSize: '9px', color: '#8E8E93', fontWeight: '700' }}>{card.set}</p>
+
+            {/* AQUI ESTÁ O NOVO BLOCO DE RARIDADE */}
+            {card.rarity && (
+              <div style={{ 
+                display: 'inline-block',
+                padding: '2px 6px',
+                borderRadius: '4px',
+                backgroundColor: '#F2F2F7',
+                fontSize: '8px',
+                fontWeight: '800',
+                color: '#FF3B30',
+                marginBottom: '8px',
+                textTransform: 'uppercase'
+              }}>
+                ✨ {card.rarity}
+              </div>
+            )}
+
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 'auto' }}>
               <span style={{ fontSize: '14px', fontWeight: '900', color: '#34C759' }}>{Number(card.marketValue).toFixed(2)}€</span>
               <button 
-                onClick={() => { if(window.confirm('Eliminar carta?')) remove(ref(db, `users/${user}/pokemonCollection/${card.id}`)); }} 
-                style={{ border: 'none', background: '#FFF5F5', width: '28px', height: '28px', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-              >
-                🗑️
-              </button>
+  onClick={() => setPokemonToDelete(card)} // Em vez de deletar logo, abre o modal
+  style={{ border: 'none', background: '#FFF5F5', width: '28px', height: '28px', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
+>
+  🗑️
+</button>
             </div>
           </div>
         </div>
@@ -1688,6 +1701,37 @@ const isLowBalance = totalBalance < (settings.lowBalanceLimit || 50);
       alt="Full View"
     />
     <p style={{ position: 'absolute', top: '40px', color: 'white', fontWeight: '800', fontSize: '10px', letterSpacing: '1px' }}>TOCA PARA FECHAR</p>
+  </div>
+)}
+
+{/* --- MODAL DE CONFIRMAÇÃO NATIVO --- */}
+{pokemonToDelete && (
+  <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(8px)', zIndex: 4000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
+    <div style={{ backgroundColor: 'white', borderRadius: '28px', padding: '30px', width: '100%', maxWidth: '320px', textAlign: 'center', boxShadow: '0 20px 40px rgba(0,0,0,0.2)' }}>
+      <div style={{ fontSize: '40px', marginBottom: '15px' }}>⚠️</div>
+      <h3 style={{ margin: '0 0 10px 0', fontWeight: '900', color: '#1C1C1E' }}>Eliminar Carta?</h3>
+      <p style={{ margin: '0 0 25px 0', fontSize: '14px', color: '#8E8E93', fontWeight: '500', lineHeight: '1.4' }}>
+        Estás prestes a remover <b>{pokemonToDelete.name}</b> da tua coleção. Esta ação não pode ser desfeita.
+      </p>
+      
+      <div style={{ display: 'flex', gap: '12px' }}>
+        <button 
+          onClick={() => setPokemonToDelete(null)}
+          style={{ flex: 1, padding: '15px', borderRadius: '16px', border: 'none', backgroundColor: '#F2F2F7', color: '#1C1C1E', fontWeight: '800', cursor: 'pointer' }}
+        >
+          Cancelar
+        </button>
+        <button 
+          onClick={() => {
+            remove(ref(db, `users/${user}/pokemonCollection/${pokemonToDelete.id}`));
+            setPokemonToDelete(null);
+          }}
+          style={{ flex: 1, padding: '15px', borderRadius: '16px', border: 'none', backgroundColor: '#FF3B30', color: 'white', fontWeight: '800', cursor: 'pointer' }}
+        >
+          Eliminar
+        </button>
+      </div>
+    </div>
   </div>
 )}
 
