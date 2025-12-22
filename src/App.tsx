@@ -64,13 +64,113 @@ export default function App() {
   const [invFilter, setInvFilter] = useState('TODOS'); 
   const [viewPhoto, setViewPhoto] = useState(null); 
   const [inventory, setInventory] = useState([]);
-  // --- ESTADOS POKÉMON ---
+  // --- ESTADOS POKÉMON (Versão Limpa) ---
   const [pokemonCards, setPokemonCards] = useState([]);
-  const [showAddPokemon, setShowAddPokemon] = useState(false);
-  const [pokemonSearchTerm, setPokemonSearchTerm] = useState('');
-  const [pokemonData, setPokemonData] = useState({ 
+  const [displayValue, setDisplayValue] = useState(0);
+  const [isSyncing, setIsSyncing] = useState(false);
+    const [pokemonData, setPokemonData] = useState({ 
     name: '', number: '', set: '', rarity: '', buyPrice: '', marketValue: '', photo: '', condition: 'Near Mint' 
   });
+  const searchPokemonInAPI = async () => {
+    if (!pokemonSearchTerm) return;
+    setIsSearching(true);
+    try {
+      // Procura cartas pelo nome na API oficial
+      const resp = await fetch(`https://api.pokemontcg.io/v2/cards?q=name:"${pokemonSearchTerm}"&pageSize=10`);
+      const data = await resp.json();
+      
+      if (data.data) {
+        setSearchResults(data.data); // Guarda as 10 primeiras cartas encontradas
+      }
+    } catch (err) {
+      console.error("Erro na busca:", err);
+    } finally {
+      setIsSearching(false);
+    }
+  };
+  // Atualiza o valor do dashboard automaticamente ao abrir
+  useEffect(() => {
+    const total = pokemonCards.reduce((acc, c) => acc + (Number(c.marketValue) || 0), 0);
+    setDisplayValue(total);
+  }, [pokemonCards]);
+
+  // --- FUNÇÃO DE ATUALIZAÇÃO (CORRIGIDA E LIMPA) ---
+  const refreshAllPrices = async () => {
+    setIsSyncing(true);
+    if (typeof triggerHaptic === 'function') triggerHaptic('medium');
+
+    try {
+      // 1. Criamos uma lista de promessas para atualizar todas as cartas ao mesmo tempo
+      const updatedCards = await Promise.all(pokemonCards.map(async (card) => {
+        try {
+          // Procuramos na API pelo nome da carta e número (se disponível)
+          const response = await fetch(`https://api.pokemontcg.io/v2/cards?q=name:"${card.name}"`);
+          const data = await response.json();
+          
+          if (data.data && data.data.length > 0) {
+            // Pegamos no preço de mercado (tcgplayer market value)
+            const apiPrice = data.data[0].tcgplayer?.prices?.holofoil?.market || 
+                             data.data[0].tcgplayer?.prices?.normal?.market || 
+                             card.marketValue;
+
+            // Atualizamos no Firebase para ficar guardado permanentemente
+            await update(ref(db, `users/${user}/pokemonCollection/${card.id}`), {
+              marketValue: apiPrice,
+              lastUpdate: Date.now()
+            });
+
+            return { ...card, marketValue: apiPrice };
+          }
+          return card; // Se não encontrar na API, mantém o valor antigo
+        } catch (err) {
+          console.error(`Erro ao atualizar ${card.name}:`, err);
+          return card;
+        }
+      }));
+
+      // 2. Atualizamos o estado local e o Dashboard
+      setPokemonCards(updatedCards);
+      const novoTotal = updatedCards.reduce((acc, c) => acc + Number(c.marketValue), 0);
+      
+      // Animação dos números no Dashboard
+      let start = displayValue;
+      const increment = (novoTotal - start) / 20;
+      const timer = setInterval(() => {
+        start += increment;
+        if (Math.abs(start - novoTotal) < 0.1) {
+          setDisplayValue(novoTotal);
+          clearInterval(timer);
+        } else {
+          setDisplayValue(start);
+        }
+      }, 50);
+
+    } catch (error) {
+      console.error("Erro geral na sincronização:", error);
+    } finally {
+      setIsSyncing(false);
+      if (typeof triggerHaptic === 'function') triggerHaptic('success');
+    }
+  };
+
+  // Função auxiliar para os números "correrem" no ecrã
+  const animarTotal = (objetivo) => {
+    let atual = displayValue;
+    const passo = (objetivo - atual) / 15;
+    const intervalo = setInterval(() => {
+      atual += passo;
+      if (Math.abs(atual - objetivo) < 0.1) {
+        setDisplayValue(objetivo);
+        clearInterval(intervalo);
+      } else {
+        setDisplayValue(atual);
+      }
+    }, 40);
+  };
+
+  // --- ESTADOS DE INTERFACE (DECLARADOS APENAS UMA VEZ) ---
+  const [showAddPokemon, setShowAddPokemon] = useState(false);
+  const [pokemonSearchTerm, setPokemonSearchTerm] = useState('');
   const [showAddInventory, setShowAddInventory] = useState(false);
   const [invData, setInvData] = useState({ 
     name: '', 
@@ -1571,34 +1671,38 @@ const isLowBalance = totalBalance < (settings.lowBalanceLimit || 50);
       </div>
     )}
 
-    {searchResults.length > 0 && (
-      <div style={{ display: 'flex', gap: '10px', overflowX: 'auto', padding: '10px', backgroundColor: '#f0f0f0', borderRadius: '15px', marginBottom: '15px' }}>
-        {searchResults.map(card => (
-          <div key={card.id} style={{ textAlign: 'center' }}>
-            <img 
-              src={card.images.small} 
-              style={{ height: '120px', borderRadius: '8px', cursor: 'pointer' }} 
-              onClick={() => {
-                const prices = card.tcgplayer?.prices;
-                const mkt = prices?.holofoil?.market || prices?.normal?.market || prices?.reverseHolofoil?.market || card.cardmarket?.prices?.averageSellPrice || 0;
-                setPokemonData({
-                  ...pokemonData,
-                  name: card.name,
-                  set: card.set.name,
-                  photo: card.images.small,
-                  marketValue: mkt.toFixed(2),
-                  rarity: card.rarity
-                });
-                setSearchResults([]);
-              }}
-            />
-            <p style={{ fontSize: '8px', fontWeight: '800', marginTop: '5px' }}>{card.set.name}</p>
-          </div>
-        ))}
+{searchResults.length > 0 && (
+  <div style={{ 
+    display: 'flex', gap: '10px', overflowX: 'auto', padding: '10px 0', 
+    marginBottom: '15px', borderBottom: '1px solid #eee' 
+  }}>
+    {searchResults.map((result) => (
+      <div 
+        key={result.id}
+        onClick={() => {
+          // A MAGIA: Preenche o formulário automaticamente
+          setPokemonData({
+            name: result.name,
+            number: result.number,
+            set: result.set.name,
+            rarity: result.rarity || 'Common',
+            buyPrice: '', // Deixamos vazio para tu meteres quanto pagaste
+            marketValue: result.tcgplayer?.prices?.holofoil?.market || result.tcgplayer?.prices?.normal?.market || 0,
+            photo: result.images.small,
+            condition: 'Near Mint'
+          });
+          setSearchResults([]); // Fecha a lista após escolher
+        }}
+        style={{ cursor: 'pointer', textAlign: 'center', minWidth: '80px' }}
+      >
+        <img src={result.images.small} style={{ width: '60px', borderRadius: '4px' }} alt={result.name} />
+        <p style={{ fontSize: '8px', fontWeight: 'bold', margin: '5px 0' }}>{result.set.name}</p>
       </div>
-    )}
+    ))}
+  </div>
+)}
 
-    {/* Formulário de Adição */}
+    {/* Formulário de Adição (Versão Única e Completa) */}
     {showAddPokemon && (
       <div style={{ backgroundColor: '#FF3B30', padding: '15px', borderRadius: '24px', marginBottom: '20px', boxShadow: '0 8px 20px rgba(0,0,0,0.1)' }}>
         <div style={{ backgroundColor: 'white', padding: '20px', borderRadius: '20px' }}>
@@ -1640,7 +1744,7 @@ const isLowBalance = totalBalance < (settings.lowBalanceLimit || 50);
             </div>
           )}
 
-<button 
+          <button 
             type="button"
             onClick={handlePokemonSubmit} 
             style={{ width: '100%', padding: '15px', backgroundColor: '#FF3B30', color: 'white', border: 'none', borderRadius: '15px', fontWeight: '900' }}
@@ -1651,111 +1755,151 @@ const isLowBalance = totalBalance < (settings.lowBalanceLimit || 50);
       </div>
     )}
 
-    {/* COLA O PASSO 2 AQUI (Substituindo o antigo Dashboard) */}
-    {/* Dashboard Pokédex OS - Redesign Premium */}
-
-    <div style={{ 
-      background: '#222', 
-      borderRadius: '24px', 
-      marginBottom: '35px', 
-      position: 'relative', 
-      padding: '2px', // Borda de destaque
-      background: 'linear-gradient(135deg, #ee1515 0%, #222 40%, #111 100%)',
-      boxShadow: '0 15px 35px rgba(0,0,0,0.3)'
-    }}>
-      <div style={{ 
-        background: '#1a1a1a', 
-        borderRadius: '22px', 
-        padding: '25px', 
-        position: 'relative',
-        overflow: 'hidden'
+    {/* MODAL DE SINCRONIZAÇÃO COM POKÉBOLA REAL */}
+    {isSyncing && (
+      <div style={{
+        position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+        backgroundColor: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(8px)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        zIndex: 9999
       }}>
-        {/* --- ADICIONA ESTE BLOCO AQUI --- */}
-        {/* Elemento Decorativo: Scanner de Dados */}
-        <div style={{ 
-          position: 'absolute', top: 0, left: 0, width: '100%', height: '100%',
-          backgroundImage: 'linear-gradient(rgba(52, 217, 100, 0.05) 1px, transparent 1px)',
-          backgroundSize: '100% 4px', pointerEvents: 'none', zIndex: 0
-        }} />
-        
-        {/* Slot de Cartão de Memória Pokédex */}
-        <div style={{ 
-          position: 'absolute', left: '0', top: '50%', transform: 'translateY(-50%)',
-          width: '4px', height: '40px', background: '#ee1515', borderRadius: '0 2px 2px 0', boxShadow: '0 0 10px #ee1515'
-        }} />
-        {/* --------------------------------- */}
-        {/* Elemento Decorativo: Scanner de Dados */}
-        <div style={{ 
-          position: 'absolute', top: 0, left: 0, width: '100%', height: '100%',
-          backgroundImage: 'linear-gradient(rgba(52, 217, 100, 0.03) 1px, transparent 1px)',
-          backgroundSize: '100% 4px', pointerEvents: 'none'
-        }} />
-
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', position: 'relative', zIndex: 1 }}>
-          
-          {/* Lado Esquerdo: Valuation com Estilo Digital */}
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-              <div style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#ee1515', boxShadow: '0 0 10px #ee1515' }} />
-              <p style={{ margin: 0, fontSize: '10px', fontWeight: '900', color: '#ee1515', letterSpacing: '2px', textTransform: 'uppercase' }}>
-                Valor da Pokedex
-              </p>
-            </div>
-            <h4 style={{ 
-              margin: 0, 
-              fontSize: '38px', 
-              fontWeight: '900', 
-              color: '#fff', 
-              textShadow: '0 0 15px rgba(255,255,255,0.2)',
-              fontFamily: 'monospace' 
-            }}>
-              {pokemonCards.reduce((acc, c) => acc + (Number(c.marketValue) || 0), 0).toFixed(2)}<span style={{ fontSize: '20px', color: '#ee1515' }}>€</span>
-            </h4>
-          </div>
-
-          {/* Lado Direito: Profit Estilo "Level Up" */}
-          <div style={{ textAlign: 'right' }}>
-            <p style={{ margin: 0, fontSize: '10px', fontWeight: '900', color: '#8e8e93', letterSpacing: '1px', marginBottom: '8px' }}>
-              LUCRO TOTAL
-            </p>
-            <div style={{ 
-              background: 'linear-gradient(90deg, rgba(76, 217, 100, 0.1), rgba(76, 217, 100, 0.2))',
-              padding: '8px 15px',
-              borderRadius: '12px',
-              border: '1px solid #4cd964',
-              boxShadow: '0 0 15px rgba(76, 217, 100, 0.2)'
-            }}>
-              <h4 style={{ margin: 0, fontSize: '22px', fontWeight: '900', color: '#4cd964' }}>
-                +{(pokemonCards.reduce((acc, c) => acc + (Number(c.marketValue) || 0), 0) - pokemonCards.reduce((acc, c) => acc + (Number(c.buyPrice) || 0), 0)).toFixed(2)}€
-              </h4>
-            </div>
-          </div>
-        </div>
-
-        {/* Barra de Status Inferior (Real Pokémon Element) */}
-        <div style={{ 
-          marginTop: '20px', 
-          height: '6px', 
-          background: '#333', 
-          borderRadius: '3px', 
-          display: 'flex', 
-          overflow: 'hidden',
-          border: '1px solid #000'
+        <div style={{
+          background: '#1a1a1a', padding: '40px', borderRadius: '30px',
+          border: '2px solid #ee1515', textAlign: 'center', boxShadow: '0 0 40px rgba(238, 21, 21, 0.3)'
         }}>
-          <div style={{ width: '70%', background: '#ee1515', boxShadow: '0 0 10px #ee1515' }} />
-          <div style={{ width: '10%', background: '#ffcc00' }} />
-          <div style={{ width: '20%', background: '#333' }} />
+          {/* A Pokébola animada aqui em baixo */}
+          <div style={{ 
+            width: '80px', height: '80px', margin: '0 auto 20px auto', 
+            position: 'relative', 
+            animation: 'spin 1.5s linear infinite' // Isto liga à regra 'spin' do Passo 1
+          }}>
+            <div style={{
+              width: '100%', height: '100%', borderRadius: '50%',
+              background: 'linear-gradient(to bottom, #ee1515 45%, #111 45%, #111 55%, #fff 55%)',
+              border: '4px solid #111',
+              boxShadow: 'inset -4px -4px 0 rgba(0,0,0,0.2)'
+            }}>
+              <div style={{ 
+                position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', 
+                width: '18px', height: '18px', backgroundColor: '#fff', border: '4px solid #111', borderRadius: '50%', zIndex: 10 
+              }} />
+            </div>
+          </div>
+          <h3 style={{ color: '#fff', margin: '0 0 5px 0', fontWeight: '900', letterSpacing: '1px' }}>SINCRONIZANDO...</h3>
+          <p style={{ color: '#8e8e93', fontSize: '11px' }}>A atualizar preços via Satélite Pokédex</p>
         </div>
       </div>
-    </div>
-{/* --- ADICIONA ESTE BLOCO AQUI --- */}
-<div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '15px', padding: '0 10px' }}>
-      <div style={{ fontSize: '9px', fontWeight: '900', color: '#1c1c1e', background: '#eee', padding: '3px 8px', borderRadius: '4px', letterSpacing: '1px' }}>
-        DATA_SCAN: ACTIVE
+    )}
+
+    {/* Dashboard Pokédex Redesenhado */}
+    <div style={{ marginBottom: '25px', position: 'relative' }}>
+      
+      {/* Modal de Sincronização */}
+      {isSyncing && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          backgroundColor: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(5px)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          zIndex: 9999, padding: '20px'
+        }}>
+          <div style={{
+            background: '#1a1a1a', padding: '30px', borderRadius: '24px',
+            border: '2px solid #ee1515', textAlign: 'center', boxShadow: '0 0 30px #ee1515'
+          }}>
+            <div style={{ 
+  width: '60px', 
+  height: '60px', 
+  margin: '0 auto 20px auto',
+  position: 'relative',
+  animation: 'spin 2s linear infinite' // Faz a pokebola girar enquanto sincroniza
+}}>
+  <div style={{
+    width: '100%', height: '100%',
+    borderRadius: '50%',
+    background: 'linear-gradient(to bottom, #ee1515 45%, #111 45%, #111 55%, #fff 55%)',
+    border: '3px solid #111',
+    boxShadow: 'inset -4px -4px 0 rgba(0,0,0,0.1), 0 0 15px rgba(238, 21, 21, 0.4)'
+  }}>
+    {/* Botão Central da Pokébola */}
+    <div style={{
+      position: 'absolute', top: '50%', left: '50%',
+      transform: 'translate(-50%, -50%)',
+      width: '15px', height: '15px',
+      backgroundColor: '#fff',
+      border: '3px solid #111',
+      borderRadius: '50%',
+      zIndex: 10
+    }} />
+  </div>
+</div>
+            <h3 style={{ color: '#fff', margin: '0 0 10px 0', fontWeight: '900' }}>Sincronizando...</h3>
+            <p style={{ color: '#8e8e93', fontSize: '12px', margin: '0 0 20px 0' }}>A atualizar preços via Satélite Pokédex</p>
+            <button 
+              onClick={() => setIsSyncing(false)}
+              style={{ background: '#ee1515', color: '#fff', border: 'none', padding: '10px 20px', borderRadius: '12px', fontWeight: '900' }}
+            >
+              OK
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Card do Dashboard */}
+      <div style={{ 
+        background: 'linear-gradient(135deg, #ee1515 0%, #222 40%, #111 100%)',
+        borderRadius: '24px', margin: '0 10px 20px 10px', padding: '2px',
+        boxShadow: '0 10px 30px rgba(0,0,0,0.3)', position: 'relative'
+      }}>
+        <div style={{ background: '#1a1a1a', borderRadius: '22px', padding: '20px', position: 'relative', overflow: 'hidden' }}>
+          
+          {/* MUDANÇA 1: Agora chama a função de atualização real */}
+          <button 
+            onClick={refreshAllPrices} 
+            style={{
+              position: 'absolute', top: '15px', right: '15px',
+              background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
+              borderRadius: '50%', width: '38px', height: '38px', display: 'flex',
+              alignItems: 'center', justifyContent: 'center', cursor: 'pointer', zIndex: 10
+            }}
+          >
+            <span style={{ fontSize: '16px' }}>🔄</span>
+          </button>
+
+          <div style={{ position: 'relative', zIndex: 1 }}>
+            <p style={{ margin: 0, fontSize: '10px', fontWeight: '900', color: '#ee1515', letterSpacing: '2px', textTransform: 'uppercase' }}>
+              Valor da Pokédex
+            </p>
+            
+            {/* MUDANÇA 2: Agora usa o valor animado */}
+            <h4 style={{ margin: '5px 0 18px 0', fontSize: '34px', fontWeight: '900', color: '#fff', fontFamily: 'monospace' }}>
+              {Number(displayValue).toFixed(2)}<span style={{color: '#ee1515', fontSize: '20px'}}>€</span>
+            </h4>
+
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+              <span style={{ fontSize: '9px', fontWeight: '900', color: '#ffcc00', letterSpacing: '1px' }}>COLLECTION_EXP</span>
+              <span style={{ fontSize: '10px', fontWeight: '900', color: '#ffcc00' }}>LVL {Math.floor(pokemonCards.length / 5)}</span>
+            </div>
+            <div style={{ height: '8px', background: '#333', borderRadius: '4px', overflow: 'hidden', border: '1px solid #000' }}>
+              <div style={{ 
+                width: `${Math.min((pokemonCards.length % 5) * 20, 100)}%`, 
+                height: '100%', background: '#ffcc00', boxShadow: '0 0 10px rgba(255, 204, 0, 0.4)' 
+              }} />
+            </div>
+          </div>
+        </div>
       </div>
-      <div style={{ flex: 1, height: '1px', background: 'linear-gradient(90deg, #eee, transparent)' }} />
-      <div style={{ fontSize: '9px', fontWeight: '900', color: '#ee1515', letterSpacing: '1px' }}>REG: PALDEA_SEC_01</div>
+
+      {/* Rodapé do Dashboard */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '0 15px' }}>
+        <div style={{ fontSize: '9px', fontWeight: '900', color: '#1c1c1e', background: '#eee', padding: '3px 8px', borderRadius: '4px', letterSpacing: '1px' }}>
+          DATA_SCAN: ACTIVE
+        </div>
+        <div style={{ flex: 1, height: '1px', background: 'linear-gradient(90deg, #eee, transparent)' }} />
+        <div style={{ fontSize: '9px', fontWeight: '900', color: '#ee1515', letterSpacing: '1px' }}>REG: PALDEA_SEC_01</div>
+      </div>
     </div>
+
+    {/* Grelha de Cartas Estilo Dex - Continua aqui em baixo */}
     {/* --------------------------------- */}
 
     {/* Grelha de Cartas Estilo Dex */}
