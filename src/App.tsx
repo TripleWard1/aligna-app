@@ -1794,156 +1794,127 @@ const isLowBalance = totalBalance < (settings.lowBalanceLimit || 50);
         </div>
       </div>
     )}
-
-    {/* MODAL DE SINCRONIZAÇÃO COM POKÉBOLA REAL */}
-    {isSyncing && (
+{/* --- POKÉDEX DASHBOARD: ULTRA CHARIZARD EDITION --- */}
+<div style={{ marginBottom: '30px', position: 'relative' }}>
+  
+  {/* MODAL DE SINCRONIZAÇÃO (POKÉBOLA REAL) */}
+  {isSyncing && (
+    <div style={{
+      position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+      backgroundColor: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(10px)',
+      display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999
+    }}>
       <div style={{
-        position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-        backgroundColor: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(8px)',
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        zIndex: 9999
+        background: '#1a1a1a', padding: '40px', borderRadius: '35px',
+        border: '3px solid #ee1515', textAlign: 'center', boxShadow: '0 0 50px rgba(238, 21, 21, 0.4)'
       }}>
-        <div style={{
-          background: '#1a1a1a', padding: '40px', borderRadius: '30px',
-          border: '2px solid #ee1515', textAlign: 'center', boxShadow: '0 0 40px rgba(238, 21, 21, 0.3)'
-        }}>
-          {/* A Pokébola animada aqui em baixo */}
-          <div style={{ 
-            width: '80px', height: '80px', margin: '0 auto 20px auto', 
-            position: 'relative', 
-            animation: 'spin 1.5s linear infinite' // Isto liga à regra 'spin' do Passo 1
-          }}>
-            <div style={{
-              width: '100%', height: '100%', borderRadius: '50%',
-              background: 'linear-gradient(to bottom, #ee1515 45%, #111 45%, #111 55%, #fff 55%)',
-              border: '4px solid #111',
-              boxShadow: 'inset -4px -4px 0 rgba(0,0,0,0.2)'
-            }}>
-              <div style={{ 
-                position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', 
-                width: '18px', height: '18px', backgroundColor: '#fff', border: '4px solid #111', borderRadius: '50%', zIndex: 10 
-              }} />
-            </div>
-          </div>
-          <h3 style={{ color: '#fff', margin: '0 0 5px 0', fontWeight: '900', letterSpacing: '1px' }}>SINCRONIZANDO...</h3>
-          <p style={{ color: '#8e8e93', fontSize: '11px' }}>A atualizar preços via Satélite Pokédex</p>
-        </div>
-      </div>
-    )}
-
-    {/* Dashboard Pokédex Redesenhado */}
-    <div style={{ marginBottom: '25px', position: 'relative' }}>
-      
-      {/* MODAL DE SINCRONIZAÇÃO (VERSÃO ÚNICA E CORRIGIDA) */}
-    {isSyncing && (
-      <div style={{
-        position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-        backgroundColor: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(8px)',
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        zIndex: 9999
-      }}>
-        <div style={{
-          background: '#1a1a1a', padding: '40px', borderRadius: '30px',
-          border: '2px solid #ee1515', textAlign: 'center', boxShadow: '0 0 40px rgba(238, 21, 21, 0.3)'
-        }}>
-          <div style={{ 
-            width: '80px', height: '80px', margin: '0 auto 20px auto', 
-            position: 'relative', 
-            animation: 'spin 1.5s linear infinite' 
-          }}>
-            <div style={{
-              width: '100%', height: '100%', borderRadius: '50%',
-              background: 'linear-gradient(to bottom, #ee1515 45%, #111 45%, #111 55%, #fff 55%)',
-              border: '4px solid #111',
-              boxShadow: 'inset -4px -4px 0 rgba(0,0,0,0.2)'
-            }}>
-              <div style={{ 
-                position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', 
-                width: '18px', height: '18px', backgroundColor: '#fff', border: '4px solid #111', borderRadius: '50%', zIndex: 10 
-              }} />
-            </div>
-          </div>
-          <h3 style={{ color: '#fff', margin: '0 0 5px 0', fontWeight: '900', letterSpacing: '1px' }}>SINCRONIZANDO...</h3>
-          <p style={{ color: '#8e8e93', fontSize: '11px' }}>A atualizar preços via Satélite Pokédex</p>
-          <button 
-            onClick={() => setIsSyncing(false)}
-            style={{ marginTop: '20px', background: '#ee1515', color: '#fff', border: 'none', padding: '8px 20px', borderRadius: '12px', fontWeight: '900', cursor: 'pointer' }}
-          >
-            FECHAR
-          </button>
-        </div>
-      </div>
-    )}
-
-    {/* DASHBOARD POKÉDEX CORRIGIDO (VALORES REAIS) */}
-<div style={{ 
-  background: 'linear-gradient(135deg, #ee1515 0%, #222 40%, #111 100%)',
-  borderRadius: '24px', margin: '0 10px 20px 10px', padding: '2px',
-  boxShadow: '0 10px 30px rgba(0,0,0,0.3)', position: 'relative', zIndex: 1
-}}>
-  <div style={{ background: '#1a1a1a', borderRadius: '22px', padding: '20px', position: 'relative', overflow: 'hidden' }}>
-    
-    {/* Botão Refresh que dispara a sincronização */}
-    <button 
-      onClick={refreshAllPrices} 
-      style={{
-        position: 'absolute', top: '15px', right: '15px',
-        background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)',
-        borderRadius: '50%', width: '38px', height: '38px', display: 'flex',
-        alignItems: 'center', justifyContent: 'center', cursor: 'pointer', zIndex: 10
-      }}
-    >
-      <span style={{ fontSize: '16px' }}>🔄</span>
-    </button>
-
-    <div style={{ position: 'relative', zIndex: 1 }}>
-      <p style={{ margin: 0, fontSize: '10px', fontWeight: '900', color: '#ee1515', letterSpacing: '2px', textTransform: 'uppercase' }}>
-        Valor Real da Pokédex
-      </p>
-      
-      {/* CORREÇÃO CRÍTICA: Se os valores estão baixos, é aqui que garantimos a soma correta */}
-      {/* CÁLCULO REFORÇADO - COLA ISTO NO LUGAR DO H4 ANTERIOR */}
-      <h4 style={{ margin: '5px 0 18px 0', fontSize: '38px', fontWeight: '900', color: '#fff', fontFamily: 'monospace' }}>
-  {pokemonCards && pokemonCards.length > 0 
-    ? pokemonCards.reduce((acc, card) => {
-        // 1. Tenta ler marketValue, se não existir tenta buyPrice
-        const rawValue = card.marketValue || card.buyPrice || 0;
-        // 2. Converte para número e limpa possíveis vírgulas ou símbolos
-        const cleanValue = typeof rawValue === 'string' 
-          ? parseFloat(rawValue.replace(/[^0-9.]/g, '')) 
-          : parseFloat(rawValue);
-        
-        return acc + (isNaN(cleanValue) ? 0 : cleanValue);
-      }, 0).toFixed(2)
-    : "0.00"}
-  <span style={{color: '#ee1515', fontSize: '22px', marginLeft: '4px'}}>€</span>
-</h4>
-
-      {/* Barra de Progresso XP */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-        <span style={{ fontSize: '9px', fontWeight: '900', color: '#ffcc00', letterSpacing: '1px' }}>COLLECTION_EXP</span>
-        <span style={{ fontSize: '10px', fontWeight: '900', color: '#ffcc00' }}>LVL {Math.floor(pokemonCards.length / 5)}</span>
-      </div>
-      <div style={{ height: '8px', background: '#333', borderRadius: '4px', overflow: 'hidden', border: '1px solid #000' }}>
         <div style={{ 
-          width: `${Math.min((pokemonCards.length % 5) * 20, 100)}%`, 
-          height: '100%', background: 'linear-gradient(90deg, #ffcc00, #f1c40f)', 
-          boxShadow: '0 0 10px rgba(255, 204, 0, 0.4)' 
+          width: '90px', height: '90px', margin: '0 auto 25px auto', 
+          position: 'relative', animation: 'spin 1.2s linear infinite' 
+        }}>
+          <div style={{
+            width: '100%', height: '100%', borderRadius: '50%',
+            background: 'linear-gradient(to bottom, #ee1515 45%, #111 45%, #111 55%, #fff 55%)',
+            border: '5px solid #111', boxShadow: 'inset -5px -5px 0 rgba(0,0,0,0.2)'
+          }}>
+            <div style={{ 
+              position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', 
+              width: '20px', height: '20px', backgroundColor: '#fff', border: '5px solid #111', borderRadius: '50%', zIndex: 10 
+            }} />
+          </div>
+        </div>
+        <h2 style={{ color: '#fff', margin: '0 0 10px 0', fontWeight: '1000', letterSpacing: '2px' }}>DATA SYNCING...</h2>
+        <p style={{ color: '#ffcc00', fontSize: '12px', fontWeight: '700' }}>LINKING TO GLOBAL POKÉDEX NETWORK</p>
+      </div>
+    </div>
+  )}
+
+  {/* CONTAINER PRINCIPAL COM EFEITO DE CARTA RARA */}
+  <div style={{ 
+    backgroundImage: `url('/charizard.png')`, // Corrigido para .png
+    backgroundSize: 'cover',
+    backgroundPosition: 'center 35%',
+    borderRadius: '35px', 
+    margin: '10px', 
+    padding: '3px',
+    position: 'relative', 
+    zIndex: 1, 
+    overflow: 'hidden', 
+    border: '2px solid rgba(255,215,0,0.6)', // Moldura Dourada suave
+    boxShadow: '0 30px 60px rgba(0,0,0,0.3)',
+    display: 'flex',
+    flexDirection: 'column',
+    minHeight: '340px'
+  }}>
+
+    {/* LOGO POKÉMON OFICIAL */}
+    <img src="https://upload.wikimedia.org/wikipedia/commons/9/98/International_Pok%C3%A9mon_logo.svg" 
+         style={{ position: 'absolute', right: '35px', top: '30px', height: '42px', zIndex: 10, filter: 'drop-shadow(0 4px 10px rgba(0,0,0,0.3))' }} 
+         alt="pokemon-logo" />
+
+    {/* CAMADA DE VIDRO COM OPACIDADE AJUSTADA (Mais transparente para ver melhor o Charizard) */}
+    <div style={{ 
+      position: 'absolute', inset: 0, 
+      background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.1) 20%, rgba(255, 255, 255, 0.6) 50%, rgba(255, 255, 255, 0.85) 100%)', 
+      backdropFilter: 'blur(4px)', zIndex: 2 
+    }} />
+
+    {/* CONTEÚDO SUPERIOR */}
+    <div style={{ position: 'relative', zIndex: 10, padding: '30px 40px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
+        <div style={{ background: 'rgba(255, 59, 48, 0.9)', padding: '8px 20px', borderRadius: '50px', border: '1px solid white', display: 'flex', alignItems: 'center', gap: '10px', boxShadow: '0 4px 15px rgba(255,59,48,0.4)' }}>
+          <div style={{ width: '10px', height: '10px', background: 'white', borderRadius: '50%', animation: 'pulse 1.5s infinite' }} />
+          <span style={{ fontSize: '12px', fontWeight: '1000', color: 'white', letterSpacing: '1px' }}>POKEDEX VALUE</span>
+        </div>
+        
+        <div onClick={refreshAllPrices} style={{ cursor: 'pointer', background: 'white', padding: '10px 22px', borderRadius: '20px', border: '1px solid #E5E5EA', display: 'flex', alignItems: 'center', gap: '12px', boxShadow: '0 8px 20px rgba(0,0,0,0.12)', transition: 'transform 0.2s', marginRight: '140px' }}>
+           <span style={{ fontSize: '11px', fontWeight: '1000', color: '#1C1C1E' }}>SYNC DATA</span>
+           <span style={{ color: '#007AFF', fontSize: '16px' }}>🔄</span>
+        </div>
+      </div>
+
+      {/* VALORES DO PORTFOLIO */}
+      <p style={{ margin: 0, fontSize: '12px', color: '#444', fontWeight: '900', textTransform: 'uppercase', letterSpacing: '1.5px' }}>Total Market Valuation</p>
+      <div style={{ display: 'flex', alignItems: 'baseline', gap: '12px', marginBottom: '25px' }}>
+        <h4 style={{ margin: 0, fontSize: '80px', fontWeight: '1000', color: '#1C1C1E', letterSpacing: '-5px', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.1))' }}>
+          {pokemonCards && pokemonCards.length > 0 ? pokemonCards.reduce((acc, card) => acc + (parseFloat(card.marketValue) || 0), 0).toFixed(2) : "0.00"}
+        </h4>
+        <span style={{ color: '#FF3B30', fontSize: '42px', fontWeight: '1000' }}>€</span>
+      </div>
+
+      {/* STATUS DO TREINADOR */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '15px' }}>
+         <div>
+           <p style={{ margin: 0, fontSize: '11px', color: '#636366', fontWeight: '900' }}>MASTER TRAINER RANK</p>
+           <p style={{ margin: 0, fontSize: '16px', color: '#007AFF', fontWeight: '1000', textShadow: '0 0 10px rgba(0,122,255,0.2)' }}>RANK: PRO TRAINER ALPHA</p>
+         </div>
+         <div style={{ background: 'linear-gradient(180deg, #FFCC00, #FF9500)', padding: '8px 24px', borderRadius: '15px', fontSize: '16px', fontWeight: '1000', color: '#1C1C1E', boxShadow: '0 8px 20px rgba(255,204,0,0.5)', border: '1px solid white' }}>
+           LVL {Math.floor(pokemonCards.length / 5)}
+         </div>
+      </div>
+
+      {/* BARRA DE EXP PERSONALIZADA */}
+      <div style={{ height: '18px', background: 'rgba(0,0,0,0.1)', borderRadius: '25px', overflow: 'hidden', padding: '4px', border: '1px solid rgba(255,255,255,0.5)' }}>
+        <div style={{ 
+          width: `${Math.min(((pokemonCards.length % 5) / 5) * 100, 100)}%`, 
+          background: 'linear-gradient(90deg, #007AFF, #00C7BE, #34C759)', 
+          height: '100%', borderRadius: '20px', transition: 'width 2s cubic-bezier(0.4, 0, 0.2, 1)',
+          boxShadow: '0 0 15px rgba(0,122,255,0.6)'
         }} />
       </div>
     </div>
+
+    {/* INDICADOR LATERAL ESTILO POKÉDEX */}
+    <div style={{ position: 'absolute', left: 0, top: '35%', bottom: '35%', width: '6px', background: 'linear-gradient(#007AFF, #5856D6)', borderRadius: '0 6px 6px 0', zIndex: 10, boxShadow: '2px 0 10px rgba(0,122,255,0.4)' }} />
+  </div>
+
+  {/* RODAPÉ DO TERMINAL */}
+  <div style={{ display: 'flex', alignItems: 'center', gap: '15px', padding: '10px 20px' }}>
+    <div style={{ fontSize: '10px', fontWeight: '1000', color: '#1c1c1e', background: '#FF3B30', color: 'white', padding: '4px 12px', borderRadius: '6px' }}>SECURE_ENCRYPTION: ON</div>
+    <div style={{ flex: 1, height: '2px', background: 'linear-gradient(90deg, #FF3B30, transparent)' }} />
+    <div style={{ fontSize: '10px', fontWeight: '1000', color: '#8e8e93' }}>NODE: PALDEA_SEC_01</div>
   </div>
 </div>
-      {/* Rodapé do Dashboard */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '0 15px' }}>
-        <div style={{ fontSize: '9px', fontWeight: '900', color: '#1c1c1e', background: '#eee', padding: '3px 8px', borderRadius: '4px', letterSpacing: '1px' }}>
-          DATA_SCAN: ACTIVE
-        </div>
-        <div style={{ flex: 1, height: '1px', background: 'linear-gradient(90deg, #eee, transparent)' }} />
-        <div style={{ fontSize: '9px', fontWeight: '900', color: '#ee1515', letterSpacing: '1px' }}>REG: PALDEA_SEC_01</div>
-      </div>
-    </div>
-
     {/* Grelha de Cartas Estilo Dex - Continua aqui em baixo */}
     {/* --------------------------------- */}
 
