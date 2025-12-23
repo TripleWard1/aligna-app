@@ -182,6 +182,24 @@ export default function App() {
     category: 'OUTROS' 
   });
 
+
+  const [editingCard, setEditingCard] = useState(null);
+
+// FUNÇÃO PARA EDITAR CARTA EXISTENTE
+const handleEditCard = (card) => {
+  // 1. Preenche o estado do formulário com os dados da carta selecionada
+  setPokemonData({
+    ...card,
+    id: card.id // Mantemos o ID para saber que é uma edição e não uma nova carta
+  });
+  
+  // 2. Abre o formulário
+  setShowAddPokemon(true);
+  
+  // 3. Scroll suave até ao topo para ver o formulário aberto
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+};
+
   // --- ESTADOS GERAIS ---
   const gerarRelatorioMensal = () => {
     const doc = new jsPDF();
@@ -1849,6 +1867,7 @@ const filteredCards = pokemonCards
         onClick={() => {
           if (!pokemonData.name) return alert("Nome é obrigatório");
           setIsSyncing(true);
+          
           setTimeout(() => {
             const valorLimpo = String(pokemonData.marketValue).replace(',', '.');
             const finalData = {
@@ -1856,12 +1875,22 @@ const filteredCards = pokemonCards
               marketValue: parseFloat(valorLimpo) || 0,
               avg7Day: parseFloat(String(pokemonData.avg7Day).replace(',', '.')) || 0
             };
-            handlePokemonSubmit(finalData); 
+        
+            // SE TIVER ID, ATUALIZA. SE NÃO, ADICIONA.
+            if (pokemonData.id) {
+              // Lógica de Update: Filtra a antiga e mete a nova
+              const updatedInventory = pokemonCards.map(c => c.id === pokemonData.id ? finalData : c);
+              setPokemonCards(updatedInventory);
+              // Aqui podes chamar a tua função de gravar na DB/LocalStorage
+            } else {
+              handlePokemonSubmit(finalData); 
+            }
+        
             setIsSyncing(false);
             setPokemonData({}); 
             setShowAddPokemon(false);
           }, 1000);
-        }} 
+        }}
         style={{ 
           width: '100%', padding: '18px', backgroundColor: '#ee1515', color: 'white', 
           border: 'none', borderRadius: '16px', fontSize: '14px', fontWeight: '1000',
@@ -1981,64 +2010,76 @@ const filteredCards = pokemonCards
   </div>
 </div>
 
-    {/* GRELHA DE CARTAS GUARDADAS - CORRIGIDA */}
+{/* GRELHA DE CARTAS GUARDADAS - DESIGN FINAL REFINADO */}
 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '16px', position: 'relative', zIndex: 5 }}>
-{filteredCards.map((card) => (
+  {filteredCards.map((card) => (
     <div key={card.id} style={{ backgroundColor: '#ffffff', borderRadius: '24px 4px 24px 4px', padding: '12px', boxShadow: '0 10px 25px rgba(0,0,0,0.08)', border: '1px solid #e5e7eb', position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
       
       {/* Fundo Artístico */}
-      <div style={{ position: 'absolute', top: '-5%', left: '-5%', right: '-5%', bottom: '-5%', backgroundImage: `url(${card.photo})`, backgroundSize: 'cover', backgroundPosition: 'center', opacity: 0.15, filter: 'blur(4px)', zIndex: 0 }} />
+      <div style={{ position: 'absolute', top: '-5%', left: '-5%', right: '-5%', bottom: '-5%', backgroundImage: `url(${card.photo})`, backgroundSize: 'cover', backgroundPosition: 'center', opacity: 0.35, filter: 'blur(4px)', zIndex: 0 }} />
       
       <div style={{ position: 'relative', height: '160px', backgroundColor: 'rgba(255, 255, 255, 0.7)', backdropFilter: 'blur(8px)', borderRadius: '16px 4px 16px 4px', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '12px', zIndex: 2 }}>
         <img src={card.photo} style={{ width: '85%', height: '85%', objectFit: 'contain', filter: 'drop-shadow(0 5px 15px rgba(0,0,0,0.2))' }} alt={card.name} onClick={() => setViewPhoto(card.photo)} />
       </div>
 
       <div style={{ padding: '0 4px', zIndex: 3, position: 'relative' }}>
-      <p style={{ 
-  margin: 0, 
-  fontWeight: '900', 
-  fontSize: '11px', // Ligeiramente menor
-  color: '#000', 
-  textTransform: 'uppercase', 
-  minHeight: '34px', // Mudado de 'height' para 'minHeight'
-  lineHeight: '1.2',
-  display: '-webkit-box',
-  WebkitLineClamp: '2',
-  WebkitBoxOrient: 'vertical',
-  overflow: 'hidden' 
-}}>
-  {card.name}
-</p>
+        <p style={{ margin: 0, fontWeight: '900', fontSize: '11px', color: '#000', textTransform: 'uppercase', minHeight: '34px', lineHeight: '1.2', display: '-webkit-box', WebkitLineClamp: '2', WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+          {card.name}
+        </p>
         
-        {/* CORREÇÃO DA BADGE: Usando card.rarity que vem do formulário */}
         {card.rarity && (
           <span style={{ fontSize: '8px', fontWeight: '900', color: '#ee1515', background: '#fff', padding: '3px 8px', borderRadius: '6px', marginTop: '6px', display: 'inline-block', border: '1px solid #eee', textTransform: 'uppercase' }}>
             {card.rarity}
           </span>
         )}
         
+        {/* ZONA DE PREÇOS: MARKET COM FORMA À ESQUERDA | 7D AVG À DIREITA */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: '15px' }}>
-          <div>
-            <span style={{ fontSize: '8px', fontWeight: '900', color: '#636366', display: 'block', textTransform: 'uppercase' }}>Market Value</span>
-            {/* CORREÇÃO DO PREÇO: Garantindo que é número para evitar NaN */}
-            <span style={{ fontSize: '17px', fontWeight: '900', color: '#1c1c1e' }}>
-              {card.marketValue ? Number(card.marketValue).toFixed(2) : "0.00"}€
-            </span>
+          
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flex: 1 }}>
+            {/* Bloco Market Value com Forma Envolvente */}
+            <div style={{ 
+              backgroundColor: '#f2f2f7', 
+              padding: '4px 8px', 
+              borderRadius: '10px', 
+              display: 'flex', 
+              flexDirection: 'column',
+              border: '1px solid #e5e7eb'
+            }}>
+              <span style={{ fontSize: '7px', fontWeight: '1000', color: '#636366', textTransform: 'uppercase' }}>Market</span>
+              <span style={{ fontSize: '18px', fontWeight: '1000', color: '#1c1c1e', lineHeight: '1' }}>
+                {card.marketValue ? Number(card.marketValue).toFixed(2) : "0.00"}€
+              </span>
+            </div>
+
+            {/* Separador Vertical Vermelho */}
+            <div style={{ width: '2px', height: '26px', backgroundColor: '#ee1515', borderRadius: '2px', margin: '0 2px' }} />
+
+            {/* Bloco 7D Avg (Ligeiramente maior) */}
+            <div style={{ display: 'flex', flexDirection: 'column' }}>
+              <span style={{ fontSize: '7px', fontWeight: '1000', color: '#8E8E93', textTransform: 'uppercase' }}>7D Avg</span>
+              <span style={{ fontSize: '13px', fontWeight: '900', color: '#3a3a3c' }}>
+                {card.avg7Day ? Number(card.avg7Day).toFixed(2) : "0.00"}€
+              </span>
+            </div>
           </div>
-          <button 
-  onClick={() => setPokemonToDelete(card)} 
-  style={{ 
-    background: '#000', 
-    border: 'none', 
-    padding: '6px 8px', // Menor para não empurrar o layout
-    borderRadius: '8px', 
-    color: '#fff', 
-    fontSize: '7px', // Fonte mais fina para telemóvel
-    fontWeight: '900' 
-  }}
->
-  DISCARD
-</button>
+
+          {/* Botões de Ação - Cores Suavizadas */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', marginLeft: '4px' }}>
+            <button 
+              onClick={() => setEditingCard(card)} 
+              style={{ background: '#007AFF', border: 'none', padding: '5px 8px', borderRadius: '6px', color: '#fff', fontSize: '7px', fontWeight: '1000', cursor: 'pointer' }}
+            >
+              EDIT
+            </button>
+            <button 
+              onClick={() => setPokemonToDelete(card)} 
+              style={{ background: '#3a3a3c', border: 'none', padding: '5px 8px', borderRadius: '6px', color: '#fff', fontSize: '7px', fontWeight: '1000', cursor: 'pointer' }}
+            >
+              DISCARD
+            </button>
+          </div>
+
         </div>
       </div>
     </div>
@@ -2051,6 +2092,55 @@ const filteredCards = pokemonCards
         <img src={viewPhoto} style={{ maxWidth: '100%', maxHeight: '85vh', borderRadius: '24px' }} alt="Full" />
       </div>
     )}
+
+{/* MODAL DE EDIÇÃO RÁPIDA NA BADGE */}
+{editingCard && (
+  <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(5px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, padding: '20px' }}>
+    <div style={{ backgroundColor: 'white', borderRadius: '28px', padding: '24px', width: '100%', maxWidth: '320px', boxShadow: '0 20px 40px rgba(0,0,0,0.3)', border: '4px solid #ee1515' }}>
+      <h3 style={{ margin: '0 0 15px 0', fontSize: '16px', fontWeight: '1000', textTransform: 'uppercase', textAlign: 'center' }}>Atualizar Preços</h3>
+      <p style={{ fontSize: '12px', color: '#636366', textAlign: 'center', marginBottom: '20px' }}>{editingCard.name}</p>
+      
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+        <div>
+          <label style={{ fontSize: '10px', fontWeight: '900', color: '#8E8E93', marginLeft: '5px' }}>MARKET VALUE (€)</label>
+          <input 
+            type="number" 
+            defaultValue={editingCard.marketValue} 
+            onChange={(e) => editingCard.newMarketValue = e.target.value}
+            style={{ width: '100%', padding: '14px', borderRadius: '12px', border: 'none', backgroundColor: '#F2F2F7', fontSize: '16px', fontWeight: '800', boxSizing: 'border-box' }}
+          />
+        </div>
+        <div>
+          <label style={{ fontSize: '10px', fontWeight: '900', color: '#8E8E93', marginLeft: '5px' }}>7D AVERAGE (€)</label>
+          <input 
+            type="number" 
+            defaultValue={editingCard.avg7Day} 
+            onChange={(e) => editingCard.newAvg7Day = e.target.value}
+            style={{ width: '100%', padding: '14px', borderRadius: '12px', border: 'none', backgroundColor: '#F2F2F7', fontSize: '16px', fontWeight: '800', boxSizing: 'border-box' }}
+          />
+        </div>
+      </div>
+
+      <div style={{ display: 'flex', gap: '10px', marginTop: '25px' }}>
+        <button onClick={() => setEditingCard(null)} style={{ flex: 1, padding: '14px', borderRadius: '12px', border: 'none', backgroundColor: '#E5E5EA', fontWeight: '900', fontSize: '12px' }}>CANCELAR</button>
+        <button 
+          onClick={() => {
+            const updatedCards = pokemonCards.map(c => c.id === editingCard.id ? {
+              ...c,
+              marketValue: parseFloat(editingCard.newMarketValue || c.marketValue),
+              avg7Day: parseFloat(editingCard.newAvg7Day || c.avg7Day)
+            } : c);
+            setPokemonCards(updatedCards);
+            setEditingCard(null);
+          }} 
+          style={{ flex: 2, padding: '14px', borderRadius: '12px', border: 'none', backgroundColor: '#ee1515', color: 'white', fontWeight: '1000', fontSize: '12px' }}
+        >
+          GUARDAR
+        </button>
+      </div>
+    </div>
+  </div>
+)}
 
     {pokemonToDelete && (
       <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(8px)', zIndex: 4000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
