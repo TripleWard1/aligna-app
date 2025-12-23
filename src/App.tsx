@@ -1748,11 +1748,11 @@ const filteredCards = pokemonCards
       </div>
     )}
 
-   {/* FORMULÁRIO POKÉDEX - DESIGN COM BACKGROUND INTEGRAL E ÍCONE POKÉMON */}
+  {/* FORMULÁRIO POKÉDEX - DESIGN COM BACKGROUND INTEGRAL E ÍCONE POKÉMON */}
 {showAddPokemon && (
   <div style={{ 
     backgroundColor: '#ee1515', 
-    padding: '12px', 
+    padding: '8px', // Reduzido para dar mais espaço lateral
     borderRadius: '28px', 
     marginBottom: '25px', 
     boxShadow: '0 12px 30px rgba(238, 21, 21, 0.3)', 
@@ -1761,38 +1761,40 @@ const filteredCards = pokemonCards
     overflow: 'hidden',
     backgroundImage: `linear-gradient(rgba(238, 21, 21, 0.7), rgba(238, 21, 21, 0.7)), url('/charizard.png')`,
     backgroundSize: 'cover',
-    backgroundPosition: 'center'
+    backgroundPosition: 'center',
+    boxSizing: 'border-box' // Garante que a borda não expanda o container
   }}>
-    {/* Camada Branca com Opacidade Baixa para o Charizard aparecer no fundo dos inputs */}
+    {/* Camada Branca com Opacidade Baixa */}
     <div style={{ 
-      backgroundColor: 'rgba(255, 255, 255, 0.65)', // Reduzido de 0.96 para 0.85 para ver o fundo
+      backgroundColor: 'rgba(255, 255, 255, 0.65)', 
       backdropFilter: 'blur(10px)',
-      padding: '18px', 
+      padding: '14px', // Reduzido de 18px para 14px para ganhar espaço
       borderRadius: '22px', 
       position: 'relative', 
       zIndex: 1,
-      backgroundImage: `url('/charizard.png')`, // Charizard também aqui dentro
+      backgroundImage: `url('/charizard.png')`, 
       backgroundSize: 'cover',
       backgroundPosition: 'center',
-      backgroundBlendMode: 'overlay'
+      backgroundBlendMode: 'overlay',
+      boxSizing: 'border-box'
     }}>
       
-      {/* NOME E ÍCONE POKÉMON (SUBSTITUI A LUPA) */}
-      <div style={{ display: 'flex', gap: '8px', marginBottom: '12px', alignItems: 'center' }}>
+      {/* NOME E ÍCONE POKÉMON */}
+      <div style={{ display: 'flex', gap: '8px', marginBottom: '10px', alignItems: 'center' }}>
         <input 
           placeholder="Nome da Carta..." 
           value={pokemonData.name || ''}
           onChange={e => setPokemonData({...pokemonData, name: e.target.value})}
-          style={{ flex: 1, padding: '14px', borderRadius: '12px', border: 'none', backgroundColor: 'rgba(242, 242, 247, 0.9)', fontSize: '14px', fontWeight: '800', outline: 'none' }}
+          style={{ flex: 1, padding: '12px', borderRadius: '12px', border: 'none', backgroundColor: 'rgba(242, 242, 247, 0.9)', fontSize: '14px', fontWeight: '800', outline: 'none', boxSizing: 'border-box', minWidth: 0 }}
         />
-        {/* ÍCONE POKÉBOLA REAL NO LUGAR DA LUPA */}
+        {/* ÍCONE POKÉBOLA REAL */}
         <div style={{ 
-          width: '48px', height: '48px', borderRadius: '12px', backgroundColor: '#ee1515',
+          width: '44px', height: '44px', borderRadius: '12px', backgroundColor: '#ee1515',
           display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
           boxShadow: '0 4px 0 #b10f0f', border: 'none'
         }}>
           <div style={{ 
-            width: '26px', height: '26px', borderRadius: '50%', 
+            width: '24px', height: '24px', borderRadius: '50%', 
             background: 'linear-gradient(180deg, white 50%, #f0f0f0 50%)', 
             border: '2.5px solid #1c1c1e', position: 'relative',
             animation: 'shake 1.5s ease-in-out infinite'
@@ -1806,18 +1808,35 @@ const filteredCards = pokemonCards
         </div>
       </div>
 
-      {/* SET E RARIDADES COMPLETAS */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '12px' }}>
-        <div style={{ display: 'flex', gap: '8px' }}>
-          <input placeholder="Set (ex: 151)" value={pokemonData.set || ''} onChange={e => setPokemonData({...pokemonData, set: e.target.value})} style={{ flex: 1, padding: '14px', borderRadius: '12px', border: 'none', backgroundColor: 'rgba(242, 242, 247, 0.9)', fontSize: '13px', fontWeight: '700' }} />
+      {/* SET E RARIDADES - CORRIGIDO PARA CABER NO ECRÃ */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '10px' }}>
+        <div style={{ display: 'flex', gap: '8px', width: '100%' }}>
+          <input 
+            placeholder="Set" 
+            value={pokemonData.set || ''} 
+            onChange={e => setPokemonData({...pokemonData, set: e.target.value})} 
+            style={{ flex: 0.8, padding: '12px', borderRadius: '12px', border: 'none', backgroundColor: 'rgba(242, 242, 247, 0.9)', fontSize: '13px', fontWeight: '700', boxSizing: 'border-box', minWidth: 0 }} 
+          />
           <select 
             value={pokemonData.rarity || ''} 
             onChange={e => setPokemonData({...pokemonData, rarity: e.target.value})} 
-            style={{ flex: 1, padding: '14px', borderRadius: '12px', border: 'none', backgroundColor: 'rgba(242, 242, 247, 0.9)', fontSize: '12px', fontWeight: '800', color: '#1C1C1E', outline: 'none' }}
+            style={{ 
+              flex: 1.2, // Dá mais espaço para o texto da raridade
+              padding: '12px', 
+              borderRadius: '12px', 
+              border: 'none', 
+              backgroundColor: 'rgba(242, 242, 247, 0.9)', 
+              fontSize: '11px', // Fonte ligeiramente menor para não cortar
+              fontWeight: '800', 
+              color: '#1C1C1E', 
+              outline: 'none',
+              boxSizing: 'border-box',
+              minWidth: 0
+            }}
           >
             <option value="">Raridade</option>
-            <option value="Special Illustration Rare">Special Illustration Rare</option>
-            <option value="Illustration Rare">Illustration Rare</option>
+            <option value="Special Illustration Rare">Spec. Illus. Rare</option>
+            <option value="Illustration Rare">Illus. Rare</option>
             <option value="Ultra Rare">Ultra Rare</option>
             <option value="Hyper Rare">Hyper Rare</option>
             <option value="Double Rare">Double Rare</option>
@@ -1831,7 +1850,7 @@ const filteredCards = pokemonCards
 
         {/* VALORES TÉCNICOS */}
         <div style={{ display: 'flex', gap: '8px' }}>
-          <div style={{ flex: 1 }}>
+          <div style={{ flex: 1, minWidth: 0 }}>
             <label style={{ fontSize: '9px', fontWeight: '1000', color: '#555', marginLeft: '5px' }}>7D AVG €</label>
             <input 
               type="number" 
@@ -1841,7 +1860,7 @@ const filteredCards = pokemonCards
               style={{ width: '100%', padding: '12px', borderRadius: '10px', border: 'none', backgroundColor: 'rgba(242, 242, 247, 0.9)', fontSize: '14px', fontWeight: '900', boxSizing: 'border-box' }} 
             />
           </div>
-          <div style={{ flex: 1 }}>
+          <div style={{ flex: 1, minWidth: 0 }}>
             <label style={{ fontSize: '9px', fontWeight: '1000', color: '#555', marginLeft: '5px' }}>MARKET €</label>
             <input 
               type="number" 
@@ -1858,7 +1877,7 @@ const filteredCards = pokemonCards
         placeholder="URL da Imagem" 
         value={pokemonData.photo || ''} 
         onChange={e => setPokemonData({...pokemonData, photo: e.target.value})} 
-        style={{ width: '100%', padding: '14px', borderRadius: '12px', border: 'none', backgroundColor: 'rgba(242, 242, 247, 0.9)', fontSize: '13px', marginBottom: '15px', boxSizing: 'border-box', fontWeight: '600' }} 
+        style={{ width: '100%', padding: '12px', borderRadius: '12px', border: 'none', backgroundColor: 'rgba(242, 242, 247, 0.9)', fontSize: '13px', marginBottom: '12px', boxSizing: 'border-box', fontWeight: '600' }} 
       />
 
       {/* BOTÃO SUBMETER REFORÇADO */}
@@ -1876,12 +1895,9 @@ const filteredCards = pokemonCards
               avg7Day: parseFloat(String(pokemonData.avg7Day).replace(',', '.')) || 0
             };
         
-            // SE TIVER ID, ATUALIZA. SE NÃO, ADICIONA.
             if (pokemonData.id) {
-              // Lógica de Update: Filtra a antiga e mete a nova
               const updatedInventory = pokemonCards.map(c => c.id === pokemonData.id ? finalData : c);
               setPokemonCards(updatedInventory);
-              // Aqui podes chamar a tua função de gravar na DB/LocalStorage
             } else {
               handlePokemonSubmit(finalData); 
             }
@@ -1892,7 +1908,7 @@ const filteredCards = pokemonCards
           }, 1000);
         }}
         style={{ 
-          width: '100%', padding: '18px', backgroundColor: '#ee1515', color: 'white', 
+          width: '100%', padding: '16px', backgroundColor: '#ee1515', color: 'white', 
           border: 'none', borderRadius: '16px', fontSize: '14px', fontWeight: '1000',
           textTransform: 'uppercase', letterSpacing: '1px', cursor: 'pointer',
           boxShadow: '0 6px 0 #b10f0f' 
@@ -2033,34 +2049,35 @@ const filteredCards = pokemonCards
           </span>
         )}
         
-        {/* ZONA DE PREÇOS CORRIGIDA - SEM PONTINHOS "..." */}
+        {/* ZONA DE PREÇOS - ALINHAMENTO CORRIGIDO */}
         <div style={{ marginTop: '15px' }}>
           
           <div style={{ 
             display: 'flex', 
             alignItems: 'center', 
+            justifyContent: 'space-between', // Garante que ocupam as extremidades
             backgroundColor: 'rgba(242, 242, 247, 0.8)', 
             backdropFilter: 'blur(10px)',
-            padding: '6px 6px', 
+            padding: '8px 10px', 
             borderRadius: '12px',
             border: '1px solid rgba(229, 231, 235, 0.5)',
             marginBottom: '8px'
           }}>
-            {/* Market Value - flex: 1.1 */}
-            <div style={{ display: 'flex', flexDirection: 'column', flex: 1.1 }}>
-              <span style={{ fontSize: '7px', fontWeight: '1000', color: '#636366', textTransform: 'uppercase' }}>Market</span>
+            {/* Market Value - Alinhado à Esquerda */}
+            <div style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
+              <span style={{ fontSize: '7px', fontWeight: '1000', color: '#636366', textTransform: 'uppercase', marginBottom: '2px' }}>Market</span>
               <span style={{ fontSize: '13px', fontWeight: '1000', color: '#1c1c1e', lineHeight: '1', whiteSpace: 'nowrap' }}>
                 {card.marketValue ? Number(card.marketValue).toFixed(2) : "0.00"}€
               </span>
             </div>
 
-            {/* Separador Vertical */}
-            <div style={{ width: '1.5px', height: '18px', backgroundColor: '#ee1515', opacity: 0.4, margin: '0 4px', flexShrink: 0 }} />
+            {/* Separador Vertical Fixo no Centro */}
+            <div style={{ width: '1.5px', height: '22px', backgroundColor: '#ee1515', opacity: 0.4, margin: '0 8px', flexShrink: 0 }} />
 
-            {/* 7D Avg - flex: 1.3 (mais espaço) e sem restrições de corte */}
-            <div style={{ display: 'flex', flexDirection: 'column', flex: 1.3 }}>
-              <span style={{ fontSize: '7px', fontWeight: '1000', color: '#8E8E93', textTransform: 'uppercase' }}>7D Avg</span>
-              <span style={{ fontSize: '11.5px', fontWeight: '900', color: '#3a3a3c', whiteSpace: 'nowrap' }}>
+            {/* 7D Avg - Alinhado à Esquerda relativo à sua coluna */}
+            <div style={{ display: 'flex', flexDirection: 'column', flex: 1.2 }}>
+              <span style={{ fontSize: '7px', fontWeight: '1000', color: '#8E8E93', textTransform: 'uppercase', marginBottom: '2px' }}>7D Avg</span>
+              <span style={{ fontSize: '11.5px', fontWeight: '900', color: '#3a3a3c', lineHeight: '1', whiteSpace: 'nowrap' }}>
                 {card.avg7Day ? Number(card.avg7Day).toFixed(2) : "0.00"}€
               </span>
             </div>
