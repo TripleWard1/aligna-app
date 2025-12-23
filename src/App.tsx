@@ -1859,25 +1859,25 @@ const filteredCards = pokemonCards
       <div style={{ 
         backgroundImage: `url('/charizard.png')`, backgroundSize: 'cover', backgroundPosition: 'center 35%',
         borderRadius: '35px', margin: '10px', padding: '3px', position: 'relative', zIndex: 1, overflow: 'hidden', 
-        border: '2px solid rgba(255,215,0,0.6)', boxShadow: '0 30px 60px rgba(0,0,0,0.3)', display: 'flex', flexDirection: 'column', minHeight: '280px'
+        border: '2px solid rgba(255,215,0,0.6)', boxShadow: '0 30px 60px rgba(0,0,0,0.3)', display: 'flex', flexDirection: 'column', minHeight: '200px', padding: '2px'
       }}>
-        <img src="https://upload.wikimedia.org/wikipedia/commons/9/98/International_Pok%C3%A9mon_logo.svg" style={{ position: 'absolute', right: '35px', top: '30px', height: '42px', zIndex: 10 }} alt="logo" />
+        <img src="https://upload.wikimedia.org/wikipedia/commons/9/98/International_Pok%C3%A9mon_logo.svg" style={{ position: 'absolute', right: '20px', top: '20px', height: '25px', zIndex: 10 }} alt="logo" />
         <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.05) 20%, rgba(255, 255, 255, 0.4) 50%, rgba(255, 255, 255, 0.7) 100%)', backdropFilter: 'blur(4px)', zIndex: 2 }} />
 
         <div style={{ position: 'relative', zIndex: 10, padding: '15px 20px' }}>
-          <div style={{ background: 'rgba(255, 59, 48, 0.9)', padding: '8px 20px', borderRadius: '50px', border: '1px solid white', display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '25px', width: 'fit-content' }}>
+          <div style={{ background: 'rgba(255, 59, 48, 0.9)', padding: '8px 20px', borderRadius: '50px', border: '1px solid white', display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px', padding: '4px 12px', width: 'fit-content' }}>
             <span style={{ fontSize: '12px', fontWeight: '1000', color: 'white' }}>POKEDEX VALUE</span>
           </div>
 
-          <div style={{ background: 'rgba(255, 255, 255, 0.15)', backdropFilter: 'blur(12px)', padding: '20px 30px', borderRadius: '24px', border: '1px solid rgba(255, 255, 255, 0.3)', display: 'inline-block' }}>
+          <div style={{ background: 'rgba(255, 255, 255, 0.15)', backdropFilter: 'blur(12px)', padding: '10px 20px', borderRadius: '18px', border: '1px solid rgba(255, 255, 255, 0.3)', display: 'inline-block' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <h4 style={{ margin: 0, fontSize: '60px', fontWeight: '1000', color: '#fff', letterSpacing: '-4px', textShadow: '0 0 20px rgba(0, 122, 255, 0.4)' }}>
+              <h4 style={{ margin: 0, fontSize: '42px', letterSpacing: '-2px', fontWeight: '1000', color: '#fff', letterSpacing: '-4px', textShadow: '0 0 20px rgba(0, 122, 255, 0.4)' }}>
                 {pokemonCards && pokemonCards.length > 0 ? pokemonCards.reduce((acc, card) => acc + (parseFloat(card.marketValue) || 0), 0).toFixed(2) : "0.00"}€
               </h4>
             </div>
           </div>
 
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: '20px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: '10px' }}>
              <div style={{ background: 'rgba(255, 255, 255, 0.1)', padding: '10px 22px', borderRadius: '16px', borderLeft: '4px solid #007AFF' }}>
                <p style={{ margin: 0, fontSize: '11px', color: '#fff', fontWeight: '1000' }}>MASTER TRAINER RANK</p>
                <p style={{ margin: 0, fontSize: '20px', color: '#007AFF', fontWeight: '1000' }}>PRO TRAINER ALPHA</p>
@@ -1887,7 +1887,7 @@ const filteredCards = pokemonCards
              </div>
           </div>
 
-          <div style={{ height: '18px', background: 'rgba(255,255,255,0.2)', borderRadius: '25px', overflow: 'hidden', padding: '4px', marginTop: '15px' }}>
+          <div style={{ height: '18px', background: 'rgba(255,255,255,0.2)', borderRadius: '25px', overflow: 'hidden', padding: '4px', marginTop: '10px' }}>
             <div style={{ width: `${Math.min(((pokemonCards.length % 5) / 5) * 100, 100)}%`, background: 'linear-gradient(90deg, #007AFF, #00C7BE, #34C759)', height: '100%', borderRadius: '20px', transition: 'width 2s' }} />
           </div>
         </div>
