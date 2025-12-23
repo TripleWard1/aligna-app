@@ -2033,48 +2033,52 @@ const filteredCards = pokemonCards
           </span>
         )}
         
-        {/* ZONA DE PREÇOS: MARKET COM FORMA À ESQUERDA | 7D AVG À DIREITA */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: '15px' }}>
+        {/* ZONA DE PREÇOS ATUALIZADA - SEM CORTES */}
+        <div style={{ marginTop: '15px' }}>
           
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flex: 1 }}>
-            {/* Bloco Market Value com Forma Envolvente */}
-            <div style={{ 
-              backgroundColor: '#f2f2f7', 
-              padding: '4px 8px', 
-              borderRadius: '10px', 
-              display: 'flex', 
-              flexDirection: 'column',
-              border: '1px solid #e5e7eb'
-            }}>
+          {/* Contentor de Preços com Transparência */}
+          <div style={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: '8px', 
+            backgroundColor: 'rgba(242, 242, 247, 0.8)', 
+            backdropFilter: 'blur(10px)',
+            padding: '6px 10px', 
+            borderRadius: '12px',
+            border: '1px solid rgba(229, 231, 235, 0.5)',
+            marginBottom: '8px'
+          }}>
+            {/* Market Value */}
+            <div style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
               <span style={{ fontSize: '7px', fontWeight: '1000', color: '#636366', textTransform: 'uppercase' }}>Market</span>
-              <span style={{ fontSize: '18px', fontWeight: '1000', color: '#1c1c1e', lineHeight: '1' }}>
+              <span style={{ fontSize: '16px', fontWeight: '1000', color: '#1c1c1e', lineHeight: '1', whiteSpace: 'nowrap' }}>
                 {card.marketValue ? Number(card.marketValue).toFixed(2) : "0.00"}€
               </span>
             </div>
 
             {/* Separador Vertical Vermelho */}
-            <div style={{ width: '2px', height: '26px', backgroundColor: '#ee1515', borderRadius: '2px', margin: '0 2px' }} />
+            <div style={{ width: '2px', height: '22px', backgroundColor: '#ee1515', borderRadius: '2px', opacity: 0.6 }} />
 
-            {/* Bloco 7D Avg (Ligeiramente maior) */}
-            <div style={{ display: 'flex', flexDirection: 'column' }}>
+            {/* 7D Avg */}
+            <div style={{ display: 'flex', flexDirection: 'column', flex: 1.2 }}>
               <span style={{ fontSize: '7px', fontWeight: '1000', color: '#8E8E93', textTransform: 'uppercase' }}>7D Avg</span>
-              <span style={{ fontSize: '13px', fontWeight: '900', color: '#3a3a3c' }}>
+              <span style={{ fontSize: '13px', fontWeight: '900', color: '#3a3a3c', whiteSpace: 'nowrap' }}>
                 {card.avg7Day ? Number(card.avg7Day).toFixed(2) : "0.00"}€
               </span>
             </div>
           </div>
 
-          {/* Botões de Ação - Cores Suavizadas */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', marginLeft: '4px' }}>
+          {/* Botões de Ação em Nova Linha - Largura Total */}
+          <div style={{ display: 'flex', gap: '6px' }}>
             <button 
               onClick={() => setEditingCard(card)} 
-              style={{ background: '#007AFF', border: 'none', padding: '5px 8px', borderRadius: '6px', color: '#fff', fontSize: '7px', fontWeight: '1000', cursor: 'pointer' }}
+              style={{ flex: 1, background: '#007AFF', border: 'none', padding: '8px', borderRadius: '8px', color: '#fff', fontSize: '8px', fontWeight: '1000', cursor: 'pointer', textTransform: 'uppercase' }}
             >
               EDIT
             </button>
             <button 
               onClick={() => setPokemonToDelete(card)} 
-              style={{ background: '#3a3a3c', border: 'none', padding: '5px 8px', borderRadius: '6px', color: '#fff', fontSize: '7px', fontWeight: '1000', cursor: 'pointer' }}
+              style={{ flex: 1, background: '#3a3a3c', border: 'none', padding: '8px', borderRadius: '8px', color: '#fff', fontSize: '8px', fontWeight: '1000', cursor: 'pointer', textTransform: 'uppercase' }}
             >
               DISCARD
             </button>
