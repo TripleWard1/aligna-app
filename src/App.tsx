@@ -2033,36 +2033,37 @@ const filteredCards = pokemonCards
           </span>
         )}
         
-        {/* ZONA DE PREÇOS ATUALIZADA - SEM CORTES */}
+        {/* ZONA DE PREÇOS ATUALIZADA - CORREÇÃO DE TRANSBORDO */}
         <div style={{ marginTop: '15px' }}>
           
-          {/* Contentor de Preços com Transparência */}
+          {/* Contentor de Preços com Transparência e Ajuste de Overflow */}
           <div style={{ 
             display: 'flex', 
             alignItems: 'center', 
-            gap: '8px', 
+            gap: '4px', 
             backgroundColor: 'rgba(242, 242, 247, 0.8)', 
             backdropFilter: 'blur(10px)',
-            padding: '6px 10px', 
+            padding: '6px 8px', 
             borderRadius: '12px',
             border: '1px solid rgba(229, 231, 235, 0.5)',
-            marginBottom: '8px'
+            marginBottom: '8px',
+            overflow: 'hidden' // Garante que nada sai fora da forma
           }}>
             {/* Market Value */}
-            <div style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minWidth: 0 }}>
               <span style={{ fontSize: '7px', fontWeight: '1000', color: '#636366', textTransform: 'uppercase' }}>Market</span>
-              <span style={{ fontSize: '16px', fontWeight: '1000', color: '#1c1c1e', lineHeight: '1', whiteSpace: 'nowrap' }}>
+              <span style={{ fontSize: '15px', fontWeight: '1000', color: '#1c1c1e', lineHeight: '1', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                 {card.marketValue ? Number(card.marketValue).toFixed(2) : "0.00"}€
               </span>
             </div>
 
             {/* Separador Vertical Vermelho */}
-            <div style={{ width: '2px', height: '22px', backgroundColor: '#ee1515', borderRadius: '2px', opacity: 0.6 }} />
+            <div style={{ width: '2px', height: '20px', backgroundColor: '#ee1515', borderRadius: '2px', opacity: 0.6, flexShrink: 0 }} />
 
-            {/* 7D Avg */}
-            <div style={{ display: 'flex', flexDirection: 'column', flex: 1.2 }}>
+            {/* 7D Avg - Corrigido para ficar dentro da forma */}
+            <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minWidth: 0, marginLeft: '4px' }}>
               <span style={{ fontSize: '7px', fontWeight: '1000', color: '#8E8E93', textTransform: 'uppercase' }}>7D Avg</span>
-              <span style={{ fontSize: '13px', fontWeight: '900', color: '#3a3a3c', whiteSpace: 'nowrap' }}>
+              <span style={{ fontSize: '12px', fontWeight: '900', color: '#3a3a3c', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                 {card.avg7Day ? Number(card.avg7Day).toFixed(2) : "0.00"}€
               </span>
             </div>
