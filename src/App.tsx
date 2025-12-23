@@ -1942,40 +1942,44 @@ const filteredCards = pokemonCards
       </div>
     </div>
 
-{/* --- BARRA DE PESQUISA E ORDENAÇÃO (ADICIONADO) --- */}
-<div style={{ marginBottom: '25px', display: 'flex', flexDirection: 'column', gap: '12px', padding: '0 10px' }}>
-      <div style={{ position: 'relative' }}>
-        <input 
-          type="text"
-          placeholder="Pesquisar carta pelo nome..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          style={{ width: '100%', padding: '16px 20px', borderRadius: '18px', border: '1px solid #e5e7eb', fontSize: '14px', fontWeight: '700', outline: 'none', backgroundColor: 'white', boxShadow: '0 4px 15px rgba(0,0,0,0.05)' }}
-        />
-        <span style={{ position: 'absolute', right: '20px', top: '16px', fontSize: '18px' }}>🔍</span>
-      </div>
+{/* BARRA DE PESQUISA ALINHADA COM O DASHBOARD */}
+<div style={{ marginBottom: '25px', padding: '0 10px' }}>
+  <div style={{ position: 'relative', width: '100%' }}>
+    <input 
+      type="text"
+      placeholder="Pesquisar carta pelo nome..."
+      value={searchTerm}
+      onChange={(e) => setSearchTerm(e.target.value)}
+      style={{ 
+        width: '100%', padding: '14px 15px', borderRadius: '18px', 
+        border: '1px solid #e5e7eb', fontSize: '14px', fontWeight: '700', 
+        outline: 'none', backgroundColor: 'white', boxSizing: 'border-box' 
+      }}
+    />
+    <span style={{ position: 'absolute', right: '15px', top: '14px', fontSize: '18px' }}>🔍</span>
+  </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
-        <select 
-          value={sortBy} 
-          onChange={(e) => setSortBy(e.target.value)}
-          style={{ padding: '14px', borderRadius: '15px', border: 'none', backgroundColor: '#F2F2F7', fontSize: '12px', fontWeight: '800', color: '#1c1c1e', outline: 'none' }}
-        >
-          <option value="recent">🕒 MAIS RECENTES</option>
-          <option value="expensive">💰 MAIS CARAS</option>
-          <option value="cheapest">🏷️ MAIS BARATAS</option>
-        </select>
+  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginTop: '12px' }}>
+    <select 
+      value={sortBy} 
+      onChange={(e) => setSortBy(e.target.value)}
+      style={{ padding: '12px', borderRadius: '15px', border: 'none', backgroundColor: '#F2F2F7', fontSize: '12px', fontWeight: '800', color: '#1c1c1e' }}
+    >
+      <option value="recent">🕒 MAIS RECENTES</option>
+      <option value="expensive">💰 MAIS CARAS</option>
+      <option value="cheapest">🏷️ MAIS BARATAS</option>
+    </select>
 
-        <select 
-          value={filterSet} 
-          onChange={(e) => setFilterSet(e.target.value)}
-          style={{ padding: '14px', borderRadius: '15px', border: 'none', backgroundColor: '#F2F2F7', fontSize: '12px', fontWeight: '800', color: '#1c1c1e', outline: 'none' }}
-        >
-          <option value="all">📦 TODOS OS SETS</option>
-          {uniqueSets.map(set => <option key={set} value={set}>{set.toUpperCase()}</option>)}
-        </select>
-      </div>
-    </div>
+    <select 
+      value={filterSet} 
+      onChange={(e) => setFilterSet(e.target.value)}
+      style={{ padding: '12px', borderRadius: '15px', border: 'none', backgroundColor: '#F2F2F7', fontSize: '12px', fontWeight: '800', color: '#1c1c1e' }}
+    >
+      <option value="all">📦 TODOS OS SETS</option>
+      {uniqueSets.map(set => <option key={set} value={set}>{set.toUpperCase()}</option>)}
+    </select>
+  </div>
+</div>
 
     {/* GRELHA DE CARTAS GUARDADAS - CORRIGIDA */}
 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '16px', position: 'relative', zIndex: 5 }}>
