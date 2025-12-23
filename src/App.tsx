@@ -1955,8 +1955,8 @@ const filteredCards = pokemonCards
           </div>
 
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: '10px' }}>
-             <div style={{ background: 'rgba(255, 255, 255, 0.1)', padding: '10px 22px', borderRadius: '16px', borderLeft: '4px solid #007AFF' }}>
-               <p style={{ margin: 0, fontSize: '11px', color: '#fff', fontWeight: '1000' }}>MASTER TRAINER RANK</p>
+             <div style={{ background: 'rgba(255, 255, 255, 0.6)', padding: '10px 22px', borderRadius: '16px', borderLeft: '4px solid #007AFF' }}>
+               <p style={{ margin: 0, fontSize: '11px', color: '#00C7BE', fontWeight: '1000' }}>MASTER TRAINER RANK</p>
                <p style={{ margin: 0, fontSize: '20px', color: '#007AFF', fontWeight: '1000' }}>PRO TRAINER ALPHA</p>
              </div>
              <div style={{ background: 'linear-gradient(180deg, #FFCC00, #FF9500)', padding: '8px 24px', borderRadius: '15px', fontSize: '16px', fontWeight: '1000', color: '#1C1C1E' }}>
