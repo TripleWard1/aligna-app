@@ -2033,43 +2033,40 @@ const filteredCards = pokemonCards
           </span>
         )}
         
-        {/* ZONA DE PREÇOS ATUALIZADA - CORREÇÃO DE TRANSBORDO */}
+        {/* ZONA DE PREÇOS CORRIGIDA - SEM PONTINHOS "..." */}
         <div style={{ marginTop: '15px' }}>
           
-          {/* Contentor de Preços com Transparência e Ajuste de Overflow */}
           <div style={{ 
             display: 'flex', 
             alignItems: 'center', 
-            gap: '4px', 
             backgroundColor: 'rgba(242, 242, 247, 0.8)', 
             backdropFilter: 'blur(10px)',
-            padding: '6px 8px', 
+            padding: '6px 6px', 
             borderRadius: '12px',
             border: '1px solid rgba(229, 231, 235, 0.5)',
-            marginBottom: '8px',
-            overflow: 'hidden' // Garante que nada sai fora da forma
+            marginBottom: '8px'
           }}>
-            {/* Market Value */}
-            <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minWidth: 0 }}>
+            {/* Market Value - flex: 1.1 */}
+            <div style={{ display: 'flex', flexDirection: 'column', flex: 1.1 }}>
               <span style={{ fontSize: '7px', fontWeight: '1000', color: '#636366', textTransform: 'uppercase' }}>Market</span>
-              <span style={{ fontSize: '15px', fontWeight: '1000', color: '#1c1c1e', lineHeight: '1', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+              <span style={{ fontSize: '13px', fontWeight: '1000', color: '#1c1c1e', lineHeight: '1', whiteSpace: 'nowrap' }}>
                 {card.marketValue ? Number(card.marketValue).toFixed(2) : "0.00"}€
               </span>
             </div>
 
-            {/* Separador Vertical Vermelho */}
-            <div style={{ width: '2px', height: '20px', backgroundColor: '#ee1515', borderRadius: '2px', opacity: 0.6, flexShrink: 0 }} />
+            {/* Separador Vertical */}
+            <div style={{ width: '1.5px', height: '18px', backgroundColor: '#ee1515', opacity: 0.4, margin: '0 4px', flexShrink: 0 }} />
 
-            {/* 7D Avg - Corrigido para ficar dentro da forma */}
-            <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minWidth: 0, marginLeft: '4px' }}>
+            {/* 7D Avg - flex: 1.3 (mais espaço) e sem restrições de corte */}
+            <div style={{ display: 'flex', flexDirection: 'column', flex: 1.3 }}>
               <span style={{ fontSize: '7px', fontWeight: '1000', color: '#8E8E93', textTransform: 'uppercase' }}>7D Avg</span>
-              <span style={{ fontSize: '12px', fontWeight: '900', color: '#3a3a3c', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+              <span style={{ fontSize: '11.5px', fontWeight: '900', color: '#3a3a3c', whiteSpace: 'nowrap' }}>
                 {card.avg7Day ? Number(card.avg7Day).toFixed(2) : "0.00"}€
               </span>
             </div>
           </div>
 
-          {/* Botões de Ação em Nova Linha - Largura Total */}
+          {/* Botões de Ação */}
           <div style={{ display: 'flex', gap: '6px' }}>
             <button 
               onClick={() => setEditingCard(card)} 
