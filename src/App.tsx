@@ -69,7 +69,7 @@ export default function App() {
   const [displayValue, setDisplayValue] = useState(0);
   const [isSyncing, setIsSyncing] = useState(false);
     const [pokemonData, setPokemonData] = useState({ 
-    name: '', number: '', set: '', rarity: '', buyPrice: '', marketValue: '', photo: '', condition: 'Near Mint' 
+    name: '', number: '', set: '', setLogo: '', rarity: '', buyPrice: '', marketValue: '', photo: '', condition: 'Near Mint' 
   });
   const searchPokemonInAPI = async () => {
     if (!pokemonSearchTerm) return;
@@ -1660,9 +1660,18 @@ const filteredCards = pokemonCards
     position: 'relative'
   }}>
 
-    {/* ESTILO DA ANIMAÇÃO (COLOQUEI AQUI PARA FUNCIONAR O SPIN) */}
+    {/* ESTILOS DE ANIMAÇÃO ATUALIZADOS */}
     <style>{`
       @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+      @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+      @keyframes shake {
+        0% { transform: translate(0, 0) rotate(0deg); }
+        20% { transform: translate(-2px, 1px) rotate(-5deg); }
+        40% { transform: translate(-2px, -1px) rotate(5deg); }
+        60% { transform: translate(2px, 1px) rotate(-5deg); }
+        80% { transform: translate(2px, -1px) rotate(5deg); }
+        100% { transform: translate(0, 0) rotate(0deg); }
+      }
     `}</style>
     
     {/* CABEÇALHO COM POKÉBOLA REAL */}
@@ -1712,47 +1721,37 @@ const filteredCards = pokemonCards
     </div>
 
     {/* PESQUISA E SELEÇÃO DE RESULTADOS */}
-    {isSearching && (
-      <div style={{ textAlign: 'center', padding: '10px', color: '#FF3B30', fontWeight: '800', fontSize: '12px' }}>
-        🔎 A procurar na Pokédex...
+{searchResults.length > 0 && (
+  <div style={{ display: 'flex', gap: '10px', overflowX: 'auto', padding: '10px 0', marginBottom: '15px' }}>
+    {searchResults.map((result) => (
+      <div 
+        key={result.id}
+        onClick={() => {
+          setPokemonData({
+            ...pokemonData,
+            id: result.id,
+            name: result.name,
+            set: result.set.name,
+            // ESTE É O CAMINHO CORRETO PARA O LOGOTIPO ARTÍSTICO
+            setLogo: result.set.images.logo, 
+            photo: result.images.small,
+            marketValue: result.tcgplayer?.prices?.holofoil?.market || result.tcgplayer?.prices?.normal?.market || 0,
+          });
+          setSearchResults([]); 
+        }}
+        style={{ cursor: 'pointer', textAlign: 'center', minWidth: '80px' }}
+      >
+        <img src={result.images.small} style={{ width: '60px', borderRadius: '4px' }} alt={result.name} />
+        <p style={{ fontSize: '8px', fontWeight: 'bold', margin: '5px 0' }}>{result.set.name}</p>
       </div>
-    )}
+    ))}
+  </div>
+)}
 
-    {searchResults.length > 0 && (
-      <div style={{ 
-        display: 'flex', gap: '10px', overflowX: 'auto', padding: '10px 0', 
-        marginBottom: '15px', borderBottom: '1px solid #eee' 
-      }}>
-        {searchResults.map((result) => (
-          <div 
-            key={result.id}
-            onClick={() => {
-              setPokemonData({
-                name: result.name,
-                number: result.number,
-                set: result.set.name,
-                rarity: result.rarity || 'Common',
-                buyPrice: '', 
-                marketValue: result.tcgplayer?.prices?.holofoil?.market || result.tcgplayer?.prices?.normal?.market || 0,
-                photo: result.images.small,
-                condition: 'Near Mint'
-              });
-              setSearchResults([]); 
-            }}
-            style={{ cursor: 'pointer', textAlign: 'center', minWidth: '80px' }}
-          >
-            <img src={result.images.small} style={{ width: '60px', borderRadius: '4px' }} alt={result.name} />
-            <p style={{ fontSize: '8px', fontWeight: 'bold', margin: '5px 0' }}>{result.set.name}</p>
-          </div>
-        ))}
-      </div>
-    )}
-
-  {/* FORMULÁRIO POKÉDEX - DESIGN COM BACKGROUND INTEGRAL E ÍCONE POKÉMON */}
 {showAddPokemon && (
   <div style={{ 
     backgroundColor: '#ee1515', 
-    padding: '8px', // Reduzido para dar mais espaço lateral
+    padding: '8px', 
     borderRadius: '28px', 
     marginBottom: '25px', 
     boxShadow: '0 12px 30px rgba(238, 21, 21, 0.3)', 
@@ -1762,13 +1761,12 @@ const filteredCards = pokemonCards
     backgroundImage: `linear-gradient(rgba(238, 21, 21, 0.7), rgba(238, 21, 21, 0.7)), url('/charizard.png')`,
     backgroundSize: 'cover',
     backgroundPosition: 'center',
-    boxSizing: 'border-box' // Garante que a borda não expanda o container
+    boxSizing: 'border-box'
   }}>
-    {/* Camada Branca com Opacidade Baixa */}
     <div style={{ 
       backgroundColor: 'rgba(255, 255, 255, 0.65)', 
       backdropFilter: 'blur(10px)',
-      padding: '14px', // Reduzido de 18px para 14px para ganhar espaço
+      padding: '14px', 
       borderRadius: '22px', 
       position: 'relative', 
       zIndex: 1,
@@ -1779,7 +1777,6 @@ const filteredCards = pokemonCards
       boxSizing: 'border-box'
     }}>
       
-      {/* NOME E ÍCONE POKÉMON */}
       <div style={{ display: 'flex', gap: '8px', marginBottom: '10px', alignItems: 'center' }}>
         <input 
           placeholder="Nome da Carta..." 
@@ -1787,7 +1784,6 @@ const filteredCards = pokemonCards
           onChange={e => setPokemonData({...pokemonData, name: e.target.value})}
           style={{ flex: 1, padding: '12px', borderRadius: '12px', border: 'none', backgroundColor: 'rgba(242, 242, 247, 0.9)', fontSize: '14px', fontWeight: '800', outline: 'none', boxSizing: 'border-box', minWidth: 0 }}
         />
-        {/* ÍCONE POKÉBOLA REAL */}
         <div style={{ 
           width: '44px', height: '44px', borderRadius: '12px', backgroundColor: '#ee1515',
           display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
@@ -1808,7 +1804,6 @@ const filteredCards = pokemonCards
         </div>
       </div>
 
-      {/* SET E RARIDADES - CORRIGIDO PARA CABER NO ECRÃ */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '10px' }}>
         <div style={{ display: 'flex', gap: '8px', width: '100%' }}>
           <input 
@@ -1821,12 +1816,12 @@ const filteredCards = pokemonCards
             value={pokemonData.rarity || ''} 
             onChange={e => setPokemonData({...pokemonData, rarity: e.target.value})} 
             style={{ 
-              flex: 1.2, // Dá mais espaço para o texto da raridade
+              flex: 1.2,
               padding: '12px', 
               borderRadius: '12px', 
               border: 'none', 
               backgroundColor: 'rgba(242, 242, 247, 0.9)', 
-              fontSize: '11px', // Fonte ligeiramente menor para não cortar
+              fontSize: '11px', 
               fontWeight: '800', 
               color: '#1C1C1E', 
               outline: 'none',
@@ -1848,7 +1843,6 @@ const filteredCards = pokemonCards
           </select>
         </div>
 
-        {/* VALORES TÉCNICOS */}
         <div style={{ display: 'flex', gap: '8px' }}>
           <div style={{ flex: 1, minWidth: 0 }}>
             <label style={{ fontSize: '9px', fontWeight: '1000', color: '#555', marginLeft: '5px' }}>7D AVG €</label>
@@ -1880,7 +1874,6 @@ const filteredCards = pokemonCards
         style={{ width: '100%', padding: '12px', borderRadius: '12px', border: 'none', backgroundColor: 'rgba(242, 242, 247, 0.9)', fontSize: '13px', marginBottom: '12px', boxSizing: 'border-box', fontWeight: '600' }} 
       />
 
-      {/* BOTÃO SUBMETER REFORÇADO */}
       <button 
         type="button"
         onClick={() => {
@@ -1923,7 +1916,6 @@ const filteredCards = pokemonCards
     {/* DASHBOARD ULTRA CHARIZARD EDITION */}
     <div style={{ marginBottom: '30px', position: 'relative' }}>
       
-      {/* ANIMAÇÃO DE SYNC (POKÉBOLA) INTEGRADA */}
       {isSyncing && (
         <div style={{ 
           position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, 
@@ -1944,7 +1936,7 @@ const filteredCards = pokemonCards
                 width: '20px', height: '20px', borderRadius: '50%', backgroundColor: 'white', border: '4px solid #1c1c1e'
               }} />
             </div>
-            <p style={{ marginTop: '20px', fontWeight: '900', color: '#ee1515', letterSpacing: '2px' }}>A GUARDAR...</p>
+            <p style={{ marginTop: '20px', fontWeight: '900', color: '#ee1515', letterSpacing: '2px' }}>A ADICIONAR À POKEDEX...</p>
           </div>
         </div>
       )}
@@ -1971,9 +1963,16 @@ const filteredCards = pokemonCards
           </div>
 
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: '10px' }}>
-             <div style={{ background: 'rgba(255, 255, 255, 0.6)', padding: '10px 22px', borderRadius: '16px', borderLeft: '4px solid #007AFF' }}>
-               <p style={{ margin: 0, fontSize: '11px', color: '#00C7BE', fontWeight: '1000' }}>MASTER TRAINER RANK</p>
-               <p style={{ margin: 0, fontSize: '20px', color: '#007AFF', fontWeight: '1000' }}>PRO TRAINER ALPHA</p>
+             {/* MASTER TRAINER RANK COM FORMA E COR AMARELA */}
+             <div style={{ 
+               background: 'rgba(255, 255, 255, 0.8)', 
+               padding: '10px 22px', 
+               borderRadius: '16px 4px 16px 4px', 
+               border: '2px solid #FFCC00',
+               boxShadow: '0 4px 15px rgba(0,0,0,0.1)'
+             }}>
+               <p style={{ margin: 0, fontSize: '11px', color: '#FF9500', fontWeight: '1000' }}>MASTER TRAINER RANK</p>
+               <p style={{ margin: 0, fontSize: '20px', color: '#1c1c1e', fontWeight: '1000' }}>PRO TRAINER ALPHA</p>
              </div>
              <div style={{ background: 'linear-gradient(180deg, #FFCC00, #FF9500)', padding: '8px 24px', borderRadius: '15px', fontSize: '16px', fontWeight: '1000', color: '#1C1C1E' }}>
                LVL {Math.floor(pokemonCards.length / 5)}
@@ -1987,7 +1986,7 @@ const filteredCards = pokemonCards
       </div>
     </div>
 
-{/* BARRA DE PESQUISA ALINHADA COM O DASHBOARD */}
+{/* BARRA DE PESQUISA */}
 <div style={{ marginBottom: '25px', padding: '0 10px' }}>
   <div style={{ position: 'relative', width: '100%' }}>
     <input 
@@ -2026,93 +2025,130 @@ const filteredCards = pokemonCards
   </div>
 </div>
 
-{/* GRELHA DE CARTAS GUARDADAS - DESIGN FINAL REFINADO */}
+{/* GRELHA DE CARTAS - SEM NENHUMA CARTA GENÉRICA NO CANTO */}
 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '16px', position: 'relative', zIndex: 5 }}>
-  {filteredCards.map((card) => (
-    <div key={card.id} style={{ backgroundColor: '#ffffff', borderRadius: '24px 4px 24px 4px', padding: '12px', boxShadow: '0 10px 25px rgba(0,0,0,0.08)', border: '1px solid #e5e7eb', position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
-      
-      {/* Fundo Artístico */}
-      <div style={{ position: 'absolute', top: '-5%', left: '-5%', right: '-5%', bottom: '-5%', backgroundImage: `url(${card.photo})`, backgroundSize: 'cover', backgroundPosition: 'center', opacity: 0.35, filter: 'blur(4px)', zIndex: 0 }} />
-      
-      <div style={{ position: 'relative', height: '160px', backgroundColor: 'rgba(255, 255, 255, 0.7)', backdropFilter: 'blur(8px)', borderRadius: '16px 4px 16px 4px', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '12px', zIndex: 2 }}>
-        <img src={card.photo} style={{ width: '85%', height: '85%', objectFit: 'contain', filter: 'drop-shadow(0 5px 15px rgba(0,0,0,0.2))' }} alt={card.name} onClick={() => setViewPhoto(card.photo)} />
-      </div>
+  {filteredCards && filteredCards.map((card, index) => {
+    
+    // 1. Lógica para o Logo Artístico (Ex: Scarlet & Violet Promo)
+    const setId = card.id && typeof card.id === 'string' ? card.id.split('-')[0] : '';
+    const logoUrl = card.setLogo || `https://images.pokemontcg.io/${setId}/logo.png`;
 
-      <div style={{ padding: '0 4px', zIndex: 3, position: 'relative' }}>
-        <p style={{ margin: 0, fontWeight: '900', fontSize: '11px', color: '#000', textTransform: 'uppercase', minHeight: '34px', lineHeight: '1.2', display: '-webkit-box', WebkitLineClamp: '2', WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
-          {card.name}
-        </p>
-        
-        {card.rarity && (
-          <span style={{ fontSize: '8px', fontWeight: '900', color: '#ee1515', background: '#fff', padding: '3px 8px', borderRadius: '6px', marginTop: '6px', display: 'inline-block', border: '1px solid #eee', textTransform: 'uppercase' }}>
-            {card.rarity}
-          </span>
+    return (
+      <div 
+        key={card.id || index} 
+        style={{ 
+          backgroundColor: '#ffffff', 
+          borderRadius: '24px 4px 24px 4px', 
+          padding: '12px', 
+          boxShadow: '0 10px 25px rgba(0,0,0,0.08)', 
+          border: '1px solid #e5e7eb', 
+          position: 'relative', 
+          overflow: 'hidden', 
+          display: 'flex', 
+          flexDirection: 'column',
+          animation: `fadeIn 0.5s ease forwards ${index * 0.1}s`,
+          opacity: 0
+        }}
+      >
+        {/* LOGO DO SET - AGORA COM CAMINHO DIRETO E SEM INTERFERÊNCIA */}
+        {setId && (
+          <img 
+            src={logoUrl} 
+            style={{ 
+              position: 'absolute', 
+              top: '10px', 
+              right: '10px', 
+              width: '55px', 
+              height: 'auto',
+              zIndex: 30, // Z-index muito alto para garantir que nada fica por cima
+              filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))'
+            }} 
+            onError={(e) => { e.target.style.display = 'none'; }} 
+            alt="Set Logo"
+          />
         )}
+
+        {/* FUNDO BLUR (TRANSPARÊNCIA DA PRÓPRIA CARTA) */}
+        <div style={{ position: 'absolute', top: '-5%', left: '-5%', right: '-5%', bottom: '-5%', backgroundImage: `url(${card.photo})`, backgroundSize: 'cover', backgroundPosition: 'center', opacity: 0.35, filter: 'blur(4px)', zIndex: 0 }} />
         
-        {/* ZONA DE PREÇOS - ALINHAMENTO CORRIGIDO */}
-        <div style={{ marginTop: '15px' }}>
+        {/* CONTAINER DA CARTA PRINCIPAL */}
+        <div style={{ position: 'relative', height: '160px', backgroundColor: 'rgba(255, 255, 255, 0.7)', backdropFilter: 'blur(8px)', borderRadius: '16px 4px 16px 4px', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '12px', zIndex: 2 }}>
+          <img 
+            src={card.photo} 
+            style={{ width: '85%', height: '85%', objectFit: 'contain', filter: 'drop-shadow(0 5px 15px rgba(0,0,0,0.2))' }} 
+            alt={card.name} 
+            onClick={() => setViewPhoto && setViewPhoto(card.photo)} 
+          />
+        </div>
+
+        {/* ÁREA DE TEXTO E PREÇOS */}
+        <div style={{ padding: '0 4px', zIndex: 3, position: 'relative' }}>
+          <div style={{ backgroundColor: 'rgba(255,255,255,0.9)', padding: '6px 10px', borderRadius: '10px 2px 10px 2px', borderLeft: '3px solid #007AFF', minHeight: '42px', display: 'flex', alignItems: 'center' }}>
+            <p style={{ margin: 0, fontWeight: '1000', fontSize: '10px', color: '#007AFF', textTransform: 'uppercase' }}>
+              {card.name}
+            </p>
+          </div>
           
-          <div style={{ 
-            display: 'flex', 
-            alignItems: 'center', 
-            justifyContent: 'space-between', // Garante que ocupam as extremidades
-            backgroundColor: 'rgba(242, 242, 247, 0.8)', 
-            backdropFilter: 'blur(10px)',
-            padding: '8px 10px', 
-            borderRadius: '12px',
-            border: '1px solid rgba(229, 231, 235, 0.5)',
-            marginBottom: '8px'
-          }}>
-            {/* Market Value - Alinhado à Esquerda */}
-            <div style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
-              <span style={{ fontSize: '7px', fontWeight: '1000', color: '#636366', textTransform: 'uppercase', marginBottom: '2px' }}>Market</span>
-              <span style={{ fontSize: '13px', fontWeight: '1000', color: '#1c1c1e', lineHeight: '1', whiteSpace: 'nowrap' }}>
-                {card.marketValue ? Number(card.marketValue).toFixed(2) : "0.00"}€
-              </span>
+          <div style={{ marginTop: '15px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', backgroundColor: 'rgba(242, 242, 247, 0.8)', padding: '8px 10px', borderRadius: '12px', marginBottom: '8px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                <span style={{ fontSize: '7px', fontWeight: '1000', color: '#636366' }}>MARKET</span>
+                <span style={{ fontSize: '13px', fontWeight: '1000', color: '#1c1c1e' }}>{Number(card.marketValue || 0).toFixed(2)}€</span>
+              </div>
+              <div style={{ width: '1.5px', height: '22px', backgroundColor: '#ee1515', opacity: 0.4 }} />
+              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                <span style={{ fontSize: '7px', fontWeight: '1000', color: '#8E8E93' }}>7D AVG</span>
+                <span style={{ fontSize: '11.5px', fontWeight: '900', color: '#3a3a3c' }}>{Number(card.avg7Day || 0).toFixed(2)}€</span>
+              </div>
             </div>
 
-            {/* Separador Vertical Fixo no Centro */}
-            <div style={{ width: '1.5px', height: '22px', backgroundColor: '#ee1515', opacity: 0.4, margin: '0 8px', flexShrink: 0 }} />
-
-            {/* 7D Avg - Alinhado à Esquerda relativo à sua coluna */}
-            <div style={{ display: 'flex', flexDirection: 'column', flex: 1.2 }}>
-              <span style={{ fontSize: '7px', fontWeight: '1000', color: '#8E8E93', textTransform: 'uppercase', marginBottom: '2px' }}>7D Avg</span>
-              <span style={{ fontSize: '11.5px', fontWeight: '900', color: '#3a3a3c', lineHeight: '1', whiteSpace: 'nowrap' }}>
-                {card.avg7Day ? Number(card.avg7Day).toFixed(2) : "0.00"}€
-              </span>
+            <div style={{ display: 'flex', gap: '6px' }}>
+              <button onClick={() => setEditingCard && setEditingCard(card)} style={{ flex: 1, background: '#007AFF', border: 'none', padding: '8px', borderRadius: '8px', color: '#fff', fontSize: '8px', fontWeight: '1000', textTransform: 'uppercase' }}>EDIT</button>
+              <button onClick={() => setPokemonToDelete && setPokemonToDelete(card)} style={{ flex: 1, background: '#3a3a3c', border: 'none', padding: '8px', borderRadius: '8px', color: '#fff', fontSize: '8px', fontWeight: '1000', textTransform: 'uppercase' }}>DISCARD</button>
             </div>
           </div>
-
-          {/* Botões de Ação */}
-          <div style={{ display: 'flex', gap: '6px' }}>
-            <button 
-              onClick={() => setEditingCard(card)} 
-              style={{ flex: 1, background: '#007AFF', border: 'none', padding: '8px', borderRadius: '8px', color: '#fff', fontSize: '8px', fontWeight: '1000', cursor: 'pointer', textTransform: 'uppercase' }}
-            >
-              EDIT
-            </button>
-            <button 
-              onClick={() => setPokemonToDelete(card)} 
-              style={{ flex: 1, background: '#3a3a3c', border: 'none', padding: '8px', borderRadius: '8px', color: '#fff', fontSize: '8px', fontWeight: '1000', cursor: 'pointer', textTransform: 'uppercase' }}
-            >
-              DISCARD
-            </button>
-          </div>
-
         </div>
       </div>
-    </div>
-  ))}
+    );
+  })}
 </div>
 
     {/* MODAIS (GALERIA, DELETE, EDIÇÃO) */}
     {viewPhoto && (
-      <div onClick={() => setViewPhoto(null)} style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.9)', backdropFilter: 'blur(15px)', zIndex: 3000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <img src={viewPhoto} style={{ maxWidth: '100%', maxHeight: '85vh', borderRadius: '24px' }} alt="Full" />
+      <div 
+        onClick={() => setViewPhoto(null)} 
+        style={{ 
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, 
+          backgroundColor: 'rgba(0,0,0,0.92)', backdropFilter: 'blur(15px)', 
+          zIndex: 3000, display: 'flex', flexDirection: 'column',
+          alignItems: 'center', justifyContent: 'center' 
+        }}
+      >
+        <span style={{ 
+          color: 'rgba(255,255,255,0.7)', 
+          fontSize: '12px', 
+          fontWeight: '900', 
+          marginBottom: '15px', 
+          textTransform: 'uppercase', 
+          letterSpacing: '2px',
+          fontFamily: 'sans-serif'
+        }}>
+          Toque para fechar
+        </span>
+
+        <img 
+          src={viewPhoto} 
+          style={{ 
+            maxWidth: '100%', 
+            maxHeight: '80vh', 
+            borderRadius: '24px',
+            boxShadow: '0 20px 50px rgba(0,0,0,0.5)'
+          }} 
+          alt="Full" 
+        />
       </div>
     )}
 
-{/* MODAL DE EDIÇÃO RÁPIDA NA BADGE */}
 {editingCard && (
   <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(5px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, padding: '20px' }}>
     <div style={{ backgroundColor: 'white', borderRadius: '28px', padding: '24px', width: '100%', maxWidth: '320px', boxShadow: '0 20px 40px rgba(0,0,0,0.3)', border: '4px solid #ee1515' }}>
@@ -2173,8 +2209,6 @@ const filteredCards = pokemonCards
         </div>
       </div>
     )}
-
-    
   </div>
 )}
 {/* Menu Inferior Dinâmico */}
