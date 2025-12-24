@@ -286,6 +286,7 @@ const handleEditCard = (card) => {
     doc.save(`Relatorio_Hugo_${mesNome}.pdf`);
   };
   const [pokemonToDelete, setPokemonToDelete] = useState(null);
+  const [selectedCard, setSelectedCard] = useState(null);
   
   const [editingPrice, setEditingPrice] = useState(null); // Guarda o item para edição rápida
 const [tempPrice, setTempPrice] = useState(''); // Guarda o valor que estás a digitar
@@ -2025,92 +2026,169 @@ const filteredCards = pokemonCards
   </div>
 </div>
 
-{/* GRELHA DE CARTAS - SEM NENHUMA CARTA GENÉRICA NO CANTO */}
-<div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '16px', position: 'relative', zIndex: 5 }}>
+{/* GRELHA DE CARTAS - DESIGN POKÉ-MASTER V7.0 (COLLECTOR RADAR EDITION) */}
+<div style={{ 
+  display: 'grid', 
+  gridTemplateColumns: 'repeat(2, 1fr)', 
+  gap: '44px 24px', 
+  position: 'relative', 
+  zIndex: 5,
+  padding: '40px 15px',
+  background: '#f1f5f9',
+  minHeight: '100vh'
+}}>
+  
+  {/* ESTILOS DE ANIMAÇÃO INJETADOS */}
+  <style>{`
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes pulseText { 0% { opacity: 0.4; } 50% { opacity: 1; } 100% { opacity: 0.4; } }
+  `}</style>
+
+  {/* MARCAS DE ÁGUA E ELEMENTOS DE FUNDO POKÉMON */}
+  <div style={{ position: 'fixed', top: '15%', right: '-10%', fontSize: '280px', color: 'rgba(0,0,0,0.03)', pointerEvents: 'none', zIndex: 0, transform: 'rotate(15deg)' }}>◓</div>
+  <div style={{ position: 'fixed', bottom: '10%', left: '-8%', fontSize: '220px', color: 'rgba(59, 130, 246, 0.04)', pointerEvents: 'none', zIndex: 0, transform: 'rotate(-15deg)' }}>⚡</div>
+  <div style={{ position: 'fixed', top: '40%', left: '30%', fontSize: '150px', color: 'rgba(0,0,0,0.02)', pointerEvents: 'none', zIndex: 0 }}>🔥</div>
+
   {filteredCards && filteredCards.map((card, index) => {
-    
-    // 1. Lógica para o Logo Artístico (Ex: Scarlet & Violet Promo)
-    const setId = card.id && typeof card.id === 'string' ? card.id.split('-')[0] : '';
-    const logoUrl = card.setLogo || `https://images.pokemontcg.io/${setId}/logo.png`;
+    const setId = card.id && typeof card.id === 'string' ? card.id.split('-')[0] : (card.set || '???');
+    const setName = card.setName || card.set || "Unknown Set";
+    const isLeft = index % 2 === 0;
 
     return (
-      <div 
-        key={card.id || index} 
-        style={{ 
-          backgroundColor: '#ffffff', 
-          borderRadius: '24px 4px 24px 4px', 
-          padding: '12px', 
-          boxShadow: '0 10px 25px rgba(0,0,0,0.08)', 
-          border: '1px solid #e5e7eb', 
-          position: 'relative', 
-          overflow: 'hidden', 
-          display: 'flex', 
-          flexDirection: 'column',
-          animation: `fadeIn 0.5s ease forwards ${index * 0.1}s`,
-          opacity: 0
-        }}
-      >
-        {/* LOGO DO SET - AGORA COM CAMINHO DIRETO E SEM INTERFERÊNCIA */}
-        {setId && (
-          <img 
-            src={logoUrl} 
-            style={{ 
-              position: 'absolute', 
-              top: '10px', 
-              right: '10px', 
-              width: '55px', 
-              height: 'auto',
-              zIndex: 30, // Z-index muito alto para garantir que nada fica por cima
-              filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))'
-            }} 
-            onError={(e) => { e.target.style.display = 'none'; }} 
-            alt="Set Logo"
-          />
+      <React.Fragment key={card.id || index}>
+        
+        {/* LINHAS DIVISÓRIAS */}
+        {/* Vertical */}
+        {!isLeft && (
+          <div style={{ position: 'absolute', left: '50%', top: '2%', bottom: '2%', width: '1px', background: 'linear-gradient(to bottom, transparent, #3b82f6, transparent)', transform: 'translateX(-50%)', zIndex: 1, opacity: 0.3 }} />
+        )}
+        {/* Horizontal (Superior e Inferior entre filas) */}
+        {index >= 2 && isLeft && (
+          <div style={{ position: 'absolute', left: '5%', right: '5%', marginTop: '-22px', height: '1px', background: 'linear-gradient(to right, transparent, #cbd5e1, transparent)', zIndex: 1 }} />
         )}
 
-        {/* FUNDO BLUR (TRANSPARÊNCIA DA PRÓPRIA CARTA) */}
-        <div style={{ position: 'absolute', top: '-5%', left: '-5%', right: '-5%', bottom: '-5%', backgroundImage: `url(${card.photo})`, backgroundSize: 'cover', backgroundPosition: 'center', opacity: 0.35, filter: 'blur(4px)', zIndex: 0 }} />
-        
-        {/* CONTAINER DA CARTA PRINCIPAL */}
-        <div style={{ position: 'relative', height: '160px', backgroundColor: 'rgba(255, 255, 255, 0.7)', backdropFilter: 'blur(8px)', borderRadius: '16px 4px 16px 4px', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '12px', zIndex: 2 }}>
-          <img 
-            src={card.photo} 
-            style={{ width: '85%', height: '85%', objectFit: 'contain', filter: 'drop-shadow(0 5px 15px rgba(0,0,0,0.2))' }} 
-            alt={card.name} 
-            onClick={() => setViewPhoto && setViewPhoto(card.photo)} 
-          />
-        </div>
-
-        {/* ÁREA DE TEXTO E PREÇOS */}
-        <div style={{ padding: '0 4px', zIndex: 3, position: 'relative' }}>
-          <div style={{ backgroundColor: 'rgba(255,255,255,0.9)', padding: '6px 10px', borderRadius: '10px 2px 10px 2px', borderLeft: '3px solid #007AFF', minHeight: '42px', display: 'flex', alignItems: 'center' }}>
-            <p style={{ margin: 0, fontWeight: '1000', fontSize: '10px', color: '#007AFF', textTransform: 'uppercase' }}>
-              {card.name}
-            </p>
-          </div>
+        <div style={{ 
+          backgroundColor: '#ffffff', borderRadius: '30px 10px 30px 10px', padding: '14px', 
+          boxShadow: '0 20px 40px rgba(0,0,0,0.12)', position: 'relative', overflow: 'hidden', 
+          display: 'flex', flexDirection: 'column',
+          animation: `fadeIn 0.6s cubic-bezier(0.23, 1, 0.32, 1) forwards ${index * 0.1}s`, 
+          opacity: 0, border: '1px solid #e2e8f0', zIndex: 2
+        }}>
           
-          <div style={{ marginTop: '15px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', backgroundColor: 'rgba(242, 242, 247, 0.8)', padding: '8px 10px', borderRadius: '12px', marginBottom: '8px' }}>
-              <div style={{ display: 'flex', flexDirection: 'column' }}>
-                <span style={{ fontSize: '7px', fontWeight: '1000', color: '#636366' }}>MARKET</span>
-                <span style={{ fontSize: '13px', fontWeight: '1000', color: '#1c1c1e' }}>{Number(card.marketValue || 0).toFixed(2)}€</span>
+          {/* ELEMENTOS DE CANTO (UI TECH) */}
+          <div style={{ position: 'absolute', top: '0', left: '0', width: '20px', height: '20px', borderTop: '3px solid #1e293b', borderLeft: '3px solid #1e293b', zIndex: 4 }} />
+          <div style={{ position: 'absolute', bottom: '0', right: '0', width: '20px', height: '20px', borderBottom: '3px solid #ff4b4b', borderRight: '3px solid #ff4b4b', zIndex: 4 }} />
+
+          {/* BARRA LATERAL DE STATUS */}
+          <div style={{ position: 'absolute', left: '0', top: '25%', bottom: '25%', width: '4px', display: 'flex', flexDirection: 'column', gap: '2px', zIndex: 4 }}>
+            <div style={{ flex: 1, background: '#3b82f6', opacity: 0.6 }} />
+            <div style={{ flex: 2, background: '#ffcb05', opacity: 0.6 }} />
+            <div style={{ flex: 1, background: '#4ade80', opacity: 0.6 }} />
+          </div>
+
+          {/* FUNDO DINÂMICO INTENSO */}
+          <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundImage: `url(${card.photo})`, backgroundSize: 'cover', backgroundPosition: 'center', opacity: 0.6, filter: 'blur(12px) saturate(1.4)', zIndex: 0 }} />
+          
+          {/* NOME DA CARTA - BOLINHA VERDE FIXA */}
+          <div style={{ 
+            background: 'linear-gradient(180deg, #475569 0%, #1e293b 100%)', color: '#fff', 
+            padding: '10px 12px', borderRadius: '16px 4px 16px 4px', fontSize: '11px', 
+            fontWeight: '1000', zIndex: 3, textTransform: 'uppercase',
+            letterSpacing: '1px', marginBottom: '12px', boxShadow: '0 4px 15px rgba(0,0,0,0.3)',
+            border: '1px solid #0f172a', display: 'flex', alignItems: 'center', gap: '10px'
+          }}>
+            <div style={{ width: '8px', height: '8px', background: '#4ade80', borderRadius: '50%', boxShadow: '0 0 8px #4ade80', flexShrink: 0 }} />
+            <span style={{ flex: 1, textAlign: 'center', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{card.name}</span>
+            <div style={{ width: '8px', height: '8px', opacity: 0, flexShrink: 0 }} />
+          </div>
+
+          {/* MOLDURA DA IMAGEM COM EFEITO ZOOM AO CLICAR */}
+          <div 
+            onClick={() => setSelectedCard(card)}
+            style={{ 
+              position: 'relative', height: '165px', backgroundColor: 'rgba(255, 255, 255, 0.85)',
+              backdropFilter: 'blur(8px)', borderRadius: '20px 8px 20px 8px', display: 'flex', 
+              alignItems: 'center', justifyContent: 'center', marginBottom: '14px', zIndex: 2, 
+              border: '1px solid #fff', boxShadow: 'inset 0 0 20px rgba(0,0,0,0.05)', cursor: 'zoom-in'
+            }}
+          >
+            <img src={card.photo} style={{ width: '90%', height: '90%', objectFit: 'contain', filter: 'drop-shadow(0 10px 20px rgba(0,0,0,0.25))' }} alt={card.name} />
+          </div>
+
+          <div style={{ padding: '0 2px', zIndex: 3, position: 'relative' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '14px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div style={{ background: '#1e293b', color: '#fff', fontSize: '9px', fontWeight: '1000', padding: '5px 12px', borderRadius: '6px', borderLeft: '3px solid #ffcb05', textTransform: 'uppercase' }}>
+                  ★ {card.rarity ? card.rarity.toUpperCase() : 'COMMON'}
+                </div>
+                <div style={{ fontSize: '10px', fontFamily: 'monospace', color: '#1e293b', fontWeight: 'bold', background: 'rgba(255,255,255,0.5)', padding: '2px 6px', borderRadius: '4px' }}>
+                  #{index + 101}
+                </div>
               </div>
-              <div style={{ width: '1.5px', height: '22px', backgroundColor: '#ee1515', opacity: 0.4 }} />
-              <div style={{ display: 'flex', flexDirection: 'column' }}>
-                <span style={{ fontSize: '7px', fontWeight: '1000', color: '#8E8E93' }}>7D AVG</span>
-                <span style={{ fontSize: '11.5px', fontWeight: '900', color: '#3a3a3c' }}>{Number(card.avg7Day || 0).toFixed(2)}€</span>
+
+              {/* SET BADGE */}
+              <div style={{ display: 'flex', alignItems: 'stretch', height: '32px', borderRadius: '12px', overflow: 'hidden', border: '1.5px solid #1c1c1e', background: '#fff' }}>
+                <div style={{ width: '35%', background: 'linear-gradient(180deg, #ff4b4b 0%, #cc0000 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
+                  <div style={{ position: 'absolute', right: '-7px', width: '10px', height: '10px', backgroundColor: '#fff', borderRadius: '50%', border: '2px solid #1c1c1e', zIndex: 10 }}></div>
+                  <span style={{ fontSize: '10px', fontWeight: '1000', color: '#fff' }}>{setId}</span>
+                </div>
+                <div style={{ width: '65%', padding: '0 12px 0 16px', display: 'flex', alignItems: 'center', background: '#fff' }}>
+                  <span style={{ fontSize: '9px', fontWeight: '1000', color: '#1c1c1e', textTransform: 'uppercase', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{setName}</span>
+                </div>
+              </div>
+            </div>
+            
+            {/* ÁREA DE PREÇOS */}
+            <div style={{ display: 'flex', background: '#1c1c1e', padding: '10px', borderRadius: '20px', marginBottom: '14px', justifyContent: 'space-between', alignItems: 'center', border: '1px solid rgba(255,255,255,0.1)' }}>
+              <div>
+                <div style={{ fontSize: '6px', color: '#9ca3af', marginBottom: '2px' }}>DATA_MARKET</div>
+                <div style={{ fontSize: '18px', fontWeight: '1000', color: '#fff', fontFamily: 'monospace' }}>{Number(card.marketValue || 0).toFixed(2)}€</div>
+              </div>
+              <div style={{ textAlign: 'right' }}>
+                <div style={{ fontSize: '6px', color: '#9ca3af', marginBottom: '2px' }}>7D_HISTORIC</div>
+                <div style={{ fontSize: '12px', fontWeight: '1000', color: '#ff4b4b', fontFamily: 'monospace' }}>{Number(card.avg7Day || 0).toFixed(2)}€</div>
               </div>
             </div>
 
-            <div style={{ display: 'flex', gap: '6px' }}>
-              <button onClick={() => setEditingCard && setEditingCard(card)} style={{ flex: 1, background: '#007AFF', border: 'none', padding: '8px', borderRadius: '8px', color: '#fff', fontSize: '8px', fontWeight: '1000', textTransform: 'uppercase' }}>EDIT</button>
-              <button onClick={() => setPokemonToDelete && setPokemonToDelete(card)} style={{ flex: 1, background: '#3a3a3c', border: 'none', padding: '8px', borderRadius: '8px', color: '#fff', fontSize: '8px', fontWeight: '1000', textTransform: 'uppercase' }}>DISCARD</button>
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <button onClick={() => setEditingCard(card)} style={{ flex: 1.2, background: '#1e293b', border: 'none', padding: '13px', borderRadius: '15px', color: '#fff', fontSize: '10px', fontWeight: '1000', textTransform: 'uppercase', cursor: 'pointer' }}>Edit</button>
+              <button onClick={() => setPokemonToDelete(card)} style={{ flex: 1, background: '#fff', border: '2px solid #ff4b4b', padding: '13px', borderRadius: '15px', color: '#ff4b4b', fontSize: '10px', fontWeight: '1000', textTransform: 'uppercase', cursor: 'pointer' }}>Discard</button>
             </div>
           </div>
         </div>
-      </div>
+      </React.Fragment>
     );
   })}
+
+  {/* MODAL DE ZOOM (SÓ ATIVA SE SELECTEDCARD NÃO FOR NULL) */}
+  {selectedCard && (
+    <div 
+      onClick={() => setSelectedCard(null)}
+      style={{ 
+        position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, 
+        backgroundColor: 'rgba(0,0,0,0.92)', zIndex: 9999, 
+        display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+        backdropFilter: 'blur(8px)', cursor: 'zoom-out'
+      }}
+    >
+      <div style={{ 
+        color: '#fff', marginBottom: '20px', fontWeight: '1000', 
+        textTransform: 'uppercase', letterSpacing: '2px', fontSize: '14px',
+        animation: 'pulseText 2s infinite'
+      }}>
+        Toque para fechar
+      </div>
+      <img 
+        src={selectedCard.photo} 
+        style={{ 
+          maxWidth: '90%', maxHeight: '75vh', objectFit: 'contain', 
+          borderRadius: '15px', boxShadow: '0 0 50px rgba(59, 130, 246, 0.4)',
+          transform: 'scale(1.1)', transition: 'transform 0.3s ease'
+        }} 
+        alt="Zoom" 
+      />
+    </div>
+  )}
 </div>
 
     {/* MODAIS (GALERIA, DELETE, EDIÇÃO) */}
