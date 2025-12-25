@@ -2013,102 +2013,41 @@ const filteredCards = pokemonCards
 )}
 {/* Menu Inferior Dinâmico */}
 <div style={{ 
-  position: 'fixed', 
-  bottom: '15px', 
-  left: '50%', 
-  transform: 'translateX(-50%)', 
-  width: '92%', 
-  maxWidth: '400px', 
-  backgroundColor: 'rgba(255,255,255,0.92)', 
-  backdropFilter: 'blur(15px)', 
-  WebkitBackdropFilter: 'blur(15px)', 
-  display: 'flex', 
-  justifyContent: 'space-around', 
-  padding: '12px 0', 
-  borderRadius: '25px', 
-  boxShadow: '0 8px 25px rgba(0,0,0,0.1)', 
-  border: '1px solid rgba(255,255,255,0.4)', 
-  zIndex: 1000,
-  transition: 'all 0.4s ease'
-}}>
-  
-  <div style={{ 
-  position: 'fixed', bottom: '30px', left: '0', right: '0', 
-  zIndex: 9999, display: 'flex', flexDirection: 'column', alignItems: 'center' 
-}}>
-  <div style={{ 
-    display: 'flex', 
-    alignItems: 'center', 
-    justifyContent: 'center',
-    background: 'rgba(255,255,255,0.98)', 
-    backdropFilter: 'blur(20px)', 
-    borderRadius: '40px', 
-    padding: '12px 35px', // Padding vertical e horizontal que define o tamanho da cápsula
-    gap: '35px', // ESTE É O ESPAÇAMENTO ENTRE OS BOTÕES - Aumenta aqui se quiseres mais espaço
-    boxShadow: '0 10px 40px rgba(0,0,0,0.12)',
-    border: '1px solid rgba(255,255,255,0.4)',
-  }}>
-    
-    {/* POKÉMON */}
-    <button onClick={() => { triggerHaptic('light'); setActiveTab('pokemon'); setSelectedDetail(null); }} 
-      style={{ background: 'none', border: 'none', padding: 0, opacity: activeTab === 'pokemon' ? 1 : 0.3, transition: '0.3s', display: 'flex' }}>
-      <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Pok%C3%A9_Ball_icon.svg" style={{ width: '22px', height: '22px' }} />
-    </button>
+        position: 'fixed', 
+        bottom: '25px', 
+        left: '0', 
+        right: '0', 
+        zIndex: 10000, 
+        display: 'flex', 
+        justifyContent: 'center' 
+      }}>
+        <div style={{ 
+          width: '90%', 
+          maxWidth: '400px', 
+          height: '65px',
+          background: 'rgba(255,255,255,0.96)', 
+          backdropFilter: 'blur(20px)', 
+          WebkitBackdropFilter: 'blur(20px)',
+          borderRadius: '35px', 
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: 'space-evenly', 
+          boxShadow: '0 10px 30px rgba(0,0,0,0.1)',
+          border: '1px solid rgba(255,255,255,0.4)',
+          boxSizing: 'border-box'
+        }}>
+          <button onClick={() => { triggerHaptic('light'); setActiveTab('pokemon'); setSelectedDetail(null); }} style={{ background: 'none', border: 'none', opacity: activeTab === 'pokemon' ? 1 : 0.3 }}><img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Pok%C3%A9_Ball_icon.svg" style={{ width: '22px' }} alt="pk" /></button>
+          <button onClick={() => { triggerHaptic('light'); setActiveTab('inventory'); setSelectedDetail(null); }} style={{ background: 'none', border: 'none', fontSize: '22px', opacity: activeTab === 'inventory' ? 1 : 0.3 }}>📦</button>
+          <button onClick={() => { triggerHaptic('medium'); setActiveTab('home'); setSelectedDetail(null); }} style={{ background: 'none', border: 'none', fontSize: '26px', opacity: activeTab === 'home' ? 1 : 0.3, transform: activeTab === 'home' ? 'scale(1.2)' : 'scale(1)', transition: '0.2s' }}>💰</button>
+          <button onClick={() => { triggerHaptic('light'); setActiveTab('setup'); setSelectedDetail(null); }} style={{ background: 'none', border: 'none', fontSize: '22px', opacity: activeTab === 'setup' ? 1 : 0.3 }}>🖥️</button>
+          <button onClick={() => { triggerHaptic('light'); setActiveTab('reports'); setSelectedDetail(null); }} style={{ background: 'none', border: 'none', fontSize: '22px', opacity: activeTab === 'reports' ? 1 : 0.3 }}>📊</button>
+          <button onClick={() => { triggerHaptic('light'); setActiveTab('settings'); setSelectedDetail(null); }} style={{ background: 'none', border: 'none', fontSize: '22px', opacity: activeTab === 'settings' ? 1 : 0.3 }}>⚙️</button>
+        </div>
+      </div>
 
-    {/* INVENTÁRIO */}
-    <button onClick={() => { triggerHaptic('light'); setActiveTab('inventory'); setSelectedDetail(null); }} 
-      style={{ background: 'none', border: 'none', fontSize: '22px', opacity: activeTab === 'inventory' ? 1 : 0.3 }}>📦</button>
-
-    {/* REGISTO FINANCEIRO */}
-    <button onClick={() => { triggerHaptic('medium'); setActiveTab('home'); setSelectedDetail(null); }} 
-      style={{ 
-        background: 'none', border: 'none', fontSize: '26px', 
-        opacity: activeTab === 'home' ? 1 : 0.3,
-        transform: activeTab === 'home' ? 'scale(1.2)' : 'scale(1)',
-        transition: '0.2s'
-      }}>💰</button>
-
-    {/* SETUP */}
-    <button onClick={() => { triggerHaptic('light'); setActiveTab('setup'); setSelectedDetail(null); }} 
-      style={{ background: 'none', border: 'none', fontSize: '22px', opacity: activeTab === 'setup' ? 1 : 0.3 }}>🖥️</button>
-
-    {/* RELATÓRIOS */}
-    <button onClick={() => { triggerHaptic('light'); setActiveTab('reports'); setSelectedDetail(null); }} 
-      style={{ background: 'none', border: 'none', fontSize: '22px', opacity: activeTab === 'reports' ? 1 : 0.3 }}>📊</button>
-
-    {/* DEFINIÇÕES */}
-    <button onClick={() => { triggerHaptic('light'); setActiveTab('settings'); setSelectedDetail(null); }} 
-      style={{ background: 'none', border: 'none', fontSize: '22px', opacity: activeTab === 'settings' ? 1 : 0.3 }}>⚙️</button>
-
-  </div>
-
-  </div>
-</div>
-
-      <div style={{ height: '90px' }}></div>
-      <footer style={{ 
-  textAlign: 'center', 
-  padding: '40px 0 120px 0', // Aumentamos o espaço em baixo para o menu não tapar o texto
-  opacity: 0.5 
-}}>
-  <p style={{ 
-    fontSize: '9px', 
-    color: '#AEAEB2', 
-    letterSpacing: '2px', 
-    fontWeight: '800',
-    textTransform: 'uppercase'
-  }}>
-    © 2026 ALIGNA — HUGO BARROS
-  </p>
-  <div style={{ 
-    width: '40px', 
-    height: '4px', 
-    backgroundColor: '#000', 
-    borderRadius: '2px', 
-    margin: '15px auto 0', 
-    opacity: 0.1 
-  }}></div> {/* Pequena barra estilo iPhone no fundo */}
-</footer>
+      <footer style={{ textAlign: 'center', padding: '40px 0 120px 0', opacity: 0.5 }}>
+        <p style={{ fontSize: '9px', color: '#AEAEB2', letterSpacing: '2px', fontWeight: '800' }}>© 2026 ALIGNA — HUGO BARROS</p>
+      </footer>
     </div>
   );
 }
