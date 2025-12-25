@@ -287,7 +287,7 @@ const handleEditCard = (card) => {
   };
   const [pokemonToDelete, setPokemonToDelete] = useState(null);
   const [selectedCard, setSelectedCard] = useState(null);
-  
+  const [savingPokemon, setSavingPokemon] = useState(false);
   const [editingPrice, setEditingPrice] = useState(null); // Guarda o item para edição rápida
 const [tempPrice, setTempPrice] = useState(''); // Guarda o valor que estás a digitar
   const [searchTerm, setSearchTerm] = useState(''); // Estado para a barra de pesquisa
@@ -1665,14 +1665,8 @@ const filteredCards = pokemonCards
       @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
       @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
       @keyframes pulseText { 0% { opacity: 0.4; } 50% { opacity: 1; } 100% { opacity: 0.4; } }
-      @keyframes shake {
-        0% { transform: translate(0, 0) rotate(0deg); }
-        20% { transform: translate(-2px, 1px) rotate(-5deg); }
-        40% { transform: translate(-2px, -1px) rotate(5deg); }
-        60% { transform: translate(2px, 1px) rotate(-5deg); }
-        80% { transform: translate(2px, -1px) rotate(5deg); }
-        100% { transform: translate(0, 0) rotate(0deg); }
-      }
+      @keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-10px); } 100% { transform: translateY(0px); } }
+      @keyframes shine { from { left: -100%; } to { left: 100%; } }
     `}</style>
     
     {/* CABEÇALHO */}
@@ -1698,79 +1692,177 @@ const filteredCards = pokemonCards
       </button>
     </div>
 
-    {/* DASHBOARD - AJUSTE DE ESPAÇAMENTO (MAIS SEPARADOS) */}
+    {/* PESQUISA DE RESULTADOS API */}
+    {searchResults.length > 0 && (
+      <div style={{ display: 'flex', gap: '10px', overflowX: 'auto', padding: '10px 0', marginBottom: '15px' }}>
+        {searchResults.map((result) => (
+          <div key={result.id} onClick={() => { setPokemonData({...pokemonData, id: result.id, name: result.name, set: result.set.name, setLogo: result.set.images.logo, photo: result.images.small, marketValue: result.tcgplayer?.prices?.holofoil?.market || result.tcgplayer?.prices?.normal?.market || 0, avg7Day: result.tcgplayer?.prices?.holofoil?.low || 0}); setSearchResults([]); }} style={{ cursor: 'pointer', textAlign: 'center', minWidth: '80px' }}>
+            <img src={result.images.small} style={{ width: '60px', borderRadius: '4px' }} alt={result.name} />
+            <p style={{ fontSize: '8px', fontWeight: 'bold', margin: '5px 0' }}>{result.set.name}</p>
+          </div>
+        ))}
+      </div>
+    )}
+
+    {/* FORMULÁRIO ADICIONAR COM BACKGROUND CHARIZARD E POKÉBOLA HD */}
+    {showAddPokemon && (
+      <div style={{ 
+        backgroundImage: `url('/charizard.png')`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        padding: '8px', 
+        borderRadius: '28px', 
+        marginBottom: '25px', 
+        boxShadow: '0 12px 30px rgba(238, 21, 21, 0.3)', 
+        border: '4px solid white', 
+        position: 'relative', 
+        overflow: 'hidden', 
+        boxSizing: 'border-box' 
+      }}>
+        <div style={{ backgroundColor: 'rgba(255, 255, 255, 0.75)', backdropFilter: 'blur(8px)', padding: '14px', borderRadius: '22px', position: 'relative', zIndex: 1 }}>
+          <div style={{ display: 'flex', gap: '10px', marginBottom: '10px', alignItems: 'center' }}>
+            <input placeholder="Nome da Carta..." value={pokemonData.name || ''} onChange={e => setPokemonData({...pokemonData, name: e.target.value})} style={{ flex: 1, padding: '12px', borderRadius: '12px', border: 'none', backgroundColor: 'rgba(242, 242, 247, 0.9)', fontSize: '14px', fontWeight: '800', outline: 'none' }} />
+            
+            {/* POKÉBOLA HD NO MENU */}
+            <div style={{ 
+                width: '45px', height: '45px', borderRadius: '50%', 
+                background: 'linear-gradient(180deg, #ee1515 45%, #1c1c1e 45%, #1c1c1e 55%, white 55%)', 
+                border: '3px solid #1c1c1e', position: 'relative', boxShadow: '0 4px 10px rgba(0,0,0,0.2)',
+                animation: 'spin 3s linear infinite'
+            }}>
+                <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: '14px', height: '14px', borderRadius: '50%', background: 'white', border: '3px solid #1c1c1e', zIndex: 2, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <div style={{ width: '4px', height: '4px', borderRadius: '50%', background: '#1c1c1e', opacity: 0.3 }} />
+                </div>
+                <div style={{ position: 'absolute', top: '5px', left: '8px', width: '10px', height: '5px', background: 'rgba(255,255,255,0.3)', borderRadius: '50%', transform: 'rotate(-20deg)' }} />
+            </div>
+          </div>
+          
+          <input placeholder="URL da Imagem da Carta..." value={pokemonData.photo || ''} onChange={e => setPokemonData({...pokemonData, photo: e.target.value})} style={{ width: '100%', padding: '12px', borderRadius: '12px', border: 'none', backgroundColor: 'rgba(242, 242, 247, 0.9)', fontSize: '13px', fontWeight: '700', marginBottom: '10px', boxSizing: 'border-box' }} />
+
+          <div style={{ display: 'flex', gap: '8px', marginBottom: '10px' }}>
+            <input placeholder="Set" value={pokemonData.set || ''} onChange={e => setPokemonData({...pokemonData, set: e.target.value})} style={{ flex: 1, padding: '12px', borderRadius: '12px', border: 'none', backgroundColor: 'rgba(242, 242, 247, 0.9)', fontSize: '13px', fontWeight: '700' }} />
+            <select value={pokemonData.rarity || ''} onChange={e => setPokemonData({...pokemonData, rarity: e.target.value})} style={{ flex: 1, padding: '12px', borderRadius: '12px', border: 'none', backgroundColor: 'rgba(242, 242, 247, 0.9)', fontSize: '11px', fontWeight: '800' }}>
+              <option value="">Raridade</option>
+              <option value="Secret Rare">Secret Rare</option>
+              <option value="Special Illustration Rare">Spec. Illus. Rare</option>
+              <option value="Illustration Rare">Illus. Rare</option>
+              <option value="Ultra Rare">Ultra Rare</option>
+              <option value="Hyper Rare">Hyper Rare</option>
+              <option value="Double Rare">Double Rare</option>
+              <option value="Rare Holo">Rare Holo</option>
+            </select>
+          </div>
+          <div style={{ display: 'flex', gap: '8px', marginBottom: '15px' }}>
+            <input placeholder="Market €" type="number" value={pokemonData.marketValue || ''} onChange={e => setPokemonData({...pokemonData, marketValue: e.target.value})} style={{ flex: 1, padding: '12px', borderRadius: '12px', border: 'none', backgroundColor: 'rgba(242, 242, 247, 0.9)', fontSize: '13px', fontWeight: '700' }} />
+            <input placeholder="7D Avg €" type="number" value={pokemonData.avg7Day || ''} onChange={e => setPokemonData({...pokemonData, avg7Day: e.target.value})} style={{ flex: 1, padding: '12px', borderRadius: '12px', border: 'none', backgroundColor: 'rgba(242, 242, 247, 0.9)', fontSize: '13px', fontWeight: '700' }} />
+          </div>
+          <button onClick={() => { if (!pokemonData.name) return; setSavingPokemon(true); setTimeout(() => { handlePokemonSubmit(pokemonData); setSavingPokemon(false); setShowAddPokemon(false); }, 1500); }} style={{ width: '100%', padding: '16px', backgroundColor: '#ee1515', color: 'white', border: 'none', borderRadius: '16px', fontWeight: '1000', textTransform: 'uppercase', boxShadow: '0 6px 0 #b10f0f' }}>ADICIONAR À POKÉDEX</button>
+        </div>
+      </div>
+    )}
+
+    {/* DASHBOARD COM BARRA DE EXP PREMIUM */}
     <div style={{ marginBottom: '30px', position: 'relative' }}>
-      <div style={{ backgroundImage: `url('/charizard.png')`, backgroundSize: 'cover', backgroundPosition: 'center 35%', borderRadius: '35px', padding: '3px', position: 'relative', zIndex: 1, overflow: 'hidden', border: '2px solid rgba(255,215,0,0.6)', boxShadow: '0 30px 60px rgba(0,0,0,0.3)', display: 'flex', flexDirection: 'column', minHeight: '200px' }}>
+      <div style={{ backgroundImage: `url('/charizard.png')`, backgroundSize: 'cover', backgroundPosition: 'center 35%', borderRadius: '35px', padding: '3px', position: 'relative', zIndex: 1, overflow: 'hidden', border: '2px solid rgba(255,215,0,0.6)', boxShadow: '0 30px 60px rgba(0,0,0,0.3)', display: 'flex', flexDirection: 'column', minHeight: '220px' }}>
         <img src="https://upload.wikimedia.org/wikipedia/commons/9/98/International_Pok%C3%A9mon_logo.svg" style={{ position: 'absolute', right: '20px', top: '20px', height: '25px', zIndex: 10 }} />
         <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.05) 20%, rgba(255, 255, 255, 0.4) 50%, rgba(255, 255, 255, 0.7) 100%)', backdropFilter: 'blur(4px)', zIndex: 2 }} />
         <div style={{ position: 'relative', zIndex: 10, padding: '25px 20px' }}>
           <div style={{ background: 'rgba(255, 59, 48, 0.9)', padding: '4px 12px', borderRadius: '50px', border: '1px solid white', width: 'fit-content', marginBottom: '15px' }}>
             <span style={{ fontSize: '12px', fontWeight: '1000', color: 'white' }}>POKEDEX VALUE</span>
           </div>
-          <h4 style={{ margin: '0 0 20px 0', fontSize: '42px', fontWeight: '1000', color: '#fff', letterSpacing: '-2px' }}>
-            {pokemonCards.reduce((acc, card) => acc + (parseFloat(card.marketValue) || 0), 0).toFixed(2)}€
-          </h4>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '10px', gap: '20px' }}>
+          
+          <div style={{ background: 'rgba(255, 255, 255, 0.25)', backdropFilter: 'blur(10px)', border: '1px solid rgba(255, 255, 255, 0.5)', padding: '10px 25px', borderRadius: '25px', width: 'fit-content', marginBottom: '20px', boxShadow: '0 8px 32px rgba(0,0,0,0.1)' }}>
+            <h4 style={{ margin: 0, fontSize: '38px', fontWeight: '1000', color: '#fff', letterSpacing: '-2px' }}>
+              {pokemonCards.reduce((acc, card) => acc + (parseFloat(card.marketValue) || 0), 0).toFixed(2)}€
+            </h4>
+          </div>
+
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '15px', marginBottom: '18px' }}>
              <div style={{ background: 'rgba(255, 255, 255, 0.8)', padding: '10px 22px', borderRadius: '16px 4px 16px 4px', border: '2px solid #FFCC00', flex: 1 }}>
                <p style={{ margin: 0, fontSize: '11px', color: '#FF9500', fontWeight: '1000' }}>MASTER TRAINER RANK</p>
                <p style={{ margin: 0, fontSize: '18px', color: '#1c1c1e', fontWeight: '1000' }}>PRO TRAINER ALPHA</p>
              </div>
-             <div style={{ background: 'linear-gradient(180deg, #FFCC00, #FF9500)', padding: '12px 24px', borderRadius: '15px', fontSize: '18px', fontWeight: '1000', textAlign: 'center', minWidth: '80px' }}>LVL {Math.floor(pokemonCards.length / 5)}</div>
+             <div style={{ background: 'linear-gradient(180deg, #FFCC00, #FF9500)', padding: '12px 24px', borderRadius: '15px', fontSize: '18px', fontWeight: '1000', textAlign: 'center', minWidth: '80px', boxShadow: '0 4px 12px rgba(255, 153, 0, 0.3)' }}>LVL {Math.floor(pokemonCards.length / 5)}</div>
+          </div>
+
+          {/* BARRA DE EXP MELHORADA */}
+          <div style={{ position: 'relative', width: '100%', height: '14px', background: 'rgba(0,0,0,0.4)', borderRadius: '20px', padding: '2px', border: '1px solid rgba(255,255,255,0.4)', boxSizing: 'border-box', overflow: 'hidden' }}>
+            <div style={{ 
+                width: `${(pokemonCards.length % 5) * 20}%`, 
+                height: '100%', 
+                background: 'linear-gradient(90deg, #4ade80 0%, #22c55e 50%, #16a34a 100%)', 
+                borderRadius: '20px',
+                position: 'relative',
+                transition: 'width 0.5s ease-out'
+            }}>
+                {/* Efeito de Brilho animado na barra */}
+                <div style={{ position: 'absolute', top: 0, bottom: 0, width: '30px', background: 'rgba(255,255,255,0.4)', filter: 'blur(5px)', animation: 'shine 2s infinite linear' }} />
+            </div>
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '4px' }}>
+            <span style={{ fontSize: '10px', color: 'white', fontWeight: '900', opacity: 0.8 }}>EXP: {pokemonCards.length % 5} / 5</span>
           </div>
         </div>
       </div>
     </div>
 
-    {/* BARRA DE PESQUISA */}
+    {/* BARRA DE PESQUISA E FILTROS */}
     <div style={{ marginBottom: '25px' }}>
-      <input type="text" placeholder="Pesquisar carta..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} style={{ width: '100%', padding: '14px 15px', borderRadius: '18px', border: '1px solid #e5e7eb', fontSize: '14px', fontWeight: '700', outline: 'none', boxSizing: 'border-box' }} />
+      <input type="text" placeholder="Pesquisar carta pelo nome..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} style={{ width: '100%', padding: '14px 15px', borderRadius: '18px', border: '1px solid #e5e7eb', fontSize: '14px', fontWeight: '700', outline: 'none', boxSizing: 'border-box' }} />
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginTop: '12px' }}>
+        <select value={sortBy} onChange={(e) => setSortBy(e.target.value)} style={{ padding: '12px', borderRadius: '15px', border: 'none', backgroundColor: '#F2F2F7', fontSize: '12px', fontWeight: '800' }}>
+          <option value="recent">🕒 MAIS RECENTES</option>
+          <option value="expensive">💰 MAIS CARAS</option>
+        </select>
+        <select value={filterSet} onChange={(e) => setFilterSet(e.target.value)} style={{ padding: '12px', borderRadius: '15px', border: 'none', backgroundColor: '#F2F2F7', fontSize: '12px', fontWeight: '800' }}>
+          <option value="all">📦 TODOS OS SETS</option>
+          {uniqueSets.map(set => <option key={set} value={set}>{set.toUpperCase()}</option>)}
+        </select>
+      </div>
     </div>
 
-    {/* GRELHA DE CARTAS - ALTERADO PARA 1 COLUNA PARA MELHOR RESPIRAR NO TELEMÓVEL */}
-    <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '30px', position: 'relative', zIndex: 5, padding: '10px 0' }}>
-      
+    {/* GRELHA DE CARTAS */}
+    <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '30px', position: 'relative', zIndex: 5 }}>
       {filteredCards.map((card, index) => {
         const setName = card.setName || card.set || "Unknown Set";
-
         return (
           <div key={card.id || index} style={{ 
             backgroundColor: '#ffffff', borderRadius: '30px 10px 30px 10px', padding: '20px', boxShadow: '0 20px 40px rgba(0,0,0,0.12)', 
             position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column', animation: `fadeIn 0.6s forwards ${index * 0.1}s`, opacity: 0, border: '1px solid #e2e8f0', zIndex: 2
           }}>
-            <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundImage: `url(${card.photo})`, backgroundSize: 'cover', backgroundPosition: 'center', opacity: 0.15, filter: 'blur(20px)', zIndex: 0 }} />
+            <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundImage: `url(${card.photo})`, backgroundSize: 'cover', backgroundPosition: 'center', opacity: 0.5, filter: 'blur(20px)', zIndex: 0 }} />
             
-            <div style={{ 
-              background: 'linear-gradient(180deg, #475569 0%, #1e293b 100%)', color: '#fff', padding: '12px', borderRadius: '16px 4px 16px 4px', 
-              zIndex: 3, textTransform: 'uppercase', marginBottom: '15px', display: 'flex', alignItems: 'center', gap: '10px'
-            }}>
+            <div style={{ background: 'linear-gradient(180deg, #475569 0%, #1e293b 100%)', color: '#fff', padding: '12px', borderRadius: '16px 4px 16px 4px', zIndex: 3, textTransform: 'uppercase', marginBottom: '15px', display: 'flex', alignItems: 'center', gap: '10px' }}>
               <div style={{ width: '10px', height: '10px', background: '#4ade80', borderRadius: '50%', flexShrink: 0 }} />
               <span style={{ flex: 1, textAlign: 'center', fontSize: '13px', fontWeight: '1000' }}>{card.name}</span>
             </div>
 
-            <div onClick={() => setSelectedCard(card)} style={{ position: 'relative', height: '280px', backgroundColor: 'rgba(255, 255, 255, 0.5)', backdropFilter: 'blur(8px)', borderRadius: '20px 8px 20px 8px', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '20px', zIndex: 2, border: '1px solid #fff' }}>
+            <div onClick={() => setSelectedCard(card)} style={{ position: 'relative', height: '280px', backgroundColor: 'rgba(255, 255, 255, 0.4)', backdropFilter: 'blur(8px)', borderRadius: '20px 8px 20px 8px', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '20px', zIndex: 2, border: '1px solid #fff' }}>
               <img src={card.photo} style={{ width: '90%', height: '95%', objectFit: 'contain' }} />
             </div>
 
             <div style={{ zIndex: 3, position: 'relative' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px', gap: '10px' }}>
-                <div style={{ background: '#1e293b', color: '#fff', fontSize: '10px', fontWeight: '1000', padding: '8px 15px', borderRadius: '8px', borderLeft: '4px solid #ffcb05' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '15px' }}>
+                <div style={{ background: '#1e293b', color: '#fff', fontSize: '10px', fontWeight: '1000', padding: '8px 15px', borderRadius: '8px', borderLeft: '4px solid #ffcb05', width: 'fit-content' }}>
                   ★ {card.rarity ? card.rarity.toUpperCase() : 'RARE'}
                 </div>
-                
-                <div style={{ flex: 1, display: 'flex', alignItems: 'center', borderRadius: '12px', overflow: 'hidden', border: '2px solid #1c1c1e', background: '#fff', height: '38px' }}>
-                  <div style={{ width: '40px', height: '100%', background: '#ee1515', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <div style={{ width: '16px', height: '16px', borderRadius: '50%', background: '#fff', border: '2px solid #1c1c1e' }} />
+                <div style={{ display: 'flex', alignItems: 'center', borderRadius: '12px', overflow: 'hidden', border: '2px solid #1c1c1e', background: '#fff', height: '42px' }}>
+                  <div style={{ width: '45px', height: '100%', background: '#ee1515', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <div style={{ width: '18px', height: '18px', borderRadius: '50%', background: '#fff', border: '2.5px solid #1c1c1e', position: 'relative' }}>
+                      <div style={{ position: 'absolute', top: '50%', left: 0, width: '100%', height: '2.5px', background: '#1c1c1e', transform: 'translateY(-50%)' }} />
+                    </div>
                   </div>
-                  <div style={{ flex: 1, padding: '0 12px', fontSize: '10px', fontWeight: '1000', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{setName}</div>
+                  <div style={{ flex: 1, padding: '0 12px', fontSize: '11px', fontWeight: '1000' }}>{setName}</div>
                 </div>
               </div>
 
               <div style={{ display: 'flex', background: '#1c1c1e', padding: '15px 20px', borderRadius: '25px', marginBottom: '20px', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
                   <span style={{ color: '#8E8E93', fontSize: '9px', fontWeight: '800' }}>MARKET</span>
-                  <div style={{ fontSize: '24px', fontWeight: '1000', color: '#fff' }}>{Number(card.marketValue).toFixed(2)}€</div>
+                  <div style={{ fontSize: '22px', fontWeight: '1000', color: '#fff' }}>{Number(card.marketValue).toFixed(2)}€</div>
                 </div>
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
+                <div style={{ width: '1px', height: '30px', backgroundColor: 'rgba(255,255,255,0.2)', margin: '0 15px' }} />
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', flex: 1 }}>
                   <span style={{ color: '#8E8E93', fontSize: '9px', fontWeight: '800' }}>7D AVG</span>
                   <div style={{ fontSize: '16px', fontWeight: '1000', color: '#ff4b4b' }}>{Number(card.avg7Day).toFixed(2)}€</div>
                 </div>
@@ -1786,27 +1878,53 @@ const filteredCards = pokemonCards
       })}
     </div>
 
-    {/* MODAL ZOOM - ADICIONADO TEXTO "TOQUE PARA FECHAR" */}
-    {selectedCard && (
-      <div onClick={() => setSelectedCard(null)} style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.95)', zIndex: 9999, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(10px)' }}>
-        <p style={{ color: 'white', fontWeight: '900', marginBottom: '20px', fontSize: '14px', letterSpacing: '2px', animation: 'pulseText 2s infinite' }}>TOQUE PARA FECHAR</p>
-        <img src={selectedCard.photo} style={{ maxWidth: '92%', maxHeight: '75vh', borderRadius: '15px', boxShadow: '0 0 40px rgba(0,0,0,0.5)' }} />
+    {/* ANIMAÇÃO POKÉBOLA AO ADICIONAR (FULL HD) */}
+    {savingPokemon && (
+      <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(255,255,255,0.85)', backdropFilter: 'blur(8px)', zIndex: 20000, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+         <div style={{ width: '100px', height: '100px', borderRadius: '50%', background: 'linear-gradient(180deg, #ee1515 48%, #1c1c1e 48%, #1c1c1e 52%, white 52%)', border: '5px solid #1c1c1e', position: 'relative', animation: 'spin 0.8s linear infinite, float 2s ease-in-out infinite', boxShadow: '0 10px 30px rgba(0,0,0,0.2)' }}>
+            <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: '28px', height: '28px', borderRadius: '50%', background: 'white', border: '5px solid #1c1c1e', boxShadow: 'inset 0 0 5px rgba(0,0,0,0.2)', zIndex: 2 }} />
+            <div style={{ position: 'absolute', top: '10px', left: '15px', width: '25px', height: '12px', background: 'rgba(255,255,255,0.4)', borderRadius: '50%', transform: 'rotate(-25deg)' }} />
+         </div>
+         <p style={{ marginTop: '25px', fontWeight: '1000', color: '#ee1515', fontSize: '16px', letterSpacing: '2px', textTransform: 'uppercase', textShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>A ADICIONAR À POKÉDEX...</p>
       </div>
     )}
 
-    {/* MODAL DELETE */}
-    {pokemonToDelete && (
-      <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(8px)', zIndex: 4000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
-        <div style={{ backgroundColor: 'white', borderRadius: '28px', padding: '30px', width: '100%', maxWidth: '320px', textAlign: 'center' }}>
-          <h3 style={{ fontWeight: '900' }}>Eliminar Carta?</h3>
-          <p style={{ color: '#8E8E93' }}>Remover {pokemonToDelete.name} da coleção?</p>
-          <div style={{ display: 'flex', gap: '12px', marginTop: '20px' }}>
-            <button onClick={() => setPokemonToDelete(null)} style={{ flex: 1, padding: '15px', borderRadius: '16px', border: 'none', backgroundColor: '#F2F2F7', fontWeight: '800' }}>Não</button>
-            <button onClick={() => { remove(ref(db, `users/${user}/pokemonCollection/${pokemonToDelete.id}`)); setPokemonToDelete(null); }} style={{ flex: 1, padding: '15px', borderRadius: '16px', border: 'none', backgroundColor: '#FF3B30', color: 'white', fontWeight: '800' }}>Sim</button>
+    {/* MODAIS (EDIT / DISCARD / ZOOM) - MANTIDOS IGUAIS */}
+    {editingCard && (
+      <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', zIndex: 10001, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
+        <div style={{ background: 'white', borderRadius: '30px', padding: '25px', width: '100%', maxWidth: '350px', border: '4px solid #ee1515' }}>
+          <h3 style={{ textAlign: 'center', fontWeight: '900', color: '#2c3e50', margin: '0 0 5px 0' }}>ATUALIZAR PREÇOS</h3>
+          <p style={{ textAlign: 'center', fontSize: '12px', color: '#666', marginBottom: '20px' }}>{editingCard.name}</p>
+          <input type="number" value={editingCard.marketValue} onChange={e => setEditingCard({...editingCard, marketValue: e.target.value})} style={{ width: '100%', padding: '15px', background: '#F2F2F7', border: 'none', borderRadius: '15px', marginBottom: '15px', fontSize: '18px', fontWeight: '900', boxSizing: 'border-box' }} />
+          <input type="number" value={editingCard.avg7Day} onChange={e => setEditingCard({...editingCard, avg7Day: e.target.value})} style={{ width: '100%', padding: '15px', background: '#F2F2F7', border: 'none', borderRadius: '15px', marginBottom: '25px', fontSize: '18px', fontWeight: '900', boxSizing: 'border-box' }} />
+          <div style={{ display: 'flex', gap: '10px' }}>
+            <button onClick={() => setEditingCard(null)} style={{ flex: 1, padding: '15px', background: '#E5E5EA', borderRadius: '15px', border: 'none', fontWeight: '900' }}>CANCELAR</button>
+            <button onClick={() => { update(ref(db, `users/${user}/pokemonCollection/${editingCard.id}`), { marketValue: editingCard.marketValue, avg7Day: editingCard.avg7Day }); setEditingCard(null); }} style={{ flex: 1, padding: '15px', background: '#ee1515', color: 'white', borderRadius: '15px', border: 'none', fontWeight: '900' }}>GUARDAR</button>
           </div>
         </div>
       </div>
     )}
+
+    {pokemonToDelete && (
+      <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 10001, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
+        <div style={{ background: 'white', borderRadius: '30px', padding: '30px', width: '100%', maxWidth: '320px', textAlign: 'center' }}>
+          <h3 style={{ fontWeight: '900', fontSize: '20px', color: '#2c3e50', marginBottom: '10px' }}>Eliminar Carta?</h3>
+          <p style={{ color: '#888', marginBottom: '25px' }}>Remover {pokemonToDelete.name} da coleção?</p>
+          <div style={{ display: 'flex', gap: '15px' }}>
+            <button onClick={() => setPokemonToDelete(null)} style={{ flex: 1, padding: '12px', background: '#F2F2F7', borderRadius: '15px', border: 'none', fontWeight: '900' }}>Não</button>
+            <button onClick={() => { remove(ref(db, `users/${user}/pokemonCollection/${pokemonToDelete.id}`)); setPokemonToDelete(null); }} style={{ flex: 1, padding: '12px', background: '#ee1515', color: 'white', borderRadius: '15px', border: 'none', fontWeight: '900' }}>Sim</button>
+          </div>
+        </div>
+      </div>
+    )}
+
+    {selectedCard && (
+      <div onClick={() => setSelectedCard(null)} style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.95)', zIndex: 9999, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(10px)' }}>
+        <p style={{ color: 'white', fontWeight: '900', marginBottom: '20px', fontSize: '14px', letterSpacing: '2px', animation: 'pulseText 2s infinite' }}>TOQUE PARA FECHAR</p>
+        <img src={selectedCard.photo} style={{ maxWidth: '92%', maxHeight: '75vh', borderRadius: '15px' }} />
+      </div>
+    )}
+
   </div>
 )}
 {/* Menu Inferior Dinâmico */}
