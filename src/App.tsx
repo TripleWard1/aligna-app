@@ -51,6 +51,64 @@ const ACC_ICONS = ['👛', '🏦', '🐖', '💳', '💎', '📊', '💰'];
 export default function App() {
   // --- SISTEMA DE FEEDBACK (SOM E VIBRAÇÃO) ---
   const [audio] = useState(new Audio('https://www.myinstants.com/media/sounds/coin.mp3'));
+  const renderSetupTab = () => {
+    // Estado local para os balões de informação
+    const [selectedPart, setSelectedPart] = useState(null);
+
+    const setupItems = [
+      { id: 'monitores', title: "Visual Station", specs: "LG UltraWide 34' + Dell 24' Vertical", icon: "🖥️", pos: { top: '35%', left: '45%' } },
+      { id: 'pc', title: "White Cyber Build", specs: "RTX 4070, i7 13700K, 32GB RAM DDR5", icon: "⚙️", pos: { top: '60%', left: '82%' } },
+      { id: 'perifericos', title: "Input Gear", specs: "Logitech G Pro X Superlight + Keychron K2", icon: "⌨️", pos: { top: '75%', left: '40%' } },
+      { id: 'audio', title: "Studio Sound", specs: "Focusrite Scarlett + Beyerdynamic DT990 Pro", icon: "🎧", pos: { top: '50%', left: '15%' } }
+    ];
+
+    return (
+      <div style={{ padding: '10px', animation: 'fadeIn 0.5s', paddingBottom: '120px' }}>
+        <h2 style={{ color: '#1C1C1E', textAlign: 'center', fontWeight: '900', fontSize: '24px', letterSpacing: '-1px', marginBottom: '20px' }}>MY SETUP</h2>
+        
+        {/* Foto com Hotspots */}
+        <div style={{ position: 'relative', borderRadius: '25px', overflow: 'hidden', boxShadow: '0 20px 40px rgba(0,0,0,0.2)', border: '4px solid white', marginBottom: '25px' }}>
+          <img src="/setup_foto.jpg" style={{ width: '100%', display: 'block', filter: selectedPart ? 'brightness(0.5) blur(2px)' : 'none', transition: '0.4s' }} />
+          
+          {setupItems.map(item => (
+            <div 
+              key={item.id}
+              onClick={() => { triggerHaptic('light'); setSelectedPart(item); }}
+              style={{ 
+                position: 'absolute', top: item.pos.top, left: item.pos.left,
+                width: '28px', height: '28px', background: 'rgba(0,122,255,0.8)',
+                borderRadius: '50%', border: '3px solid white', cursor: 'pointer',
+                boxShadow: '0 0 15px rgba(0,122,255,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                zIndex: 10
+              }}
+            >
+              <span style={{ fontSize: '12px' }}>{item.icon}</span>
+            </div>
+          ))}
+
+          {selectedPart && (
+            <div onClick={() => setSelectedPart(null)} style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 20, padding: '20px' }}>
+              <div style={{ background: 'rgba(255,255,255,0.9)', backdropFilter: 'blur(10px)', padding: '20px', borderRadius: '20px', textAlign: 'center', width: '80%' }}>
+                <div style={{ fontSize: '40px' }}>{selectedPart.icon}</div>
+                <h4 style={{ margin: 0, fontWeight: '900' }}>{selectedPart.title}</h4>
+                <p style={{ fontSize: '12px', color: '#8E8E93' }}>{selectedPart.specs}</p>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Lista de Specs por baixo */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+          {setupItems.map(item => (
+            <div key={item.id + '_l'} style={{ background: 'white', padding: '15px', borderRadius: '20px', border: '1px solid #F2F2F7' }}>
+              <p style={{ margin: 0, fontSize: '11px', fontWeight: '900' }}>{item.icon} {item.title}</p>
+              <p style={{ margin: '4px 0 0 0', fontSize: '10px', color: '#8E8E93' }}>{item.specs}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  };
 
   const triggerHaptic = (style = 'medium') => {
     if (typeof window !== 'undefined' && window.navigator && window.navigator.vibrate) {
@@ -681,6 +739,8 @@ const filteredCards = pokemonCards
       }).slice(-6);
   };
 
+  
+
   const filteredList = list.filter(t => {
     const yearMatch = Number(t.year) === Number(reportYear);
     const monthMatch = reportMonth === 0 ? true : Number(t.month) === Number(reportMonth);
@@ -773,65 +833,7 @@ const filteredCards = pokemonCards
   const uniqueSets = pokemonCards ? [...new Set(pokemonCards.map(c => c.set).filter(Boolean))] : [];
   // === FIM DA LÓGICA ===
 
-  const renderSetupTab = () => {
-    const setupDetails = {
-      monitores: {
-        title: "Estação de Trabalho",
-        specs: "Dual Monitor Setup (Vertical/Horizontal) + Lightbar BenQ",
-        photo: "" // Espaço para a foto dos monitores
-      },
-      pc: {
-        title: "Build White Cyber",
-        specs: "RTX Series, Corsair AIO, Phanteks Case, Iluminação RGB",
-        photo: "" // Espaço para a foto do PC
-      }
-    };
-    const renderSetupContent = () => {
-      return (
-        <div style={{ padding: '20px', animation: 'fadeIn 0.5s' }}>
-          <h2 style={{ color: '#fff', textAlign: 'center', fontWeight: '1000' }}>MY SETUP</h2>
-          <div style={{ position: 'relative', marginTop: '20px', borderRadius: '20px', overflow: 'hidden' }}>
-            {/* Foto Principal do Setup (Placeholder) */}
-            <img src="URL_AQUI" style={{ width: '100%', borderRadius: '20px' }} alt="Setup Principal" />
-            
-            {/* Exemplo de ponto interativo nos monitores */}
-            <div 
-              onClick={() => alert('Especificações dos Monitores...')}
-              style={{ position: 'absolute', top: '40%', left: '30%', width: '30px', height: '30px', background: 'rgba(74, 222, 128, 0.5)', borderRadius: '50%', border: '2px solid #fff' }} 
-            />
-          </div>
-        </div>
-      );
-    };
-
-    return (
-      <div style={{ padding: '20px', animation: 'fadeIn 0.5s' }}>
-        <h2 style={{ color: '#fff', textAlign: 'center', fontWeight: '1000', marginBottom: '20px', letterSpacing: '1px' }}>MY SETUP</h2>
-        
-        {/* Imagem Principal com Hotspots */}
-        <div style={{ position: 'relative', borderRadius: '30px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.1)', boxShadow: '0 20px 40px rgba(0,0,0,0.4)' }}>
-          <img src="URL_DA_TUA_FOTO_PRINCIPAL" style={{ width: '100%', display: 'block' }} />
-  
-          {/* Hotspot Monitores */}
-          <div onClick={() => setSelectedPart(setupDetails.monitores)} style={{ position: 'absolute', top: '45%', left: '30%', width: '25px', height: '25px', background: 'rgba(0,122,255,0.6)', borderRadius: '50%', border: '2px solid white', cursor: 'pointer' }} />
-          
-          {/* Hotspot PC */}
-          <div onClick={() => setSelectedPart(setupDetails.pc)} style={{ position: 'absolute', top: '55%', left: '80%', width: '25px', height: '25px', background: 'rgba(0,122,255,0.6)', borderRadius: '50%', border: '2px solid white', cursor: 'pointer' }} />
-        </div>
-  
-        {selectedPart && (
-          <div style={{ marginTop: '20px', background: 'rgba(255,255,255,0.05)', backdropFilter: 'blur(10px)', borderRadius: '20px', padding: '20px', border: '1px solid rgba(255,255,255,0.1)', animation: 'slideUp 0.3s' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-              <h3 style={{ color: '#fff', margin: 0 }}>{selectedPart.title}</h3>
-              <button onClick={() => setSelectedPart(null)} style={{ background: 'none', border: 'none', color: '#ff4b4b', fontWeight: '1000' }}>FECHAR</button>
-            </div>
-            <p style={{ color: '#AEAEB2', fontSize: '13px', marginTop: '10px' }}>{selectedPart.specs}</p>
-          </div>
-        )}
-      </div>
-    );
-  };
-
+   {/* Renderização da Aba Setup */}
     return (
       <div style={{ 
         display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', 
@@ -892,7 +894,7 @@ const filteredCards = pokemonCards
 
   return (
     <div style={{ padding: '15px', maxWidth: '100%', margin: '0 auto', backgroundColor: '#F8F9FB', minHeight: '100vh', fontFamily: '-apple-system, sans-serif', boxSizing: 'border-box', overflowX: 'hidden' }}>
-      
+                  
       {/* Header Mobile Premium */}
 <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '25px' }}>
   {/* Avatar com Sombra Suave */}
@@ -2010,7 +2012,10 @@ const filteredCards = pokemonCards
     )}
 
   </div>
+
+  
 )}
+
 {/* Menu Inferior Dinâmico */}
 <div style={{ 
   position: 'fixed', 
