@@ -296,7 +296,8 @@ const [isSearching, setIsSearching] = useState(false);
   const [user, setUser] = useState(localStorage.getItem('f_user') || null);
   const [list, setList] = useState([]);
   const [allUsers, setAllUsers] = useState({});
-  const [activeTab, setActiveTab] = useState('home'); 
+  const [activeTab, setActiveTab] = useState('home');
+  const [selectedPart, setSelectedPart] = useState(null); 
   const [showAddAccount, setShowAddAccount] = useState(false);
   const [transType, setTransType] = useState('expense');
   const [newAccName, setNewAccName] = useState('');
@@ -771,6 +772,65 @@ const filteredCards = pokemonCards
 
   const uniqueSets = pokemonCards ? [...new Set(pokemonCards.map(c => c.set).filter(Boolean))] : [];
   // === FIM DA LÓGICA ===
+
+  const renderSetupTab = () => {
+    const setupDetails = {
+      monitores: {
+        title: "Estação de Trabalho",
+        specs: "Dual Monitor Setup (Vertical/Horizontal) + Lightbar BenQ",
+        photo: "" // Espaço para a foto dos monitores
+      },
+      pc: {
+        title: "Build White Cyber",
+        specs: "RTX Series, Corsair AIO, Phanteks Case, Iluminação RGB",
+        photo: "" // Espaço para a foto do PC
+      }
+    };
+    const renderSetupContent = () => {
+      return (
+        <div style={{ padding: '20px', animation: 'fadeIn 0.5s' }}>
+          <h2 style={{ color: '#fff', textAlign: 'center', fontWeight: '1000' }}>MY SETUP</h2>
+          <div style={{ position: 'relative', marginTop: '20px', borderRadius: '20px', overflow: 'hidden' }}>
+            {/* Foto Principal do Setup (Placeholder) */}
+            <img src="URL_AQUI" style={{ width: '100%', borderRadius: '20px' }} alt="Setup Principal" />
+            
+            {/* Exemplo de ponto interativo nos monitores */}
+            <div 
+              onClick={() => alert('Especificações dos Monitores...')}
+              style={{ position: 'absolute', top: '40%', left: '30%', width: '30px', height: '30px', background: 'rgba(74, 222, 128, 0.5)', borderRadius: '50%', border: '2px solid #fff' }} 
+            />
+          </div>
+        </div>
+      );
+    };
+
+    return (
+      <div style={{ padding: '20px', animation: 'fadeIn 0.5s' }}>
+        <h2 style={{ color: '#fff', textAlign: 'center', fontWeight: '1000', marginBottom: '20px', letterSpacing: '1px' }}>MY SETUP</h2>
+        
+        {/* Imagem Principal com Hotspots */}
+        <div style={{ position: 'relative', borderRadius: '30px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.1)', boxShadow: '0 20px 40px rgba(0,0,0,0.4)' }}>
+          <img src="URL_DA_TUA_FOTO_PRINCIPAL" style={{ width: '100%', display: 'block' }} />
+  
+          {/* Hotspot Monitores */}
+          <div onClick={() => setSelectedPart(setupDetails.monitores)} style={{ position: 'absolute', top: '45%', left: '30%', width: '25px', height: '25px', background: 'rgba(0,122,255,0.6)', borderRadius: '50%', border: '2px solid white', cursor: 'pointer' }} />
+          
+          {/* Hotspot PC */}
+          <div onClick={() => setSelectedPart(setupDetails.pc)} style={{ position: 'absolute', top: '55%', left: '80%', width: '25px', height: '25px', background: 'rgba(0,122,255,0.6)', borderRadius: '50%', border: '2px solid white', cursor: 'pointer' }} />
+        </div>
+  
+        {selectedPart && (
+          <div style={{ marginTop: '20px', background: 'rgba(255,255,255,0.05)', backdropFilter: 'blur(10px)', borderRadius: '20px', padding: '20px', border: '1px solid rgba(255,255,255,0.1)', animation: 'slideUp 0.3s' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+              <h3 style={{ color: '#fff', margin: 0 }}>{selectedPart.title}</h3>
+              <button onClick={() => setSelectedPart(null)} style={{ background: 'none', border: 'none', color: '#ff4b4b', fontWeight: '1000' }}>FECHAR</button>
+            </div>
+            <p style={{ color: '#AEAEB2', fontSize: '13px', marginTop: '10px' }}>{selectedPart.specs}</p>
+          </div>
+        )}
+      </div>
+    );
+  };
 
     return (
       <div style={{ 
@@ -1761,6 +1821,43 @@ const filteredCards = pokemonCards
       </div>
     )}
 
+{activeTab === 'setup' && (
+  <div style={{ padding: '20px', animate: 'fadeIn 0.5s' }}>
+    <h2 style={{ fontSize: '24px', fontWeight: '800', marginBottom: '20px', color: '#1c1c1e' }}>Meu Setup</h2>
+    
+    <div style={{ display: 'grid', gap: '15px' }}>
+      {/* CARD DISPOSITIVO 1 */}
+      <div style={{ background: 'white', padding: '15px', borderRadius: '20px', boxShadow: '0 4px 15px rgba(0,0,0,0.05)', display: 'flex', alignItems: 'center', gap: '15px' }}>
+        <div style={{ fontSize: '30px' }}>🖥️</div>
+        <div>
+          <p style={{ margin: 0, fontWeight: '700', color: '#1c1c1e' }}>Monitor Principal</p>
+          <p style={{ margin: 0, fontSize: '12px', color: '#8e8e93' }}>UltraWide 34" - 144Hz</p>
+        </div>
+      </div>
+
+      {/* CARD DISPOSITIVO 2 */}
+      <div style={{ background: 'white', padding: '15px', borderRadius: '20px', boxShadow: '0 4px 15px rgba(0,0,0,0.05)', display: 'flex', alignItems: 'center', gap: '15px' }}>
+        <div style={{ fontSize: '30px' }}>💻</div>
+        <div>
+          <p style={{ margin: 0, fontWeight: '700', color: '#1c1c1e' }}>Workstation</p>
+          <p style={{ margin: 0, fontSize: '12px', color: '#8e8e93' }}>MacBook Pro M3 Max</p>
+        </div>
+      </div>
+
+      {/* STATUS DE ILUMINAÇÃO (Combinando com as tuas fotos) */}
+      <div style={{ background: 'linear-gradient(135deg, #007AFF, #00C6FF)', padding: '20px', borderRadius: '25px', color: 'white', marginTop: '10px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div>
+            <p style={{ margin: 0, opacity: 0.8, fontSize: '12px', fontWeight: '600' }}>ILUMINAÇÃO</p>
+            <p style={{ margin: 0, fontSize: '18px', fontWeight: '800' }}>Azul Neon</p>
+          </div>
+          <div style={{ background: 'rgba(255,255,255,0.2)', padding: '10px', borderRadius: '50%', fontSize: '20px' }}>💡</div>
+        </div>
+      </div>
+    </div>
+  </div>
+)}
+
     {/* DASHBOARD COM BARRA DE EXP PREMIUM */}
     <div style={{ marginBottom: '30px', position: 'relative' }}>
       <div style={{ backgroundImage: `url('/charizard.png')`, backgroundSize: 'cover', backgroundPosition: 'center 35%', borderRadius: '35px', padding: '3px', position: 'relative', zIndex: 1, overflow: 'hidden', border: '2px solid rgba(255,215,0,0.6)', boxShadow: '0 30px 60px rgba(0,0,0,0.3)', display: 'flex', flexDirection: 'column', minHeight: '220px' }}>
@@ -1972,54 +2069,57 @@ const filteredCards = pokemonCards
   transition: 'all 0.4s ease'
 }}>
   
-  {/* Botão HOME */}
-  <button onClick={() => { triggerHaptic('light'); setActiveTab('home'); setSelectedDetail(null); }} 
-    style={{ 
-      background: 'none', border: 'none', fontSize: '24px', transition: '0.3s',
-      transform: activeTab === 'home' ? 'scale(1.2)' : 'scale(1)',
-      opacity: activeTab === 'home' ? 1 : 0.3,
-      filter: activeTab === 'home' ? 'drop-shadow(0 0 8px rgba(0,122,255,0.5))' : 'none'
-    }}>🏠</button>
+  <div style={{ 
+  position: 'fixed', bottom: '30px', left: '0', right: '0', 
+  zIndex: 9999, display: 'flex', flexDirection: 'column', alignItems: 'center' 
+}}>
+  <div style={{ 
+    display: 'flex', 
+    alignItems: 'center', 
+    justifyContent: 'center',
+    background: 'rgba(255,255,255,0.98)', 
+    backdropFilter: 'blur(20px)', 
+    borderRadius: '40px', 
+    padding: '12px 35px', // Padding vertical e horizontal que define o tamanho da cápsula
+    gap: '35px', // ESTE É O ESPAÇAMENTO ENTRE OS BOTÕES - Aumenta aqui se quiseres mais espaço
+    boxShadow: '0 10px 40px rgba(0,0,0,0.12)',
+    border: '1px solid rgba(255,255,255,0.4)',
+  }}>
+    
+    {/* POKÉMON */}
+    <button onClick={() => { triggerHaptic('light'); setActiveTab('pokemon'); setSelectedDetail(null); }} 
+      style={{ background: 'none', border: 'none', padding: 0, opacity: activeTab === 'pokemon' ? 1 : 0.3, transition: '0.3s', display: 'flex' }}>
+      <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Pok%C3%A9_Ball_icon.svg" style={{ width: '22px', height: '22px' }} />
+    </button>
 
-  {/* Botão RELATÓRIOS */}
-  <button onClick={() => { triggerHaptic('light'); setActiveTab('reports'); setSelectedDetail(null); }} 
-    style={{ 
-      background: 'none', border: 'none', fontSize: '24px', transition: '0.3s',
-      transform: activeTab === 'reports' ? 'scale(1.2)' : 'scale(1)',
-      opacity: activeTab === 'reports' ? 1 : 0.3,
-      filter: activeTab === 'reports' ? 'drop-shadow(0 0 8px rgba(175,82,222,0.5))' : 'none'
-    }}>📊</button>
+    {/* INVENTÁRIO */}
+    <button onClick={() => { triggerHaptic('light'); setActiveTab('inventory'); setSelectedDetail(null); }} 
+      style={{ background: 'none', border: 'none', fontSize: '22px', opacity: activeTab === 'inventory' ? 1 : 0.3 }}>📦</button>
 
-  {/* Botão INVENTÁRIO */}
-  <button onClick={() => { triggerHaptic('light'); setActiveTab('inventory'); setSelectedDetail(null); }} 
-    style={{ 
-      background: 'none', border: 'none', fontSize: '24px', transition: '0.3s',
-      transform: activeTab === 'inventory' ? 'scale(1.2)' : 'scale(1)',
-      opacity: activeTab === 'inventory' ? 1 : 0.3,
-      filter: activeTab === 'inventory' ? 'drop-shadow(0 0 8px rgba(52,199,89,0.5))' : 'none'
-    }}>📦</button>
-{/* Botão POKÉMON (Pokébola Real) */}
-<button onClick={() => { triggerHaptic('light'); setActiveTab('pokemon'); setSelectedDetail(null); }} 
-    style={{ 
-      background: 'none', border: 'none', padding: 0, cursor: 'pointer', transition: '0.3s',
-      transform: activeTab === 'pokemon' ? 'scale(1.2)' : 'scale(1)',
-      filter: activeTab === 'pokemon' ? 'drop-shadow(0 0 8px rgba(255, 59, 48, 0.6))' : 'grayscale(1) opacity(0.4)'
-    }}>
-    <img 
-      src="https://upload.wikimedia.org/wikipedia/commons/5/53/Pok%C3%A9_Ball_icon.svg" 
-      alt="Pokémon"
-      style={{ width: '26px', height: '26px', display: 'block' }}
-    />
-  </button>
+    {/* REGISTO FINANCEIRO */}
+    <button onClick={() => { triggerHaptic('medium'); setActiveTab('home'); setSelectedDetail(null); }} 
+      style={{ 
+        background: 'none', border: 'none', fontSize: '26px', 
+        opacity: activeTab === 'home' ? 1 : 0.3,
+        transform: activeTab === 'home' ? 'scale(1.2)' : 'scale(1)',
+        transition: '0.2s'
+      }}>💰</button>
 
-  {/* Botão DEFINIÇÕES */}
-  <button onClick={() => { triggerHaptic('light'); setActiveTab('settings'); setSelectedDetail(null); }} 
-    style={{ 
-      background: 'none', border: 'none', fontSize: '24px', transition: '0.3s',
-      transform: activeTab === 'settings' ? 'scale(1.2)' : 'scale(1)',
-      opacity: activeTab === 'settings' ? 1 : 0.3,
-      filter: activeTab === 'settings' ? 'drop-shadow(0 0 8px rgba(142,142,147,0.5))' : 'none'
-    }}>⚙️</button>
+    {/* SETUP */}
+    <button onClick={() => { triggerHaptic('light'); setActiveTab('setup'); setSelectedDetail(null); }} 
+      style={{ background: 'none', border: 'none', fontSize: '22px', opacity: activeTab === 'setup' ? 1 : 0.3 }}>🖥️</button>
+
+    {/* RELATÓRIOS */}
+    <button onClick={() => { triggerHaptic('light'); setActiveTab('reports'); setSelectedDetail(null); }} 
+      style={{ background: 'none', border: 'none', fontSize: '22px', opacity: activeTab === 'reports' ? 1 : 0.3 }}>📊</button>
+
+    {/* DEFINIÇÕES */}
+    <button onClick={() => { triggerHaptic('light'); setActiveTab('settings'); setSelectedDetail(null); }} 
+      style={{ background: 'none', border: 'none', fontSize: '22px', opacity: activeTab === 'settings' ? 1 : 0.3 }}>⚙️</button>
+
+  </div>
+
+  </div>
 </div>
 
       <div style={{ height: '90px' }}></div>
