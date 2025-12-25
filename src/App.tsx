@@ -2013,41 +2013,42 @@ const filteredCards = pokemonCards
 )}
 {/* Menu Inferior Dinâmico */}
 <div style={{ 
-        position: 'fixed', 
-        bottom: '25px', 
-        left: '0', 
-        right: '0', 
-        zIndex: 10000, 
-        display: 'flex', 
-        justifyContent: 'center' 
-      }}>
-        <div style={{ 
-          width: '90%', 
-          maxWidth: '400px', 
-          height: '65px',
-          background: 'rgba(255,255,255,0.96)', 
-          backdropFilter: 'blur(20px)', 
-          WebkitBackdropFilter: 'blur(20px)',
-          borderRadius: '35px', 
-          display: 'flex', 
-          alignItems: 'center', 
-          justifyContent: 'space-evenly', 
-          boxShadow: '0 10px 30px rgba(0,0,0,0.1)',
-          border: '1px solid rgba(255,255,255,0.4)',
-          boxSizing: 'border-box'
-        }}>
-          <button onClick={() => { triggerHaptic('light'); setActiveTab('pokemon'); setSelectedDetail(null); }} style={{ background: 'none', border: 'none', opacity: activeTab === 'pokemon' ? 1 : 0.3 }}><img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Pok%C3%A9_Ball_icon.svg" style={{ width: '22px' }} alt="pk" /></button>
-          <button onClick={() => { triggerHaptic('light'); setActiveTab('inventory'); setSelectedDetail(null); }} style={{ background: 'none', border: 'none', fontSize: '22px', opacity: activeTab === 'inventory' ? 1 : 0.3 }}>📦</button>
-          <button onClick={() => { triggerHaptic('medium'); setActiveTab('home'); setSelectedDetail(null); }} style={{ background: 'none', border: 'none', fontSize: '26px', opacity: activeTab === 'home' ? 1 : 0.3, transform: activeTab === 'home' ? 'scale(1.2)' : 'scale(1)', transition: '0.2s' }}>💰</button>
-          <button onClick={() => { triggerHaptic('light'); setActiveTab('setup'); setSelectedDetail(null); }} style={{ background: 'none', border: 'none', fontSize: '22px', opacity: activeTab === 'setup' ? 1 : 0.3 }}>🖥️</button>
-          <button onClick={() => { triggerHaptic('light'); setActiveTab('reports'); setSelectedDetail(null); }} style={{ background: 'none', border: 'none', fontSize: '22px', opacity: activeTab === 'reports' ? 1 : 0.3 }}>📊</button>
-          <button onClick={() => { triggerHaptic('light'); setActiveTab('settings'); setSelectedDetail(null); }} style={{ background: 'none', border: 'none', fontSize: '22px', opacity: activeTab === 'settings' ? 1 : 0.3 }}>⚙️</button>
-        </div>
-      </div>
+  position: 'fixed', 
+  bottom: '25px', 
+  left: '0', 
+  right: '0', 
+  zIndex: 10000, 
+  display: 'flex', 
+  justifyContent: 'center' 
+}}>
+  <div style={{ 
+    // Removi o width: 90% para a cápsula não esticar além dos botões
+    display: 'flex', 
+    alignItems: 'center', 
+    justifyContent: 'center', // Centraliza o grupo de botões
+    height: '65px',
+    background: 'rgba(255,255,255,0.96)', 
+    backdropFilter: 'blur(20px)', 
+    WebkitBackdropFilter: 'blur(20px)',
+    borderRadius: '35px', 
+    padding: '0 20px', // Espaço nas pontas para a Pokébola e Definições
+    gap: '12px', // Espaço reduzido para todos os 6 botões caberem no ecrã
+    boxShadow: '0 10px 30px rgba(0,0,0,0.1)',
+    border: '1px solid rgba(255,255,255,0.4)',
+    boxSizing: 'border-box'
+  }}>
+    <button onClick={() => { triggerHaptic('light'); setActiveTab('pokemon'); setSelectedDetail(null); }} style={{ background: 'none', border: 'none', padding: 0, opacity: activeTab === 'pokemon' ? 1 : 0.3, display: 'flex' }}><img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Pok%C3%A9_Ball_icon.svg" style={{ width: '22px' }} alt="pk" /></button>
+    <button onClick={() => { triggerHaptic('light'); setActiveTab('inventory'); setSelectedDetail(null); }} style={{ background: 'none', border: 'none', fontSize: '22px', opacity: activeTab === 'inventory' ? 1 : 0.3 }}>📦</button>
+    <button onClick={() => { triggerHaptic('medium'); setActiveTab('home'); setSelectedDetail(null); }} style={{ background: 'none', border: 'none', fontSize: '26px', opacity: activeTab === 'home' ? 1 : 0.3, transform: activeTab === 'home' ? 'scale(1.2)' : 'scale(1)', transition: '0.2s' }}>💰</button>
+    <button onClick={() => { triggerHaptic('light'); setActiveTab('setup'); setSelectedDetail(null); }} style={{ background: 'none', border: 'none', fontSize: '22px', opacity: activeTab === 'setup' ? 1 : 0.3 }}>🖥️</button>
+    <button onClick={() => { triggerHaptic('light'); setActiveTab('reports'); setSelectedDetail(null); }} style={{ background: 'none', border: 'none', fontSize: '22px', opacity: activeTab === 'reports' ? 1 : 0.3 }}>📊</button>
+    <button onClick={() => { triggerHaptic('light'); setActiveTab('settings'); setSelectedDetail(null); }} style={{ background: 'none', border: 'none', fontSize: '22px', opacity: activeTab === 'settings' ? 1 : 0.3 }}>⚙️</button>
+  </div>
+</div>
 
-      <footer style={{ textAlign: 'center', padding: '40px 0 120px 0', opacity: 0.5 }}>
-        <p style={{ fontSize: '9px', color: '#AEAEB2', letterSpacing: '2px', fontWeight: '800' }}>© 2026 ALIGNA — HUGO BARROS</p>
-      </footer>
+<footer style={{ textAlign: 'center', padding: '40px 0 120px 0', opacity: 0.5 }}>
+  <p style={{ fontSize: '9px', color: '#AEAEB2', letterSpacing: '2px', fontWeight: '800' }}>© 2026 ALIGNA — HUGO BARROS</p>
+</footer>
     </div>
   );
 }
