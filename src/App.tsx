@@ -2022,27 +2022,27 @@ const filteredCards = pokemonCards
   justifyContent: 'center' 
 }}>
   <div style={{ 
-    // Removi o width: 90% para a cápsula não esticar além dos botões
-    display: 'flex', 
+    // Largura automática para os ícones não fugirem
+    display: 'inline-flex', 
     alignItems: 'center', 
-    justifyContent: 'center', // Centraliza o grupo de botões
-    height: '65px',
+    justifyContent: 'center', 
+    height: '60px',
     background: 'rgba(255,255,255,0.96)', 
     backdropFilter: 'blur(20px)', 
     WebkitBackdropFilter: 'blur(20px)',
-    borderRadius: '35px', 
-    padding: '0 20px', // Espaço nas pontas para a Pokébola e Definições
-    gap: '12px', // Espaço reduzido para todos os 6 botões caberem no ecrã
+    borderRadius: '30px', 
+    padding: '0 15px', // Reduzi o padding lateral
+    gap: '10px', // Gap reduzido para comprimir os 6 botões no centro
     boxShadow: '0 10px 30px rgba(0,0,0,0.1)',
     border: '1px solid rgba(255,255,255,0.4)',
     boxSizing: 'border-box'
   }}>
-    <button onClick={() => { triggerHaptic('light'); setActiveTab('pokemon'); setSelectedDetail(null); }} style={{ background: 'none', border: 'none', padding: 0, opacity: activeTab === 'pokemon' ? 1 : 0.3, display: 'flex' }}><img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Pok%C3%A9_Ball_icon.svg" style={{ width: '22px' }} alt="pk" /></button>
-    <button onClick={() => { triggerHaptic('light'); setActiveTab('inventory'); setSelectedDetail(null); }} style={{ background: 'none', border: 'none', fontSize: '22px', opacity: activeTab === 'inventory' ? 1 : 0.3 }}>📦</button>
-    <button onClick={() => { triggerHaptic('medium'); setActiveTab('home'); setSelectedDetail(null); }} style={{ background: 'none', border: 'none', fontSize: '26px', opacity: activeTab === 'home' ? 1 : 0.3, transform: activeTab === 'home' ? 'scale(1.2)' : 'scale(1)', transition: '0.2s' }}>💰</button>
-    <button onClick={() => { triggerHaptic('light'); setActiveTab('setup'); setSelectedDetail(null); }} style={{ background: 'none', border: 'none', fontSize: '22px', opacity: activeTab === 'setup' ? 1 : 0.3 }}>🖥️</button>
-    <button onClick={() => { triggerHaptic('light'); setActiveTab('reports'); setSelectedDetail(null); }} style={{ background: 'none', border: 'none', fontSize: '22px', opacity: activeTab === 'reports' ? 1 : 0.3 }}>📊</button>
-    <button onClick={() => { triggerHaptic('light'); setActiveTab('settings'); setSelectedDetail(null); }} style={{ background: 'none', border: 'none', fontSize: '22px', opacity: activeTab === 'settings' ? 1 : 0.3 }}>⚙️</button>
+    <button onClick={() => { triggerHaptic('light'); setActiveTab('pokemon'); setSelectedDetail(null); }} style={{ background: 'none', border: 'none', padding: '0 5px', opacity: activeTab === 'pokemon' ? 1 : 0.3, display: 'flex' }}><img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Pok%C3%A9_Ball_icon.svg" style={{ width: '20px' }} alt="pk" /></button>
+    <button onClick={() => { triggerHaptic('light'); setActiveTab('inventory'); setSelectedDetail(null); }} style={{ background: 'none', border: 'none', fontSize: '20px', padding: '0 5px', opacity: activeTab === 'inventory' ? 1 : 0.3 }}>📦</button>
+    <button onClick={() => { triggerHaptic('medium'); setActiveTab('home'); setSelectedDetail(null); }} style={{ background: 'none', border: 'none', fontSize: '24px', padding: '0 5px', opacity: activeTab === 'home' ? 1 : 0.3, transform: activeTab === 'home' ? 'scale(1.1)' : 'scale(1)', transition: '0.2s' }}>💰</button>
+    <button onClick={() => { triggerHaptic('light'); setActiveTab('setup'); setSelectedDetail(null); }} style={{ background: 'none', border: 'none', fontSize: '20px', padding: '0 5px', opacity: activeTab === 'setup' ? 1 : 0.3 }}>🖥️</button>
+    <button onClick={() => { triggerHaptic('light'); setActiveTab('reports'); setSelectedDetail(null); }} style={{ background: 'none', border: 'none', fontSize: '20px', padding: '0 5px', opacity: activeTab === 'reports' ? 1 : 0.3 }}>📊</button>
+    <button onClick={() => { triggerHaptic('light'); setActiveTab('settings'); setSelectedDetail(null); }} style={{ background: 'none', border: 'none', fontSize: '20px', padding: '0 5px', opacity: activeTab === 'settings' ? 1 : 0.3 }}>⚙️</button>
   </div>
 </div>
 
