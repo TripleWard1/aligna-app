@@ -1821,43 +1821,6 @@ const filteredCards = pokemonCards
       </div>
     )}
 
-{activeTab === 'setup' && (
-  <div style={{ padding: '20px', animate: 'fadeIn 0.5s' }}>
-    <h2 style={{ fontSize: '24px', fontWeight: '800', marginBottom: '20px', color: '#1c1c1e' }}>Meu Setup</h2>
-    
-    <div style={{ display: 'grid', gap: '15px' }}>
-      {/* CARD DISPOSITIVO 1 */}
-      <div style={{ background: 'white', padding: '15px', borderRadius: '20px', boxShadow: '0 4px 15px rgba(0,0,0,0.05)', display: 'flex', alignItems: 'center', gap: '15px' }}>
-        <div style={{ fontSize: '30px' }}>🖥️</div>
-        <div>
-          <p style={{ margin: 0, fontWeight: '700', color: '#1c1c1e' }}>Monitor Principal</p>
-          <p style={{ margin: 0, fontSize: '12px', color: '#8e8e93' }}>UltraWide 34" - 144Hz</p>
-        </div>
-      </div>
-
-      {/* CARD DISPOSITIVO 2 */}
-      <div style={{ background: 'white', padding: '15px', borderRadius: '20px', boxShadow: '0 4px 15px rgba(0,0,0,0.05)', display: 'flex', alignItems: 'center', gap: '15px' }}>
-        <div style={{ fontSize: '30px' }}>💻</div>
-        <div>
-          <p style={{ margin: 0, fontWeight: '700', color: '#1c1c1e' }}>Workstation</p>
-          <p style={{ margin: 0, fontSize: '12px', color: '#8e8e93' }}>MacBook Pro M3 Max</p>
-        </div>
-      </div>
-
-      {/* STATUS DE ILUMINAÇÃO (Combinando com as tuas fotos) */}
-      <div style={{ background: 'linear-gradient(135deg, #007AFF, #00C6FF)', padding: '20px', borderRadius: '25px', color: 'white', marginTop: '10px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <div>
-            <p style={{ margin: 0, opacity: 0.8, fontSize: '12px', fontWeight: '600' }}>ILUMINAÇÃO</p>
-            <p style={{ margin: 0, fontSize: '18px', fontWeight: '800' }}>Azul Neon</p>
-          </div>
-          <div style={{ background: 'rgba(255,255,255,0.2)', padding: '10px', borderRadius: '50%', fontSize: '20px' }}>💡</div>
-        </div>
-      </div>
-    </div>
-  </div>
-)}
-
     {/* DASHBOARD COM BARRA DE EXP PREMIUM */}
     <div style={{ marginBottom: '30px', position: 'relative' }}>
       <div style={{ backgroundImage: `url('/charizard.png')`, backgroundSize: 'cover', backgroundPosition: 'center 35%', borderRadius: '35px', padding: '3px', position: 'relative', zIndex: 1, overflow: 'hidden', border: '2px solid rgba(255,215,0,0.6)', boxShadow: '0 30px 60px rgba(0,0,0,0.3)', display: 'flex', flexDirection: 'column', minHeight: '220px' }}>
