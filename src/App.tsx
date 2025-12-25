@@ -1821,16 +1821,27 @@ const filteredCards = pokemonCards
       </div>
     </div>
 
-    {/* GRELHA DE CARTAS */}
-    <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '30px', position: 'relative', zIndex: 5 }}>
+   {/* GRELHA DE CARTAS */}
+   <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '30px', position: 'relative', zIndex: 5 }}>
       {filteredCards.map((card, index) => {
         const setName = card.setName || card.set || "Unknown Set";
         return (
           <div key={card.id || index} style={{ 
-            backgroundColor: '#ffffff', borderRadius: '30px 10px 30px 10px', padding: '20px', boxShadow: '0 20px 40px rgba(0,0,0,0.12)', 
-            position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column', animation: `fadeIn 0.6s forwards ${index * 0.1}s`, opacity: 0, border: '1px solid #e2e8f0', zIndex: 2
+            backgroundColor: '#ffffff', 
+            borderRadius: '30px 10px 30px 10px', 
+            padding: '20px', 
+            boxShadow: '0 20px 40px rgba(0,0,0,0.12)', 
+            position: 'relative', 
+            overflow: 'hidden', 
+            display: 'flex', 
+            flexDirection: 'column', 
+            animation: `fadeIn 0.6s forwards ${index * 0.1}s`, 
+            opacity: 0, 
+            zIndex: 2,
+            /* BORDA MUITO MAIS GROSSA (8px) EM AMARELO POKÉMON */
+            border: '12px solid #ffcb05' 
           }}>
-            <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundImage: `url(${card.photo})`, backgroundSize: 'cover', backgroundPosition: 'center', opacity: 0.5, filter: 'blur(20px)', zIndex: 0 }} />
+            <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundImage: `url(${card.photo})`, backgroundSize: 'cover', backgroundPosition: 'center', opacity: 0.9, filter: 'blur(5px)', zIndex: 0 }} />
             
             <div style={{ background: 'linear-gradient(180deg, #475569 0%, #1e293b 100%)', color: '#fff', padding: '12px', borderRadius: '16px 4px 16px 4px', zIndex: 3, textTransform: 'uppercase', marginBottom: '15px', display: 'flex', alignItems: 'center', gap: '10px' }}>
               <div style={{ width: '10px', height: '10px', background: '#4ade80', borderRadius: '50%', flexShrink: 0 }} />
@@ -1843,9 +1854,21 @@ const filteredCards = pokemonCards
 
             <div style={{ zIndex: 3, position: 'relative' }}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '15px' }}>
-                <div style={{ background: '#1e293b', color: '#fff', fontSize: '10px', fontWeight: '1000', padding: '8px 15px', borderRadius: '8px', borderLeft: '4px solid #ffcb05', width: 'fit-content' }}>
+                
+                <div style={{ 
+                  background: '#1e293b', 
+                  color: '#fff', 
+                  fontSize: '10px', 
+                  fontWeight: '1000', 
+                  padding: '8px 15px', 
+                  borderRadius: '8px', 
+                  borderLeft: '4px solid #ffcb05', 
+                  width: 'fit-content',
+                  boxShadow: '0 0 0 1px white' 
+                }}>
                   ★ {card.rarity ? card.rarity.toUpperCase() : 'RARE'}
                 </div>
+
                 <div style={{ display: 'flex', alignItems: 'center', borderRadius: '12px', overflow: 'hidden', border: '2px solid #1c1c1e', background: '#fff', height: '42px' }}>
                   <div style={{ width: '45px', height: '100%', background: '#ee1515', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     <div style={{ width: '18px', height: '18px', borderRadius: '50%', background: '#fff', border: '2.5px solid #1c1c1e', position: 'relative' }}>
@@ -1869,7 +1892,8 @@ const filteredCards = pokemonCards
               </div>
 
               <div style={{ display: 'flex', gap: '12px' }}>
-                <button onClick={() => setEditingCard(card)} style={{ flex: 1, background: '#1e293b', border: 'none', padding: '15px', borderRadius: '18px', color: '#fff', fontSize: '12px', fontWeight: '1000' }}>EDIT</button>
+                {/* BOTÃO EDIT COM BORDA AMARELA ADICIONADA */}
+                <button onClick={() => setEditingCard(card)} style={{ flex: 1, background: '#1e293b', border: '2px solid #ffcb05', padding: '15px', borderRadius: '18px', color: '#fff', fontSize: '12px', fontWeight: '1000' }}>EDIT</button>
                 <button onClick={() => setPokemonToDelete(card)} style={{ flex: 1, background: '#fff', border: '2px solid #ff4b4b', padding: '15px', borderRadius: '18px', color: '#ff4b4b', fontSize: '12px', fontWeight: '1000' }}>DISCARD</button>
               </div>
             </div>
