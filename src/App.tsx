@@ -62,10 +62,10 @@ export default function App() {
     const tokens = {
       bg: '#050608',
       surface: '#0d0f12',
-      card: '#16191e',
+      card: '#1c1f26',
       border: 'rgba(255,255,255,0.08)',
       text: '#f1f1f4',
-      muted: '#62646c',
+      muted: '#8a8d98',
       accent: {
         PC: '#ff3b30',
         DISPLAY: '#007aff',
@@ -96,217 +96,154 @@ export default function App() {
     const filteredItems = rawItems.filter(item => setupFilter === 'ALL' || item.cat === setupFilter);
   
     return (
-      <div className="setup-pro-ui">
+      <div className="setup-mobile-pro">
         <style>{`
-          @import url('https://fonts.googleapis.com/css2?family=Syncopate:wght@700&family=Inter:wght@400;900&display=swap');
+          @import url('https://fonts.googleapis.com/css2?family=Syncopate:wght@700&family=Inter:wght@400;700;900&display=swap');
   
-          .setup-pro-ui { background: ${tokens.bg}; color: ${tokens.text}; min-height: 100vh; position: relative; overflow-x: hidden; font-family: 'Inter', sans-serif; }
+          .setup-mobile-pro { background: ${tokens.bg}; color: ${tokens.text}; min-height: 100vh; font-family: 'Inter', sans-serif; padding-bottom: 100px; }
           
-          /* LANDING PAGE MEHORADA */
-          .landing-screen {
-            position: fixed; inset: 0; z-index: 9999; background: #000;
+          /* LANDING PAGE MOBILE */
+          .st-landing {
+            position: fixed; inset: 0; z-index: 10000; background: #000;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
-            transition: 1.2s cubic-bezier(0.8, 0, 0.2, 1);
+            transition: 0.8s cubic-bezier(0.9, 0, 0.1, 1); padding: 20px;
           }
-          .landing-screen.hide { transform: translateY(-100%); opacity: 0; pointer-events: none; }
+          .st-landing.hide { transform: translateY(-100%); }
+          .st-landing-bg { position: absolute; inset: 0; background: url('/Foto Principal Setup.jpg') center/cover; filter: brightness(0.3) blur(2px); }
           
-          .landing-bg {
-            position: absolute; inset: 0;
-            background: url('/Foto Principal Setup.jpg') center/cover;
-            filter: brightness(0.25) saturate(0.5) blur(3px);
-            transform: scale(1.1);
+          .st-landing-title { position: relative; font-family: 'Syncopate', sans-serif; font-size: 28px; letter-spacing: 8px; margin-bottom: 40px; text-align: center; }
+          .st-enter-btn { 
+            position: relative; background: transparent; border: 1px solid #fff; color: #fff; 
+            padding: 18px 30px; font-family: 'Syncopate', sans-serif; font-size: 10px; letter-spacing: 3px;
+            border-radius: 4px; text-transform: uppercase;
           }
   
-          .landing-content { position: relative; z-index: 10; text-align: center; }
-          .landing-title { 
-            font-family: 'Syncopate', sans-serif; font-size: clamp(2rem, 8vw, 4rem); 
-            color: #fff; margin-bottom: 2rem; letter-spacing: 15px;
-            text-shadow: 0 0 20px rgba(255,255,255,0.3);
+          /* HEADER MOBILE */
+          .st-header { padding: 20px; display: flex; justify-content: space-between; align-items: center; }
+          .st-nav-pills { display: flex; background: ${tokens.surface}; padding: 4px; border-radius: 12px; }
+          .st-pill { border: none; background: transparent; color: ${tokens.muted}; padding: 8px 15px; border-radius: 8px; font-size: 10px; font-weight: 900; }
+          .st-pill.active { background: #fff; color: #000; }
+  
+          /* FOTO E HOTSPOTS */
+          .st-photo-container { position: relative; margin: 0 15px; border-radius: 24px; overflow: hidden; border: 1px solid ${tokens.border}; }
+          .st-main-img { width: 100%; display: block; transition: 0.5s; }
+          .st-main-img.blur { filter: brightness(0.3) blur(5px); }
+  
+          .st-hotspot {
+            position: absolute; width: 28px; height: 28px; border-radius: 50%; border: 2px solid #fff;
+            display: flex; align-items: center; justify-content: center; transform: translate(-50%, -50%);
+            font-size: 14px; box-shadow: 0 0 15px rgba(0,0,0,0.5); z-index: 5;
           }
   
-          .enter-button {
-            background: transparent; border: 1px solid rgba(255,255,255,0.4); color: #fff;
-            padding: 20px 60px; font-family: 'Syncopate', sans-serif; font-size: 12px;
-            cursor: pointer; transition: 0.5s; text-transform: uppercase; letter-spacing: 5px;
-            position: relative; overflow: hidden; border-radius: 4px;
+          /* BOTTOM SHEET (MODAL MOBILE) */
+          .st-bottom-sheet {
+            position: fixed; left: 0; right: 0; bottom: 0; background: ${tokens.card};
+            border-top-left-radius: 30px; border-top-right-radius: 30px;
+            z-index: 1000; padding: 30px 20px; transform: translateY(100%);
+            transition: 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+            border-top: 1px solid ${tokens.border};
           }
-          .enter-button:hover { 
-            background: #fff; color: #000; border-color: #fff;
-            box-shadow: 0 0 50px rgba(255,255,255,0.2);
-            transform: translateY(-5px);
-          }
+          .st-bottom-sheet.open { transform: translateY(0); }
+          .st-sheet-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 999; opacity: 0; pointer-events: none; transition: 0.3s; }
+          .st-sheet-overlay.show { opacity: 1; pointer-events: auto; }
   
-          /* DASHBOARD ANIMADO */
-          .dashboard-content { 
-            padding: 40px 20px; max-width: 1400px; margin: 0 auto; 
-            opacity: ${isLocked ? 0 : 1}; transform: translateY(${isLocked ? '40px' : '0'});
-            transition: 1s cubic-bezier(0.2, 0.8, 0.2, 1);
-          }
+          .st-close-bar { width: 40px; height: 5px; background: ${tokens.muted}; border-radius: 10px; margin: -10px auto 20px; opacity: 0.5; }
   
-          .board-wrapper { 
-            position: relative; border-radius: 40px; overflow: hidden; 
-            border: 1px solid ${tokens.border}; box-shadow: 0 50px 100px -20px rgba(0,0,0,0.7);
-            background: #000;
-          }
-          .hero-img { width: 100%; display: block; opacity: 0.6; transition: 0.8s; }
-          .board-wrapper.focused .hero-img { filter: brightness(0.15) blur(12px); transform: scale(1.02); }
-  
-          /* HOTSPOTS COM PULSO */
-          .hotspot { 
-            position: absolute; width: 40px; height: 40px; border-radius: 50%; border: 2px solid #fff;
-            display: flex; align-items: center; justify-content: center; cursor: pointer;
-            transform: translate(-50%, -50%); transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            z-index: 10; box-shadow: 0 0 20px rgba(0,0,0,0.5);
-          }
-          .hotspot:hover { transform: translate(-50%, -50%) scale(1.3); }
-          .hotspot::after {
-            content: ''; position: absolute; inset: -10px; border-radius: 50%;
-            border: 1px solid inherit; opacity: 0.4; animation: pulse 2s infinite;
-          }
-          @keyframes pulse { 0% { transform: scale(0.6); opacity: 1; } 100% { transform: scale(1.4); opacity: 0; } }
-  
-          .hardware-modal {
-            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            width: 420px; background: ${tokens.card}; border-radius: 35px; overflow: hidden;
-            z-index: 100; border: 1px solid rgba(255,255,255,0.12);
-            box-shadow: 0 60px 100px rgba(0,0,0,0.8);
-            animation: modalIn 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-          }
-          @keyframes modalIn { from { opacity: 0; transform: translate(-50%, -40%) scale(0.9); } }
-  
-          .grid-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 25px; margin-top: 50px; }
-          .item-card { 
-            background: ${tokens.surface}; padding: 25px; border-radius: 24px; 
-            display: flex; align-items: center; gap: 20px; border: 1px solid ${tokens.border}; 
-            cursor: pointer; transition: 0.4s; position: relative; overflow: hidden;
-          }
-          .item-card:hover { 
-            transform: translateY(-8px); background: ${tokens.card}; border-color: var(--accent);
-            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
-          }
-          .item-card::before {
-            content: ''; position: absolute; left: 0; top: 0; width: 5px; height: 100%;
-            background: var(--accent); opacity: 0.8;
+          /* LISTA DE ITENS */
+          .st-list { padding: 20px; display: grid; gap: 15px; }
+          .st-item { 
+            background: ${tokens.surface}; padding: 15px; border-radius: 18px; 
+            display: flex; align-items: center; gap: 15px; border: 1px solid ${tokens.border};
           }
         `}</style>
   
-        {/* TELA DE CAPA (LANDING) */}
-        <div className={`landing-screen ${!isLocked ? 'hide' : ''}`}>
-          <div className="landing-bg"></div>
-          <div className="landing-content">
-            <h1 className="landing-title">SYSTEM.IO</h1>
-            <button className="enter-button" onClick={() => setIsLocked(false)}>
-              Inicializar Battlestation
+        {/* CAPA DE ENTRADA */}
+        <div className={`st-landing ${!isLocked ? 'hide' : ''}`}>
+          <div className="st-landing-bg"></div>
+          <div className="st-landing-title">SYSTEM.IO</div>
+          <button className="st-enter-btn" onClick={() => setIsLocked(false)}>
+            Inicializar
+          </button>
+        </div>
+  
+        {/* HEADER */}
+        <header className="st-header">
+          <div style={{ fontFamily: 'Syncopate', fontSize: '12px', letterSpacing: '2px' }}>MANIFEST</div>
+          <div className="st-nav-pills">
+            <button className={`st-pill ${setupMode === 'principal' ? 'active' : ''}`} onClick={() => setSetupMode('principal')}>ALPHA</button>
+            <button className={`st-pill ${setupMode === 'extra' ? 'active' : ''}`} onClick={() => setSetupMode('extra')}>VAULT</button>
+          </div>
+        </header>
+  
+        {/* ÁREA DA FOTO */}
+        <div className="st-photo-container">
+          <img src="/Foto Principal Setup.jpg" className={`st-main-img ${selectedPart ? 'blur' : ''}`} alt="Setup" />
+          
+          {rawItems.map(item => (
+            <div 
+              key={item.id} 
+              className="st-hotspot" 
+              style={{ top: item.pos.top, left: item.pos.left, backgroundColor: tokens.accent[item.cat] }}
+              onClick={() => setSelectedPart(item)}
+            >
+              {item.icon}
+            </div>
+          ))}
+        </div>
+  
+        {/* BOTTOM SHEET (O MODAL QUE ABRE) */}
+        <div className={`st-sheet-overlay ${selectedPart ? 'show' : ''}`} onClick={() => setSelectedPart(null)}></div>
+        <div className={`st-bottom-sheet ${selectedPart ? 'open' : ''}`}>
+          <div className="st-close-bar"></div>
+          {selectedPart && (
+            <div>
+              <div style={{ display: 'flex', gap: '20px', marginBottom: '25px' }}>
+                 <img src={selectedPart.img} style={{ width: '100px', height: '100px', borderRadius: '20px', objectFit: 'cover' }} />
+                 <div>
+                    <span style={{ color: tokens.accent[selectedPart.cat], fontSize: '10px', fontWeight: '900', letterSpacing: '1px' }}>{selectedPart.brand}</span>
+                    <h3 style={{ margin: '5px 0', fontSize: '20px', fontWeight: '900' }}>{selectedPart.name}</h3>
+                 </div>
+              </div>
+              <div style={{ display: 'grid', gap: '8px' }}>
+                {selectedPart.specs.split('|').map((s, i) => (
+                  <div key={i} style={{ background: 'rgba(255,255,255,0.03)', padding: '12px', borderRadius: '12px', fontSize: '13px' }}>
+                    • {s.trim()}
+                  </div>
+                ))}
+              </div>
+              <button 
+                onClick={() => setSelectedPart(null)} 
+                style={{ width: '100%', marginTop: '30px', padding: '15px', borderRadius: '15px', border: 'none', background: '#fff', color: '#000', fontWeight: '900' }}
+              >
+                FECHAR
+              </button>
+            </div>
+          )}
+        </div>
+  
+        {/* LISTA DE ITENS ABAIXO */}
+        <div className="st-list">
+          {filteredItems.map(item => (
+            <div key={item.id} className="st-item" onClick={() => { setSelectedPart(item); window.scrollTo({ top: 0, behavior: 'smooth' }); }}>
+              <div style={{ fontSize: '24px', background: 'rgba(255,255,255,0.03)', padding: '10px', borderRadius: '12px' }}>{item.icon}</div>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: '9px', color: tokens.accent[item.cat], fontWeight: '900' }}>{item.brand}</div>
+                <div style={{ fontSize: '15px', fontWeight: '900' }}>{item.name}</div>
+              </div>
+              <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: tokens.accent[item.cat] }}></div>
+            </div>
+          ))}
+        </div>
+  
+        {/* POKÉBOLA (APENAS NO VAULT) */}
+        {setupMode === 'extra' && (
+          <div style={{ textAlign: 'center', marginTop: '40px' }}>
+            <button className="pokebola-btn" onClick={() => alert('Pokémon Vault!')} style={{ width: '60px', height: '60px', borderRadius: '50%', border: '4px solid #000', background: '#fff', position: 'relative', overflow: 'hidden' }}>
+              <div style={{ position: 'absolute', top: 0, width: '100%', height: '50%', background: '#ff0000', borderBottom: '4px solid #000' }}></div>
+              <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: '12px', height: '12px', background: '#fff', border: '4px solid #000', borderRadius: '50%', zIndex: 2 }}></div>
             </button>
           </div>
-        </div>
-  
-        {/* DASHBOARD REAL */}
-        <div className="dashboard-content">
-          <header style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '40px', alignItems: 'center' }}>
-            <h2 style={{ fontFamily: 'Syncopate', fontSize: '18px', letterSpacing: '4px', margin: 0 }}>
-              MANIFEST <span style={{ color: tokens.muted }}>// SETUP</span>
-            </h2>
-            <div style={{ display: 'flex', background: tokens.surface, padding: '4px', borderRadius: '14px', border: `1px solid ${tokens.border}` }}>
-              <button onClick={() => setSetupMode('principal')} style={{ background: setupMode === 'principal' ? '#fff' : 'none', color: setupMode === 'principal' ? '#000' : tokens.muted, border: 'none', cursor: 'pointer', padding: '10px 25px', borderRadius: '10px', fontWeight: '900', fontSize: '11px', transition: '0.3s' }}>ALPHA STATION</button>
-              <button onClick={() => setSetupMode('extra')} style={{ background: setupMode === 'extra' ? '#fff' : 'none', color: setupMode === 'extra' ? '#000' : tokens.muted, border: 'none', cursor: 'pointer', padding: '10px 25px', borderRadius: '10px', fontWeight: '900', fontSize: '11px', transition: '0.3s' }}>THE VAULT</button>
-            </div>
-          </header>
-  
-          <div className={`board-wrapper ${selectedPart ? 'focused' : ''}`}>
-            <img src="/Foto Principal Setup.jpg" className="hero-img" />
-            
-            {!selectedPart && rawItems.map(item => (
-              <div 
-                key={item.id} 
-                className="hotspot" 
-                style={{ top: item.pos.top, left: item.pos.left, borderColor: tokens.accent[item.cat], color: '#fff' }} 
-                onClick={() => setSelectedPart(item)}
-              >
-                <span style={{ fontSize: '18px' }}>{item.icon}</span>
-              </div>
-            ))}
-  
-            {selectedPart && (
-              <div className="hardware-modal">
-                <div style={{ position: 'relative' }}>
-                  <img src={selectedPart.img} style={{ width: '100%', height: '240px', objectFit: 'cover' }} />
-                  <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, #16191e, transparent)' }}></div>
-                </div>
-                <div style={{ padding: '35px' }}>
-                  <span style={{ color: tokens.accent[selectedPart.cat], fontWeight: '900', fontSize: '10px', letterSpacing: '2px', textTransform: 'uppercase' }}>{selectedPart.brand}</span>
-                  <h3 style={{ margin: '5px 0 25px', fontSize: '28px', fontWeight: '900', letterSpacing: '-1px' }}>{selectedPart.name}</h3>
-                  <div style={{ display: 'grid', gap: '10px' }}>
-                     {selectedPart.specs.split('|').map((s, i) => (
-                        <div key={i} style={{ fontSize: '14px', color: tokens.text, background: 'rgba(255,255,255,0.04)', padding: '12px', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                          <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: tokens.accent[selectedPart.cat] }}></div>
-                          {s.trim()}
-                        </div>
-                     ))}
-                  </div>
-                  <button onClick={() => setSelectedPart(null)} style={{ width: '100%', marginTop: '30px', padding: '18px', background: '#fff', border: 'none', color: '#000', fontWeight: '900', borderRadius: '14px', cursor: 'pointer', fontSize: '12px', letterSpacing: '1px' }}>VOLTAR AO DECK</button>
-                </div>
-              </div>
-            )}
-          </div>
-  
-          <div className="grid-list">
-            {filteredItems.map(item => (
-              <div 
-                key={item.id} 
-                className="item-card" 
-                style={{ '--accent': tokens.accent[item.cat] }}
-                onClick={() => { setSelectedPart(item); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
-              >
-                <div style={{ fontSize: '30px', background: 'rgba(255,255,255,0.03)', padding: '15px', borderRadius: '18px' }}>{item.icon}</div>
-                <div>
-                  <div style={{ fontSize: '10px', color: tokens.accent[item.cat], fontWeight: '900', letterSpacing: '1px', textTransform: 'uppercase' }}>{item.brand}</div>
-                  <div style={{ fontWeight: '900', fontSize: '19px', marginTop: '2px' }}>{item.name}</div>
-                </div>
-              </div>
-            ))}
-          </div>
-  
-          {setupMode === 'extra' && (
-  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginTop: '80px', paddingBottom: '40px' }}>
-    <p style={{ color: tokens.muted, fontSize: '11px', fontWeight: 'bold', letterSpacing: '3px', marginBottom: '20px' }}>
-      OPEN POKÉMON VAULT
-    </p>
-    <button 
-      className="pokebola-btn" 
-      onClick={() => alert('Em breve!')} 
-      style={{ 
-        width: '90px', 
-        height: '90px', 
-        borderRadius: '50%', 
-        border: '5px solid #000', 
-        background: '#fff', 
-        position: 'relative', 
-        cursor: 'pointer', 
-        overflow: 'hidden', 
-        boxShadow: '0 10px 30px rgba(255,0,0,0.3)' 
-      }}
-    >
-      {/* Parte Vermelha */}
-      <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '50%', background: '#ff0000', borderBottom: '5px solid #000' }}></div>
-      
-      {/* Botão Central - Corrigido zIndex */}
-      <div style={{ 
-        position: 'absolute', 
-        top: '50%', 
-        left: '50%', 
-        transform: 'translate(-50%, -50%)', 
-        width: '20px', 
-        height: '20px', 
-        background: '#fff', 
-        border: '5px solid #000', 
-        borderRadius: '50%', 
-        zIndex: 2 
-      }}></div>
-    </button>
-  </div>
-)}
-        </div>
+        )}
       </div>
     );
   };
