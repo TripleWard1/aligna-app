@@ -4,6 +4,7 @@ import { ref, push, onValue, set, remove, update, get } from "firebase/database"
 // Adiciona isto logo no início do teu ficheiro, fora da função principal
 import { jsPDF } from "jspdf";
 import "jspdf-autotable";
+import './Setup.css';
 
 
 const TWELVE_DATA_KEY = "49563e179ee146c5a53279200c654f29";
@@ -51,156 +52,261 @@ const ACC_ICONS = ['👛', '🏦', '🐖', '💳', '💎', '📊', '💰'];
 export default function App() {
   // --- SISTEMA DE FEEDBACK (SOM E VIBRAÇÃO) ---
   const [audio] = useState(new Audio('https://www.myinstants.com/media/sounds/coin.mp3'));
+  // 1. ESTADOS (Garante que estes estão no topo, fora da função render)
   const [setupMode, setSetupMode] = useState('principal');
+  const [selectedPart, setSelectedPart] = useState(null);
+  const [setupSearch, setSetupSearch] = useState('');
+  const [setupFilter, setSetupFilter] = useState('ALL');
 
   const renderSetupTab = () => {
-    // 1. DATABASE ORGANIZADA
+    const tokens = {
+      bg: '#050608',
+      surface: '#0d0f12',
+      card: '#16191e',
+      border: 'rgba(255,255,255,0.08)',
+      text: '#f1f1f4',
+      muted: '#62646c',
+      accent: {
+        PC: '#ff3b30',
+        DISPLAY: '#007aff',
+        INPUT: '#ff9500',
+        AUDIO: '#5856d6',
+        LIGHTS: '#34c759',
+        VAULT: '#ffcc00'
+      }
+    };
+  
     const setupData = {
       principal: [
-        { 
-          id: 'main_pc', 
-          name: 'Unidade Central', 
-          brand: 'Phanteks P500a Build', 
-          icon: '🖥️', 
-          pos: { top: '52%', left: '32%' }, 
-          img: '/specs/pc_build.jpg',
-          specs: 'Ryzen 5 5600X | RTX 3080 TUF | 32GB RAM | B550-E | H100i' 
-        },
-        { 
-          id: 'main_monitors', 
-          name: 'Visual Matrix', 
-          brand: 'Triple MSI Display', 
-          icon: '🖥️', 
-          pos: { top: '55%', left: '22%' }, 
-          img: '/specs/monitors.jpg',
-          specs: 'MSI MAG274QRF-QD + 2x MSI G-Series 27"'
-        },
-        { 
-          id: 'main_perifericos', 
-          name: 'Workstation Input', 
-          brand: 'Custom Peripherals', 
-          icon: '⌨️', 
-          pos: { top: '65%', left: '28%' }, 
-          img: '/specs/perifericos.jpg',
-          specs: 'Higround SNOWSTONE | Razer Naga Pro | GMK67 Evangelion | G703'
-        },
-        { 
-          id: 'main_audio', 
-          name: 'Estúdio de Áudio', 
-          brand: 'Astro & FDuce Setup', 
-          icon: '🎙️', 
-          pos: { top: '80%', left: '2%' }, 
-          img: '/specs/audio.jpg',
-          specs: 'Astro A50 | Mic FDuce SL40X | Mixer Fifine | Edifier'
-        },
-        { 
-          id: 'main_lights', 
-          name: 'Ecossistema Govee', 
-          brand: 'Smart Lighting', 
-          icon: '💡', 
-          pos: { top: '34%', left: '20%' }, 
-          img: '/specs/lights.jpg',
-          specs: '2x Govee Glide Bar + 2x Govee Rope Light'
-        },
+        { id: 'main_pc', name: 'Unidade Central', brand: 'Phanteks P500a', icon: '🖥️', pos: { top: '52%', left: '32%' }, img: '/specs/pc_build.jpg', specs: 'Ryzen 5 5600X | RTX 3080 TUF | 32GB RAM', cat: 'PC' },
+        { id: 'main_monitors', name: 'Visual Matrix', brand: 'Triple MSI', icon: '📺', pos: { top: '55%', left: '22%' }, img: '/specs/monitors.jpg', specs: 'MAG274QRF-QD | 2x G-Series 27"', cat: 'DISPLAY' },
+        { id: 'main_perifericos', name: 'Input Deck', brand: 'Custom Keys', icon: '⌨️', pos: { top: '65%', left: '28%' }, img: '/specs/perifericos.jpg', specs: 'Higround | Razer Naga | GMK67', cat: 'INPUT' },
+        { id: 'main_audio', name: 'Studio Audio', brand: 'Astro & FDuce', icon: '🎙️', pos: { top: '80%', left: '15%' }, img: '/specs/audio.jpg', specs: 'Astro A50 | Mic SL40X | Mixer Fifine', cat: 'AUDIO' },
+        { id: 'main_lights', name: 'Govee Ambient', brand: 'Smart Lights', icon: '💡', pos: { top: '34%', left: '20%' }, img: '/specs/lights.jpg', specs: '2x Glide Bar | 2x Rope Light', cat: 'LIGHTS' },
       ],
       extra: [
-        { id: 'ex_mac', name: 'MacBook Air M3', brand: 'Apple 15"', icon: '🍎', pos: { top: '72%', left: '85%' }, img: '/specs/macbook.jpg' },
-        { id: 'ex_tcl', name: 'Entertainment Display', brand: 'TCL 55"', icon: '📺', pos: { top: '50%', left: '92%' }, img: '/specs/tcl.jpg' },
-        { id: 'ex_switch', name: 'Nintendo Hub', brand: 'Consola + Pro Controllers', icon: '🎮', pos: { top: '60%', left: '80%' }, img: '/specs/switch.jpg' },
-        // Itens do Vault: IDs diferentes para a foto, mas agruparemos na lista
-        { id: 'ex_vault_1', name: 'The Vault', brand: 'Retro & Pokémon', icon: '⭐', pos: { top: '45%', left: '81%' }, img: '/specs/vault.jpg', isVault: true },
-        { id: 'ex_vault_2', name: 'The Vault', brand: 'Up Shelf', icon: '⭐', pos: { top: '25%', left: '95%' }, img: '/specs/vault.jpg', isVault: true },
-        { id: 'ex_vault_3', name: 'The Vault', brand: 'Main Vault', icon: '⭐', pos: { top: '90%', left: '96%' }, img: '/specs/vault.jpg', isVault: true },
+        { id: 'ex_mac', name: 'MacBook Air M3', brand: 'Apple 15"', icon: '🍎', pos: { top: '72%', left: '85%' }, img: '/specs/macbook.jpg', specs: 'Liquid Retina | M3 Chip', cat: 'INPUT' },
+        { id: 'ex_tcl', name: 'Console Display', brand: 'TCL 55"', icon: '🎮', pos: { top: '50%', left: '92%' }, img: '/specs/tcl.jpg', specs: '4K HDR | 120Hz Gaming Mode', cat: 'DISPLAY' },
+        { id: 'ex_switch', name: 'Nintendo Hub', brand: 'Switch OLED', icon: '🕹️', pos: { top: '60%', left: '80%' }, img: '/specs/switch.jpg', specs: 'Pro Controllers | Dock', cat: 'PC' },
+        { id: 'ex_vault_1', name: 'The Vault', brand: 'Retro Collection', icon: '⭐', pos: { top: '45%', left: '81%' }, img: '/specs/vault.jpg', isVault: true, specs: 'Pokémon TCG | Retro Handhelds', cat: 'VAULT' },
       ]
     };
   
-    // Filtragem rigorosa por modo
-    const currentItems = setupMode === 'principal' ? setupData.principal : setupData.extra;
-  
-    // Criar lista para o Inventário (remove duplicados do Vault para a listagem)
-    const inventoryItems = currentItems.filter((item, index, self) => 
-      index === self.findIndex((t) => t.name === item.name && t.brand === item.brand)
-    );
+    const rawItems = setupMode === 'principal' ? setupData.principal : setupData.extra;
+    const filteredItems = rawItems.filter(item => setupFilter === 'ALL' || item.cat === setupFilter);
   
     return (
-      <div style={{ minHeight: '100vh', background: 'transparent', paddingBottom: '150px', animation: 'fadeIn 0.5s' }}>
-        
-        {/* SELETOR DE SETUP */}
-        <div style={{ padding: '20px', display: 'flex', justifyContent: 'center' }}>
-          <div style={{ background: 'rgba(0,0,0,0.05)', padding: '5px', borderRadius: '15px', display: 'flex', backdropFilter: 'blur(10px)' }}>
-            <button 
-              onClick={() => { setSetupMode('principal'); setSelectedPart(null); triggerHaptic('light'); }}
-              style={{ padding: '10px 20px', borderRadius: '12px', border: 'none', background: setupMode === 'principal' ? '#fff' : 'transparent', fontWeight: '800', fontSize: '12px', transition: '0.3s', cursor: 'pointer', boxShadow: setupMode === 'principal' ? '0 4px 10px rgba(0,0,0,0.1)' : 'none' }}
-            >PRINCIPAL</button>
-            <button 
-              onClick={() => { setSetupMode('extra'); setSelectedPart(null); triggerHaptic('light'); }}
-              style={{ padding: '10px 20px', borderRadius: '12px', border: 'none', background: setupMode === 'extra' ? '#fff' : 'transparent', fontWeight: '800', fontSize: '12px', transition: '0.3s', cursor: 'pointer', boxShadow: setupMode === 'extra' ? '0 4px 10px rgba(0,0,0,0.1)' : 'none' }}
-            >CONSOLAS / M3</button>
+      <div className="setup-pro-ui">
+        <style>{`
+          @import url('https://fonts.googleapis.com/css2?family=Syncopate:wght@700&family=Inter:wght@400;900&display=swap');
+  
+          .setup-pro-ui { background: ${tokens.bg}; color: ${tokens.text}; min-height: 100vh; position: relative; overflow-x: hidden; font-family: 'Inter', sans-serif; }
+          
+          /* LANDING PAGE MEHORADA */
+          .landing-screen {
+            position: fixed; inset: 0; z-index: 9999; background: #000;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            transition: 1.2s cubic-bezier(0.8, 0, 0.2, 1);
+          }
+          .landing-screen.hide { transform: translateY(-100%); opacity: 0; pointer-events: none; }
+          
+          .landing-bg {
+            position: absolute; inset: 0;
+            background: url('/Foto Principal Setup.jpg') center/cover;
+            filter: brightness(0.25) saturate(0.5) blur(3px);
+            transform: scale(1.1);
+          }
+  
+          .landing-content { position: relative; z-index: 10; text-align: center; }
+          .landing-title { 
+            font-family: 'Syncopate', sans-serif; font-size: clamp(2rem, 8vw, 4rem); 
+            color: #fff; margin-bottom: 2rem; letter-spacing: 15px;
+            text-shadow: 0 0 20px rgba(255,255,255,0.3);
+          }
+  
+          .enter-button {
+            background: transparent; border: 1px solid rgba(255,255,255,0.4); color: #fff;
+            padding: 20px 60px; font-family: 'Syncopate', sans-serif; font-size: 12px;
+            cursor: pointer; transition: 0.5s; text-transform: uppercase; letter-spacing: 5px;
+            position: relative; overflow: hidden; border-radius: 4px;
+          }
+          .enter-button:hover { 
+            background: #fff; color: #000; border-color: #fff;
+            box-shadow: 0 0 50px rgba(255,255,255,0.2);
+            transform: translateY(-5px);
+          }
+  
+          /* DASHBOARD ANIMADO */
+          .dashboard-content { 
+            padding: 40px 20px; max-width: 1400px; margin: 0 auto; 
+            opacity: ${isLocked ? 0 : 1}; transform: translateY(${isLocked ? '40px' : '0'});
+            transition: 1s cubic-bezier(0.2, 0.8, 0.2, 1);
+          }
+  
+          .board-wrapper { 
+            position: relative; border-radius: 40px; overflow: hidden; 
+            border: 1px solid ${tokens.border}; box-shadow: 0 50px 100px -20px rgba(0,0,0,0.7);
+            background: #000;
+          }
+          .hero-img { width: 100%; display: block; opacity: 0.6; transition: 0.8s; }
+          .board-wrapper.focused .hero-img { filter: brightness(0.15) blur(12px); transform: scale(1.02); }
+  
+          /* HOTSPOTS COM PULSO */
+          .hotspot { 
+            position: absolute; width: 40px; height: 40px; border-radius: 50%; border: 2px solid #fff;
+            display: flex; align-items: center; justify-content: center; cursor: pointer;
+            transform: translate(-50%, -50%); transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 10; box-shadow: 0 0 20px rgba(0,0,0,0.5);
+          }
+          .hotspot:hover { transform: translate(-50%, -50%) scale(1.3); }
+          .hotspot::after {
+            content: ''; position: absolute; inset: -10px; border-radius: 50%;
+            border: 1px solid inherit; opacity: 0.4; animation: pulse 2s infinite;
+          }
+          @keyframes pulse { 0% { transform: scale(0.6); opacity: 1; } 100% { transform: scale(1.4); opacity: 0; } }
+  
+          .hardware-modal {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            width: 420px; background: ${tokens.card}; border-radius: 35px; overflow: hidden;
+            z-index: 100; border: 1px solid rgba(255,255,255,0.12);
+            box-shadow: 0 60px 100px rgba(0,0,0,0.8);
+            animation: modalIn 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+          }
+          @keyframes modalIn { from { opacity: 0; transform: translate(-50%, -40%) scale(0.9); } }
+  
+          .grid-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 25px; margin-top: 50px; }
+          .item-card { 
+            background: ${tokens.surface}; padding: 25px; border-radius: 24px; 
+            display: flex; align-items: center; gap: 20px; border: 1px solid ${tokens.border}; 
+            cursor: pointer; transition: 0.4s; position: relative; overflow: hidden;
+          }
+          .item-card:hover { 
+            transform: translateY(-8px); background: ${tokens.card}; border-color: var(--accent);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+          }
+          .item-card::before {
+            content: ''; position: absolute; left: 0; top: 0; width: 5px; height: 100%;
+            background: var(--accent); opacity: 0.8;
+          }
+        `}</style>
+  
+        {/* TELA DE CAPA (LANDING) */}
+        <div className={`landing-screen ${!isLocked ? 'hide' : ''}`}>
+          <div className="landing-bg"></div>
+          <div className="landing-content">
+            <h1 className="landing-title">SYSTEM.IO</h1>
+            <button className="enter-button" onClick={() => setIsLocked(false)}>
+              Inicializar Battlestation
+            </button>
           </div>
         </div>
   
-        {/* VISUALIZADOR COM PONTOS */}
-        <div style={{ padding: '0 15px' }}>
-          <div style={{ position: 'relative', borderRadius: '40px', overflow: 'hidden', boxShadow: '0 30px 60px rgba(0,0,0,0.2)', border: '2px solid #fff', background: '#000' }}>
-            <img 
-              src="/Foto Principal Setup.jpg" 
-              style={{ width: '100%', display: 'block', transition: '0.8s', filter: selectedPart ? 'brightness(0.3) blur(10px)' : 'brightness(0.9)' }} 
-            />
+        {/* DASHBOARD REAL */}
+        <div className="dashboard-content">
+          <header style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '40px', alignItems: 'center' }}>
+            <h2 style={{ fontFamily: 'Syncopate', fontSize: '18px', letterSpacing: '4px', margin: 0 }}>
+              MANIFEST <span style={{ color: tokens.muted }}>// SETUP</span>
+            </h2>
+            <div style={{ display: 'flex', background: tokens.surface, padding: '4px', borderRadius: '14px', border: `1px solid ${tokens.border}` }}>
+              <button onClick={() => setSetupMode('principal')} style={{ background: setupMode === 'principal' ? '#fff' : 'none', color: setupMode === 'principal' ? '#000' : tokens.muted, border: 'none', cursor: 'pointer', padding: '10px 25px', borderRadius: '10px', fontWeight: '900', fontSize: '11px', transition: '0.3s' }}>ALPHA STATION</button>
+              <button onClick={() => setSetupMode('extra')} style={{ background: setupMode === 'extra' ? '#fff' : 'none', color: setupMode === 'extra' ? '#000' : tokens.muted, border: 'none', cursor: 'pointer', padding: '10px 25px', borderRadius: '10px', fontWeight: '900', fontSize: '11px', transition: '0.3s' }}>THE VAULT</button>
+            </div>
+          </header>
+  
+          <div className={`board-wrapper ${selectedPart ? 'focused' : ''}`}>
+            <img src="/Foto Principal Setup.jpg" className="hero-img" />
             
-            {!selectedPart && currentItems.map(item => (
+            {!selectedPart && rawItems.map(item => (
               <div 
-                key={item.id}
-                onClick={() => { triggerHaptic('heavy'); setSelectedPart(item); }}
-                style={{ position: 'absolute', top: item.pos.top, left: item.pos.left, width: '32px', height: '32px', cursor: 'pointer', transform: 'translate(-50%, -50%)', zIndex: 10, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                key={item.id} 
+                className="hotspot" 
+                style={{ top: item.pos.top, left: item.pos.left, borderColor: tokens.accent[item.cat], color: '#fff' }} 
+                onClick={() => setSelectedPart(item)}
               >
-                <div style={{ position: 'absolute', width: '100%', height: '100%', background: 'rgba(0,122,255,0.3)', borderRadius: '50%', animation: 'ripple 2s infinite' }} />
-                <div style={{ width: '12px', height: '12px', background: '#fff', borderRadius: '50%', border: '3px solid #007AFF', boxShadow: '0 0 15px #007AFF', position: 'relative', zIndex: 11 }} />
+                <span style={{ fontSize: '18px' }}>{item.icon}</span>
               </div>
             ))}
   
             {selectedPart && (
-              <div style={{ position: 'absolute', inset: 0, zIndex: 20, display: 'flex', flexDirection: 'column', animation: 'fadeIn 0.4s' }}>
-                <div style={{ flex: 1, background: '#000', position: 'relative' }}>
-                  <img 
-                    src={selectedPart.img} 
-                    onError={(e) => e.target.src = `https://via.placeholder.com/800x600/1c1c1e/ffffff?text=${selectedPart.name}`}
-                    style={{ width: '100%', height: '100%', objectFit: 'contain' }} 
-                  />
-                  <div onClick={() => setSelectedPart(null)} style={{ position: 'absolute', top: '25px', right: '25px', width: '45px', height: '45px', borderRadius: '50%', background: 'rgba(255,255,255,0.2)', backdropFilter: 'blur(10px)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', cursor: 'pointer' }}>✕</div>
+              <div className="hardware-modal">
+                <div style={{ position: 'relative' }}>
+                  <img src={selectedPart.img} style={{ width: '100%', height: '240px', objectFit: 'cover' }} />
+                  <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, #16191e, transparent)' }}></div>
                 </div>
-                <div style={{ background: 'rgba(255,255,255,0.95)', backdropFilter: 'blur(20px)', padding: '25px', borderTop: '1px solid rgba(0,0,0,0.05)' }}>
-                  <p style={{ margin: 0, fontSize: '11px', fontWeight: '800', color: '#007AFF', textTransform: 'uppercase' }}>{selectedPart.brand}</p>
-                  <h3 style={{ margin: '5px 0', fontSize: '24px', fontWeight: '900', color: '#1d1d1f' }}>{selectedPart.name}</h3>
-                  {selectedPart.specs && <p style={{ margin: 0, fontSize: '13px', color: '#8E8E93', fontWeight: '500' }}>{selectedPart.specs}</p>}
+                <div style={{ padding: '35px' }}>
+                  <span style={{ color: tokens.accent[selectedPart.cat], fontWeight: '900', fontSize: '10px', letterSpacing: '2px', textTransform: 'uppercase' }}>{selectedPart.brand}</span>
+                  <h3 style={{ margin: '5px 0 25px', fontSize: '28px', fontWeight: '900', letterSpacing: '-1px' }}>{selectedPart.name}</h3>
+                  <div style={{ display: 'grid', gap: '10px' }}>
+                     {selectedPart.specs.split('|').map((s, i) => (
+                        <div key={i} style={{ fontSize: '14px', color: tokens.text, background: 'rgba(255,255,255,0.04)', padding: '12px', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                          <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: tokens.accent[selectedPart.cat] }}></div>
+                          {s.trim()}
+                        </div>
+                     ))}
+                  </div>
+                  <button onClick={() => setSelectedPart(null)} style={{ width: '100%', marginTop: '30px', padding: '18px', background: '#fff', border: 'none', color: '#000', fontWeight: '900', borderRadius: '14px', cursor: 'pointer', fontSize: '12px', letterSpacing: '1px' }}>VOLTAR AO DECK</button>
                 </div>
               </div>
             )}
           </div>
-        </div>
   
-        {/* LISTAGEM DETALHADA - AGORA LIMPA E SEM REPETIÇÕES */}
-        <div style={{ padding: '40px 20px' }}>
-          <h3 style={{ fontSize: '16px', fontWeight: '900', color: '#1d1d1f', marginBottom: '20px' }}>Inventário {setupMode === 'principal' ? 'Principal' : 'Consolas'}</h3>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '12px' }}>
-            {inventoryItems.map(item => (
-              <div key={item.id + '_list'} onClick={() => setSelectedPart(item)} style={{ background: 'rgba(255,255,255,0.6)', padding: '20px', borderRadius: '25px', border: '1px solid rgba(255,255,255,0.8)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}>
-                 <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                    <span style={{ fontSize: '22px' }}>{item.icon}</span>
-                    <div>
-                       <p style={{ margin: 0, fontSize: '15px', fontWeight: '800', color: '#1d1d1f' }}>{item.name}</p>
-                       <p style={{ margin: 0, fontSize: '11px', color: '#8E8E93' }}>{item.brand}</p>
-                    </div>
-                 </div>
-                 <div style={{ fontSize: '18px', opacity: 0.2 }}>›</div>
+          <div className="grid-list">
+            {filteredItems.map(item => (
+              <div 
+                key={item.id} 
+                className="item-card" 
+                style={{ '--accent': tokens.accent[item.cat] }}
+                onClick={() => { setSelectedPart(item); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+              >
+                <div style={{ fontSize: '30px', background: 'rgba(255,255,255,0.03)', padding: '15px', borderRadius: '18px' }}>{item.icon}</div>
+                <div>
+                  <div style={{ fontSize: '10px', color: tokens.accent[item.cat], fontWeight: '900', letterSpacing: '1px', textTransform: 'uppercase' }}>{item.brand}</div>
+                  <div style={{ fontWeight: '900', fontSize: '19px', marginTop: '2px' }}>{item.name}</div>
+                </div>
               </div>
             ))}
           </div>
-        </div>
   
-        <style>{`
-          @keyframes ripple { 0% { transform: scale(0.8); opacity: 1; } 100% { transform: scale(2.5); opacity: 0; } }
-          @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        `}</style>
+          {setupMode === 'extra' && (
+  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginTop: '80px', paddingBottom: '40px' }}>
+    <p style={{ color: tokens.muted, fontSize: '11px', fontWeight: 'bold', letterSpacing: '3px', marginBottom: '20px' }}>
+      OPEN POKÉMON VAULT
+    </p>
+    <button 
+      className="pokebola-btn" 
+      onClick={() => alert('Em breve!')} 
+      style={{ 
+        width: '90px', 
+        height: '90px', 
+        borderRadius: '50%', 
+        border: '5px solid #000', 
+        background: '#fff', 
+        position: 'relative', 
+        cursor: 'pointer', 
+        overflow: 'hidden', 
+        boxShadow: '0 10px 30px rgba(255,0,0,0.3)' 
+      }}
+    >
+      {/* Parte Vermelha */}
+      <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '50%', background: '#ff0000', borderBottom: '5px solid #000' }}></div>
+      
+      {/* Botão Central - Corrigido zIndex */}
+      <div style={{ 
+        position: 'absolute', 
+        top: '50%', 
+        left: '50%', 
+        transform: 'translate(-50%, -50%)', 
+        width: '20px', 
+        height: '20px', 
+        background: '#fff', 
+        border: '5px solid #000', 
+        borderRadius: '50%', 
+        zIndex: 2 
+      }}></div>
+    </button>
+  </div>
+)}
+        </div>
       </div>
     );
   };
@@ -214,6 +320,7 @@ export default function App() {
   };
 
   // --- ESTADOS DO INVENTÁRIO ---
+  const [isLocked, setIsLocked] = useState(true);
   const [invFilter, setInvFilter] = useState('TODOS'); 
   const [viewPhoto, setViewPhoto] = useState(null); 
   const [inventory, setInventory] = useState([]);
@@ -450,7 +557,6 @@ const [isSearching, setIsSearching] = useState(false);
   const [list, setList] = useState([]);
   const [allUsers, setAllUsers] = useState({});
   const [activeTab, setActiveTab] = useState('home');
-  const [selectedPart, setSelectedPart] = useState(null); 
   const [showAddAccount, setShowAddAccount] = useState(false);
   const [transType, setTransType] = useState('expense');
   const [newAccName, setNewAccName] = useState('');
