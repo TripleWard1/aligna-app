@@ -51,65 +51,160 @@ const ACC_ICONS = ['👛', '🏦', '🐖', '💳', '💎', '📊', '💰'];
 export default function App() {
   // --- SISTEMA DE FEEDBACK (SOM E VIBRAÇÃO) ---
   const [audio] = useState(new Audio('https://www.myinstants.com/media/sounds/coin.mp3'));
+  const [setupMode, setSetupMode] = useState('principal');
+
   const renderSetupTab = () => {
-    // Estado local para os balões de informação
-    const [selectedPart, setSelectedPart] = useState(null);
-
-    const setupItems = [
-      { id: 'monitores', title: "Visual Station", specs: "LG UltraWide 34' + Dell 24' Vertical", icon: "🖥️", pos: { top: '35%', left: '45%' } },
-      { id: 'pc', title: "White Cyber Build", specs: "RTX 4070, i7 13700K, 32GB RAM DDR5", icon: "⚙️", pos: { top: '60%', left: '82%' } },
-      { id: 'perifericos', title: "Input Gear", specs: "Logitech G Pro X Superlight + Keychron K2", icon: "⌨️", pos: { top: '75%', left: '40%' } },
-      { id: 'audio', title: "Studio Sound", specs: "Focusrite Scarlett + Beyerdynamic DT990 Pro", icon: "🎧", pos: { top: '50%', left: '15%' } }
-    ];
-
+    // 1. DATABASE ORGANIZADA
+    const setupData = {
+      principal: [
+        { 
+          id: 'main_pc', 
+          name: 'Unidade Central', 
+          brand: 'Phanteks P500a Build', 
+          icon: '🖥️', 
+          pos: { top: '52%', left: '32%' }, 
+          img: '/specs/pc_build.jpg',
+          specs: 'Ryzen 5 5600X | RTX 3080 TUF | 32GB RAM | B550-E | H100i' 
+        },
+        { 
+          id: 'main_monitors', 
+          name: 'Visual Matrix', 
+          brand: 'Triple MSI Display', 
+          icon: '🖥️', 
+          pos: { top: '55%', left: '22%' }, 
+          img: '/specs/monitors.jpg',
+          specs: 'MSI MAG274QRF-QD + 2x MSI G-Series 27"'
+        },
+        { 
+          id: 'main_perifericos', 
+          name: 'Workstation Input', 
+          brand: 'Custom Peripherals', 
+          icon: '⌨️', 
+          pos: { top: '65%', left: '28%' }, 
+          img: '/specs/perifericos.jpg',
+          specs: 'Higround SNOWSTONE | Razer Naga Pro | GMK67 Evangelion | G703'
+        },
+        { 
+          id: 'main_audio', 
+          name: 'Estúdio de Áudio', 
+          brand: 'Astro & FDuce Setup', 
+          icon: '🎙️', 
+          pos: { top: '80%', left: '2%' }, 
+          img: '/specs/audio.jpg',
+          specs: 'Astro A50 | Mic FDuce SL40X | Mixer Fifine | Edifier'
+        },
+        { 
+          id: 'main_lights', 
+          name: 'Ecossistema Govee', 
+          brand: 'Smart Lighting', 
+          icon: '💡', 
+          pos: { top: '34%', left: '20%' }, 
+          img: '/specs/lights.jpg',
+          specs: '2x Govee Glide Bar + 2x Govee Rope Light'
+        },
+      ],
+      extra: [
+        { id: 'ex_mac', name: 'MacBook Air M3', brand: 'Apple 15"', icon: '🍎', pos: { top: '72%', left: '85%' }, img: '/specs/macbook.jpg' },
+        { id: 'ex_tcl', name: 'Entertainment Display', brand: 'TCL 55"', icon: '📺', pos: { top: '50%', left: '92%' }, img: '/specs/tcl.jpg' },
+        { id: 'ex_switch', name: 'Nintendo Hub', brand: 'Consola + Pro Controllers', icon: '🎮', pos: { top: '60%', left: '80%' }, img: '/specs/switch.jpg' },
+        // Itens do Vault: IDs diferentes para a foto, mas agruparemos na lista
+        { id: 'ex_vault_1', name: 'The Vault', brand: 'Retro & Pokémon', icon: '⭐', pos: { top: '45%', left: '81%' }, img: '/specs/vault.jpg', isVault: true },
+        { id: 'ex_vault_2', name: 'The Vault', brand: 'Up Shelf', icon: '⭐', pos: { top: '25%', left: '95%' }, img: '/specs/vault.jpg', isVault: true },
+        { id: 'ex_vault_3', name: 'The Vault', brand: 'Main Vault', icon: '⭐', pos: { top: '90%', left: '96%' }, img: '/specs/vault.jpg', isVault: true },
+      ]
+    };
+  
+    // Filtragem rigorosa por modo
+    const currentItems = setupMode === 'principal' ? setupData.principal : setupData.extra;
+  
+    // Criar lista para o Inventário (remove duplicados do Vault para a listagem)
+    const inventoryItems = currentItems.filter((item, index, self) => 
+      index === self.findIndex((t) => t.name === item.name && t.brand === item.brand)
+    );
+  
     return (
-      <div style={{ padding: '10px', animation: 'fadeIn 0.5s', paddingBottom: '120px' }}>
-        <h2 style={{ color: '#1C1C1E', textAlign: 'center', fontWeight: '900', fontSize: '24px', letterSpacing: '-1px', marginBottom: '20px' }}>MY SETUP</h2>
+      <div style={{ minHeight: '100vh', background: 'transparent', paddingBottom: '150px', animation: 'fadeIn 0.5s' }}>
         
-        {/* Foto com Hotspots */}
-        <div style={{ position: 'relative', borderRadius: '25px', overflow: 'hidden', boxShadow: '0 20px 40px rgba(0,0,0,0.2)', border: '4px solid white', marginBottom: '25px' }}>
-          <img src="/setup_foto.jpg" style={{ width: '100%', display: 'block', filter: selectedPart ? 'brightness(0.5) blur(2px)' : 'none', transition: '0.4s' }} />
-          
-          {setupItems.map(item => (
-            <div 
-              key={item.id}
-              onClick={() => { triggerHaptic('light'); setSelectedPart(item); }}
-              style={{ 
-                position: 'absolute', top: item.pos.top, left: item.pos.left,
-                width: '28px', height: '28px', background: 'rgba(0,122,255,0.8)',
-                borderRadius: '50%', border: '3px solid white', cursor: 'pointer',
-                boxShadow: '0 0 15px rgba(0,122,255,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                zIndex: 10
-              }}
-            >
-              <span style={{ fontSize: '12px' }}>{item.icon}</span>
-            </div>
-          ))}
-
-          {selectedPart && (
-            <div onClick={() => setSelectedPart(null)} style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 20, padding: '20px' }}>
-              <div style={{ background: 'rgba(255,255,255,0.9)', backdropFilter: 'blur(10px)', padding: '20px', borderRadius: '20px', textAlign: 'center', width: '80%' }}>
-                <div style={{ fontSize: '40px' }}>{selectedPart.icon}</div>
-                <h4 style={{ margin: 0, fontWeight: '900' }}>{selectedPart.title}</h4>
-                <p style={{ fontSize: '12px', color: '#8E8E93' }}>{selectedPart.specs}</p>
+        {/* SELETOR DE SETUP */}
+        <div style={{ padding: '20px', display: 'flex', justifyContent: 'center' }}>
+          <div style={{ background: 'rgba(0,0,0,0.05)', padding: '5px', borderRadius: '15px', display: 'flex', backdropFilter: 'blur(10px)' }}>
+            <button 
+              onClick={() => { setSetupMode('principal'); setSelectedPart(null); triggerHaptic('light'); }}
+              style={{ padding: '10px 20px', borderRadius: '12px', border: 'none', background: setupMode === 'principal' ? '#fff' : 'transparent', fontWeight: '800', fontSize: '12px', transition: '0.3s', cursor: 'pointer', boxShadow: setupMode === 'principal' ? '0 4px 10px rgba(0,0,0,0.1)' : 'none' }}
+            >PRINCIPAL</button>
+            <button 
+              onClick={() => { setSetupMode('extra'); setSelectedPart(null); triggerHaptic('light'); }}
+              style={{ padding: '10px 20px', borderRadius: '12px', border: 'none', background: setupMode === 'extra' ? '#fff' : 'transparent', fontWeight: '800', fontSize: '12px', transition: '0.3s', cursor: 'pointer', boxShadow: setupMode === 'extra' ? '0 4px 10px rgba(0,0,0,0.1)' : 'none' }}
+            >CONSOLAS / M3</button>
+          </div>
+        </div>
+  
+        {/* VISUALIZADOR COM PONTOS */}
+        <div style={{ padding: '0 15px' }}>
+          <div style={{ position: 'relative', borderRadius: '40px', overflow: 'hidden', boxShadow: '0 30px 60px rgba(0,0,0,0.2)', border: '2px solid #fff', background: '#000' }}>
+            <img 
+              src="/Foto Principal Setup.jpg" 
+              style={{ width: '100%', display: 'block', transition: '0.8s', filter: selectedPart ? 'brightness(0.3) blur(10px)' : 'brightness(0.9)' }} 
+            />
+            
+            {!selectedPart && currentItems.map(item => (
+              <div 
+                key={item.id}
+                onClick={() => { triggerHaptic('heavy'); setSelectedPart(item); }}
+                style={{ position: 'absolute', top: item.pos.top, left: item.pos.left, width: '32px', height: '32px', cursor: 'pointer', transform: 'translate(-50%, -50%)', zIndex: 10, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+              >
+                <div style={{ position: 'absolute', width: '100%', height: '100%', background: 'rgba(0,122,255,0.3)', borderRadius: '50%', animation: 'ripple 2s infinite' }} />
+                <div style={{ width: '12px', height: '12px', background: '#fff', borderRadius: '50%', border: '3px solid #007AFF', boxShadow: '0 0 15px #007AFF', position: 'relative', zIndex: 11 }} />
               </div>
-            </div>
-          )}
+            ))}
+  
+            {selectedPart && (
+              <div style={{ position: 'absolute', inset: 0, zIndex: 20, display: 'flex', flexDirection: 'column', animation: 'fadeIn 0.4s' }}>
+                <div style={{ flex: 1, background: '#000', position: 'relative' }}>
+                  <img 
+                    src={selectedPart.img} 
+                    onError={(e) => e.target.src = `https://via.placeholder.com/800x600/1c1c1e/ffffff?text=${selectedPart.name}`}
+                    style={{ width: '100%', height: '100%', objectFit: 'contain' }} 
+                  />
+                  <div onClick={() => setSelectedPart(null)} style={{ position: 'absolute', top: '25px', right: '25px', width: '45px', height: '45px', borderRadius: '50%', background: 'rgba(255,255,255,0.2)', backdropFilter: 'blur(10px)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', cursor: 'pointer' }}>✕</div>
+                </div>
+                <div style={{ background: 'rgba(255,255,255,0.95)', backdropFilter: 'blur(20px)', padding: '25px', borderTop: '1px solid rgba(0,0,0,0.05)' }}>
+                  <p style={{ margin: 0, fontSize: '11px', fontWeight: '800', color: '#007AFF', textTransform: 'uppercase' }}>{selectedPart.brand}</p>
+                  <h3 style={{ margin: '5px 0', fontSize: '24px', fontWeight: '900', color: '#1d1d1f' }}>{selectedPart.name}</h3>
+                  {selectedPart.specs && <p style={{ margin: 0, fontSize: '13px', color: '#8E8E93', fontWeight: '500' }}>{selectedPart.specs}</p>}
+                </div>
+              </div>
+            )}
+          </div>
         </div>
-
-        {/* Lista de Specs por baixo */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-          {setupItems.map(item => (
-            <div key={item.id + '_l'} style={{ background: 'white', padding: '15px', borderRadius: '20px', border: '1px solid #F2F2F7' }}>
-              <p style={{ margin: 0, fontSize: '11px', fontWeight: '900' }}>{item.icon} {item.title}</p>
-              <p style={{ margin: '4px 0 0 0', fontSize: '10px', color: '#8E8E93' }}>{item.specs}</p>
-            </div>
-          ))}
+  
+        {/* LISTAGEM DETALHADA - AGORA LIMPA E SEM REPETIÇÕES */}
+        <div style={{ padding: '40px 20px' }}>
+          <h3 style={{ fontSize: '16px', fontWeight: '900', color: '#1d1d1f', marginBottom: '20px' }}>Inventário {setupMode === 'principal' ? 'Principal' : 'Consolas'}</h3>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '12px' }}>
+            {inventoryItems.map(item => (
+              <div key={item.id + '_list'} onClick={() => setSelectedPart(item)} style={{ background: 'rgba(255,255,255,0.6)', padding: '20px', borderRadius: '25px', border: '1px solid rgba(255,255,255,0.8)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}>
+                 <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                    <span style={{ fontSize: '22px' }}>{item.icon}</span>
+                    <div>
+                       <p style={{ margin: 0, fontSize: '15px', fontWeight: '800', color: '#1d1d1f' }}>{item.name}</p>
+                       <p style={{ margin: 0, fontSize: '11px', color: '#8E8E93' }}>{item.brand}</p>
+                    </div>
+                 </div>
+                 <div style={{ fontSize: '18px', opacity: 0.2 }}>›</div>
+              </div>
+            ))}
+          </div>
         </div>
+  
+        <style>{`
+          @keyframes ripple { 0% { transform: scale(0.8); opacity: 1; } 100% { transform: scale(2.5); opacity: 0; } }
+          @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        `}</style>
       </div>
     );
   };
-
+  
   const triggerHaptic = (style = 'medium') => {
     if (typeof window !== 'undefined' && window.navigator && window.navigator.vibrate) {
       if (style === 'light') window.navigator.vibrate(10);
@@ -2012,8 +2107,12 @@ const filteredCards = pokemonCards
     )}
 
   </div>
+    )}
 
-  
+{activeTab === 'setup' && (
+  <div style={{ paddingBottom: '100px' }}>
+    {renderSetupTab()}
+  </div>
 )}
 
 {/* Menu Inferior Dinâmico */}
