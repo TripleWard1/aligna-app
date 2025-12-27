@@ -57,22 +57,22 @@ export default function App() {
   const [selectedPart, setSelectedPart] = useState(null);
   const [setupSearch, setSetupSearch] = useState('');
   const [setupFilter, setSetupFilter] = useState('ALL');
-
+  
   const renderSetupTab = () => {
     const tokens = {
-      bg: '#050608',
-      surface: '#0d0f12',
-      card: '#1c1f26',
-      border: 'rgba(255,255,255,0.08)',
-      text: '#f1f1f4',
-      muted: '#8a8d98',
+      bg: '#F8F9FD',
+      surface: '#FFFFFF',
+      card: '#FFFFFF',
+      border: 'rgba(0, 0, 0, 0.06)',
+      text: '#1A1B1E',
+      muted: '#7C7E8B',
       accent: {
-        PC: '#ff3b30',
-        DISPLAY: '#007aff',
-        INPUT: '#ff9500',
-        AUDIO: '#5856d6',
-        LIGHTS: '#34c759',
-        VAULT: '#ffcc00'
+        PC: '#FF4757',
+        DISPLAY: '#3742FA',
+        INPUT: '#FFA502',
+        AUDIO: '#70A1FF',
+        LIGHTS: '#2ED573',
+        VAULT: '#FFD32A'
       }
     };
   
@@ -88,7 +88,7 @@ export default function App() {
         { id: 'ex_mac', name: 'MacBook Air M3', brand: 'Apple 15"', icon: '🍎', pos: { top: '72%', left: '85%' }, img: '/specs/macbook.jpg', specs: 'Liquid Retina | M3 Chip', cat: 'INPUT' },
         { id: 'ex_tcl', name: 'Console Display', brand: 'TCL 55"', icon: '🎮', pos: { top: '50%', left: '92%' }, img: '/specs/tcl.jpg', specs: '4K HDR | 120Hz Gaming Mode', cat: 'DISPLAY' },
         { id: 'ex_switch', name: 'Nintendo Hub', brand: 'Switch OLED', icon: '🕹️', pos: { top: '60%', left: '80%' }, img: '/specs/switch.jpg', specs: 'Pro Controllers | Dock', cat: 'PC' },
-        { id: 'ex_vault_1', name: 'The Vault', brand: 'Retro Collection', icon: '⭐', pos: { top: '45%', left: '81%' }, img: '/specs/vault.jpg', isVault: true, specs: 'Pokémon TCG | Retro Handhelds', cat: 'VAULT' },
+        { id: 'ex_vault_1', name: 'The Vault', brand: 'Retro Collection', icon: '⭐', pos: { top: '45%', left: '81%' }, img: 'meu-setup-vault.jpg', isVault: true, specs: 'Card Collection | Rare Hardware', cat: 'VAULT' },
       ]
     };
   
@@ -96,151 +96,197 @@ export default function App() {
     const filteredItems = rawItems.filter(item => setupFilter === 'ALL' || item.cat === setupFilter);
   
     return (
-      <div className="setup-mobile-pro">
+      <div className="setup-mobile-pro" style={{ 
+        '--zoom-x': selectedPart ? selectedPart.pos.left : '50%',
+        '--zoom-y': selectedPart ? selectedPart.pos.top : '50%'
+      }}>
         <style>{`
-          @import url('https://fonts.googleapis.com/css2?family=Syncopate:wght@700&family=Inter:wght@400;700;900&display=swap');
+          @import url('https://fonts.googleapis.com/css2?family=Syncopate:wght@700&family=Outfit:wght@300;400;600;800&display=swap');
   
-          .setup-mobile-pro { background: ${tokens.bg}; color: ${tokens.text}; min-height: 100vh; font-family: 'Inter', sans-serif; padding-bottom: 100px; }
+          .setup-mobile-pro { 
+            background: ${tokens.bg}; 
+            color: ${tokens.text}; 
+            min-height: 100vh; 
+            font-family: 'Outfit', sans-serif; 
+            padding-bottom: 140px;
+            position: relative;
+            overflow-x: hidden;
+          }
+  
+          .setup-mobile-pro::before {
+            content: ''; position: fixed; inset: 0;
+            background-image: radial-gradient(circle at 2px 2px, rgba(0,0,0,0.03) 1px, transparent 0), linear-gradient(to bottom, transparent, #FFFFFF 80%);
+            background-size: 24px 24px, 100% 100%; z-index: 1; pointer-events: none;
+          }
+  
+          .setup-mobile-pro::after {
+            content: ''; position: fixed; inset: 0;
+            background: radial-gradient(circle at 10% 20%, rgba(112, 161, 255, 0.1) 0%, transparent 40%), radial-gradient(circle at 90% 80%, rgba(255, 71, 87, 0.08) 0%, transparent 40%);
+            animation: blobFloat 20s infinite alternate ease-in-out; z-index: 0; pointer-events: none; opacity: 0.6;
+          }
+  
+          @keyframes blobFloat {
+            0% { transform: scale(1) translate(0, 0); }
+            100% { transform: scale(1.1) translate(20px, 40px); }
+          }
+  
+          .st-header { padding: 40px 24px 20px; position: relative; z-index: 10; }
+          .st-header h1 { font-family: 'Syncopate'; font-size: 16px; letter-spacing: 4px; margin: 0; background: linear-gradient(90deg, #1A1B1E, #7C7E8B); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+          .st-header p { font-size: 11px; font-weight: 600; color: ${tokens.muted}; text-transform: uppercase; letter-spacing: 1px; margin-top: 4px; }
+  
+          .st-nav-pills { display: flex; background: #E9ECF5; padding: 6px; border-radius: 24px; margin-top: 25px; box-shadow: inset 0 2px 6px rgba(0,0,0,0.05); }
+          .st-pill { flex: 1; border: none; background: transparent; color: ${tokens.muted}; padding: 14px; border-radius: 20px; font-size: 12px; font-weight: 800; transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+          .st-pill.active { background: #FFFFFF; color: ${tokens.text}; box-shadow: 0 8px 20px rgba(0,0,0,0.08); transform: translateY(-1px); }
+  
+          /* IMAGE DYNAMICS & CINEMATIC ZOOM */
+          .st-photo-container { 
+            position: relative; margin: 0 24px; border-radius: 36px; 
+            border: 1px solid rgba(255,255,255,0.8);
+            box-shadow: 0 30px 60px -20px rgba(0,0,0,0.15), 0 0 0 10px rgba(255,255,255,0.5);
+            z-index: 10; overflow: hidden;
+            background: #000;
+          }
           
-          /* LANDING PAGE MOBILE */
-          .st-landing {
-            position: fixed; inset: 0; z-index: 10000; background: #000;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            transition: 0.8s cubic-bezier(0.9, 0, 0.1, 1); padding: 20px;
-          }
-          .st-landing.hide { transform: translateY(-100%); }
-          .st-landing-bg { position: absolute; inset: 0; background: url('/Foto Principal Setup.jpg') center/cover; filter: brightness(0.3) blur(2px); }
-          
-          .st-landing-title { position: relative; font-family: 'Syncopate', sans-serif; font-size: 28px; letter-spacing: 8px; margin-bottom: 40px; text-align: center; }
-          .st-enter-btn { 
-            position: relative; background: transparent; border: 1px solid #fff; color: #fff; 
-            padding: 18px 30px; font-family: 'Syncopate', sans-serif; font-size: 10px; letter-spacing: 3px;
-            border-radius: 4px; text-transform: uppercase;
+          .st-main-img { 
+            width: 100%; display: block; 
+            transition: transform 0.9s cubic-bezier(0.19, 1, 0.22, 1), filter 0.9s ease;
+            transform-origin: var(--zoom-x) var(--zoom-y);
+            will-change: transform;
           }
   
-          /* HEADER MOBILE */
-          .st-header { padding: 20px; display: flex; justify-content: space-between; align-items: center; }
-          .st-nav-pills { display: flex; background: ${tokens.surface}; padding: 4px; border-radius: 12px; }
-          .st-pill { border: none; background: transparent; color: ${tokens.muted}; padding: 8px 15px; border-radius: 8px; font-size: 10px; font-weight: 900; }
-          .st-pill.active { background: #fff; color: #000; }
-  
-          /* FOTO E HOTSPOTS */
-          .st-photo-container { position: relative; margin: 0 15px; border-radius: 24px; overflow: hidden; border: 1px solid ${tokens.border}; }
-          .st-main-img { width: 100%; display: block; transition: 0.5s; }
-          .st-main-img.blur { filter: brightness(0.3) blur(5px); }
-  
-          .st-hotspot {
-            position: absolute; width: 28px; height: 28px; border-radius: 50%; border: 2px solid #fff;
-            display: flex; align-items: center; justify-content: center; transform: translate(-50%, -50%);
-            font-size: 14px; box-shadow: 0 0 15px rgba(0,0,0,0.5); z-index: 5;
+          .st-main-img.zoom-active {
+            transform: scale(1.95);
+            filter: brightness(0.8) contrast(1.05);
           }
   
-          /* BOTTOM SHEET (MODAL MOBILE) */
-          .st-bottom-sheet {
-            position: fixed; left: 0; right: 0; bottom: 0; background: ${tokens.card};
-            border-top-left-radius: 30px; border-top-right-radius: 30px;
-            z-index: 1000; padding: 30px 20px; transform: translateY(100%);
-            transition: 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-            border-top: 1px solid ${tokens.border};
+          @media (max-width: 768px) {
+            .st-main-img.zoom-active { transform: scale(1.75); }
           }
-          .st-bottom-sheet.open { transform: translateY(0); }
-          .st-sheet-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 999; opacity: 0; pointer-events: none; transition: 0.3s; }
+  
+          .st-hotspot { position: absolute; width: 40px; height: 40px; transform: translate(-50%, -50%); display: flex; align-items: center; justify-content: center; z-index: 15; cursor: pointer; transition: opacity 0.4s; }
+          .st-hotspot-inner { width: 32px; height: 32px; background: #FFF; border-radius: 50%; border: 3px solid var(--color); display: flex; align-items: center; justify-content: center; box-shadow: 0 10px 20px rgba(0,0,0,0.2); transition: 0.3s; }
+          .st-hotspot:hover .st-hotspot-inner { transform: scale(1.2); box-shadow: 0 0 0 6px rgba(255,255,255,0.4), 0 15px 30px rgba(0,0,0,0.3); }
+          .st-hotspot.hidden { opacity: 0; pointer-events: none; }
+  
+          .st-list { padding: 40px 24px; display: grid; gap: 20px; position: relative; z-index: 10; }
+          .st-item { background: #FFFFFF; padding: 22px; border-radius: 30px; display: flex; align-items: center; gap: 20px; position: relative; border: 1px solid rgba(0,0,0,0.03); box-shadow: 0 10px 25px -5px rgba(0,0,0,0.04); transition: 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
+          .st-item::before { content: ''; position: absolute; left: 0; top: 25%; width: 4px; height: 50%; background: var(--accent); border-radius: 0 4px 4px 0; }
+          .st-item:hover { transform: translateY(-6px); box-shadow: 0 20px 40px -10px rgba(0,0,0,0.08); }
+          .st-item:active { transform: scale(0.97); }
+          .st-card-icon { width: 65px; height: 65px; background: #F8F9FD; border-radius: 22px; display: flex; align-items: center; justify-content: center; font-size: 28px; border: 1px solid rgba(0,0,0,0.04); box-shadow: inset 0 2px 4px rgba(0,0,0,0.02); }
+          .st-rarity-tag { font-size: 8px; font-weight: 900; color: #FFF; background: var(--accent); padding: 3px 8px; border-radius: 6px; letter-spacing: 1px; position: absolute; top: -8px; left: 22px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+  
+          /* THE VAULT MODAL IMAGE FIX */
+          .st-sheet { position: fixed; left: 0; right: 0; bottom: 0; background: #FFFFFF; border-top-left-radius: 44px; border-top-right-radius: 44px; z-index: 2000; padding: 45px 28px; transform: translateY(100%); transition: transform 0.6s cubic-bezier(0.19, 1, 0.22, 1); box-shadow: 0 -25px 50px rgba(0,0,0,0.1); }
+          .st-sheet.open { transform: translateY(0); }
+          .st-modal-hero { width: 100%; aspect-ratio: 16/9; border-radius: 28px; object-fit: cover; box-shadow: 0 15px 35px rgba(0,0,0,0.1); margin-bottom: 25px; }
+          .st-spec-pill { background: #F8F9FD; padding: 18px; border-radius: 20px; border: 1px solid rgba(0,0,0,0.02); display: flex; align-items: center; gap: 15px; font-size: 14px; font-weight: 600; }
+  
+          .st-sheet-overlay { position: fixed; inset: 0; background: rgba(26, 27, 30, 0.4); backdrop-filter: blur(4px); z-index: 1999; opacity: 0; pointer-events: none; transition: 0.6s; }
           .st-sheet-overlay.show { opacity: 1; pointer-events: auto; }
   
-          .st-close-bar { width: 40px; height: 5px; background: ${tokens.muted}; border-radius: 10px; margin: -10px auto 20px; opacity: 0.5; }
-  
-          /* LISTA DE ITENS */
-          .st-list { padding: 20px; display: grid; gap: 15px; }
-          .st-item { 
-            background: ${tokens.surface}; padding: 15px; border-radius: 18px; 
-            display: flex; align-items: center; gap: 15px; border: 1px solid ${tokens.border};
-          }
+          .vault-orb { width: 80px; height: 80px; border-radius: 50%; border: 6px solid #1A1B1E; background: #FFF; position: relative; overflow: hidden; box-shadow: 0 15px 30px rgba(0,0,0,0.15); transition: 0.4s; }
+          .orb-up { position: absolute; top: 0; width: 100%; height: 50%; background: #2ED573; border-bottom: 6px solid #1A1B1E; }
+          .orb-core { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 24px; height: 24px; background: #FFF; border: 6px solid #1A1B1E; border-radius: 50%; z-index: 2; }
         `}</style>
   
-        {/* CAPA DE ENTRADA */}
-        <div className={`st-landing ${!isLocked ? 'hide' : ''}`}>
-          <div className="st-landing-bg"></div>
-          <div className="st-landing-title">SYSTEM.IO</div>
-          <button className="st-enter-btn" onClick={() => setIsLocked(false)}>
-            Inicializar
-          </button>
-        </div>
-  
-        {/* HEADER */}
         <header className="st-header">
-          <div style={{ fontFamily: 'Syncopate', fontSize: '12px', letterSpacing: '2px' }}>MANIFEST</div>
+          <h1>GEAR COLLECT</h1>
+          <p>Hardware Collection // System 2025</p>
           <div className="st-nav-pills">
-            <button className={`st-pill ${setupMode === 'principal' ? 'active' : ''}`} onClick={() => setSetupMode('principal')}>ALPHA</button>
-            <button className={`st-pill ${setupMode === 'extra' ? 'active' : ''}`} onClick={() => setSetupMode('extra')}>VAULT</button>
+            <button className={`st-pill ${setupMode === 'principal' ? 'active' : ''}`} onClick={() => setSetupMode('principal')}>STATION ALPHA</button>
+            <button className={`st-pill ${setupMode === 'extra' ? 'active' : ''}`} onClick={() => setSetupMode('extra')}>THE VAULT</button>
           </div>
         </header>
   
-        {/* ÁREA DA FOTO */}
         <div className="st-photo-container">
-          <img src="/Foto Principal Setup.jpg" className={`st-main-img ${selectedPart ? 'blur' : ''}`} alt="Setup" />
-          
+          <img 
+            src="/Foto Principal Setup.jpg" 
+            className={`st-main-img ${selectedPart ? 'zoom-active' : ''}`} 
+            alt="Setup Board" 
+          />
           {rawItems.map(item => (
             <div 
               key={item.id} 
-              className="st-hotspot" 
-              style={{ top: item.pos.top, left: item.pos.left, backgroundColor: tokens.accent[item.cat] }}
+              className={`st-hotspot ${selectedPart ? 'hidden' : ''}`} 
+              style={{ '--color': tokens.accent[item.cat], top: item.pos.top, left: item.pos.left }}
               onClick={() => setSelectedPart(item)}
             >
-              {item.icon}
+              <div className="st-hotspot-inner">
+                <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: tokens.accent[item.cat] }}></div>
+              </div>
             </div>
           ))}
         </div>
   
-        {/* BOTTOM SHEET (O MODAL QUE ABRE) */}
+        <div className="st-list">
+          {filteredItems.map(item => (
+            <div 
+              key={item.id} 
+              className="st-item" 
+              style={{ 
+                '--accent': tokens.accent[item.cat],
+                borderLeft: selectedPart?.id === item.id ? `6px solid ${tokens.accent[item.cat]}` : '1px solid rgba(0,0,0,0.03)'
+              }} 
+              onClick={() => { setSelectedPart(item); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+            >
+              {item.isVault && <div className="st-rarity-tag" style={{ '--accent': tokens.accent[item.cat] }}>SPECIAL EDITION</div>}
+              <div className="st-card-icon">{item.icon}</div>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: '10px', color: tokens.accent[item.cat], fontWeight: '800', textTransform: 'uppercase', letterSpacing: '1px' }}>{item.brand}</div>
+                <div style={{ fontSize: '18px', fontWeight: '800', color: tokens.text, marginTop: '2px' }}>{item.name}</div>
+                <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
+                  <div style={{ fontSize: '9px', background: '#F0F2F8', padding: '4px 8px', borderRadius: '6px', color: tokens.muted, fontWeight: '700' }}>{item.cat}</div>
+                  <div style={{ fontSize: '9px', background: '#F0F2F8', padding: '4px 8px', borderRadius: '6px', color: tokens.muted, fontWeight: '700' }}>ID_{item.id.slice(-2)}</div>
+                </div>
+              </div>
+              <div style={{ opacity: 0.3, fontWeight: '900' }}>❯</div>
+            </div>
+          ))}
+        </div>
+  
         <div className={`st-sheet-overlay ${selectedPart ? 'show' : ''}`} onClick={() => setSelectedPart(null)}></div>
-        <div className={`st-bottom-sheet ${selectedPart ? 'open' : ''}`}>
-          <div className="st-close-bar"></div>
+  
+        <div className={`st-sheet ${selectedPart ? 'open' : ''}`}>
           {selectedPart && (
             <div>
-              <div style={{ display: 'flex', gap: '20px', marginBottom: '25px' }}>
-                 <img src={selectedPart.img} style={{ width: '100px', height: '100px', borderRadius: '20px', objectFit: 'cover' }} />
+              <div style={{ width: '50px', height: '6px', background: '#EEE', borderRadius: '10px', margin: '-15px auto 35px' }}></div>
+              
+              {/* GRANDE IMAGEM DO MÓDULO (Para o Vault ser visível) */}
+              <img src={selectedPart.img} className="st-modal-hero" alt={selectedPart.name} />
+              
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '30px' }}>
                  <div>
-                    <span style={{ color: tokens.accent[selectedPart.cat], fontSize: '10px', fontWeight: '900', letterSpacing: '1px' }}>{selectedPart.brand}</span>
-                    <h3 style={{ margin: '5px 0', fontSize: '20px', fontWeight: '900' }}>{selectedPart.name}</h3>
+                    <div style={{ background: `${tokens.accent[selectedPart.cat]}15`, color: tokens.accent[selectedPart.cat], padding: '4px 10px', borderRadius: '8px', fontSize: '10px', fontWeight: '900', display: 'inline-block', marginBottom: '8px' }}>{selectedPart.cat} MODULE</div>
+                    <h3 style={{ margin: 0, fontSize: '28px', fontWeight: '800', lineHeight: 1.1 }}>{selectedPart.name}</h3>
+                    <div style={{ fontSize: '13px', color: tokens.muted, fontWeight: '600', marginTop: '5px' }}>By {selectedPart.brand}</div>
                  </div>
               </div>
-              <div style={{ display: 'grid', gap: '8px' }}>
+  
+              <div style={{ display: 'grid', gap: '14px' }}>
                 {selectedPart.specs.split('|').map((s, i) => (
-                  <div key={i} style={{ background: 'rgba(255,255,255,0.03)', padding: '12px', borderRadius: '12px', fontSize: '13px' }}>
-                    • {s.trim()}
+                  <div key={i} className="st-spec-pill">
+                    <span style={{ color: tokens.accent[selectedPart.cat], opacity: 0.4 }}>✦</span>
+                    {s.trim()}
                   </div>
                 ))}
               </div>
+              
               <button 
                 onClick={() => setSelectedPart(null)} 
-                style={{ width: '100%', marginTop: '30px', padding: '15px', borderRadius: '15px', border: 'none', background: '#fff', color: '#000', fontWeight: '900' }}
+                style={{ width: '100%', marginTop: '40px', padding: '24px', borderRadius: '28px', border: 'none', background: tokens.text, color: '#FFF', fontWeight: '800', fontSize: '15px', letterSpacing: '1px' }}
               >
-                FECHAR
+                DISMISS MODULE
               </button>
             </div>
           )}
         </div>
   
-        {/* LISTA DE ITENS ABAIXO */}
-        <div className="st-list">
-          {filteredItems.map(item => (
-            <div key={item.id} className="st-item" onClick={() => { setSelectedPart(item); window.scrollTo({ top: 0, behavior: 'smooth' }); }}>
-              <div style={{ fontSize: '24px', background: 'rgba(255,255,255,0.03)', padding: '10px', borderRadius: '12px' }}>{item.icon}</div>
-              <div style={{ flex: 1 }}>
-                <div style={{ fontSize: '9px', color: tokens.accent[item.cat], fontWeight: '900' }}>{item.brand}</div>
-                <div style={{ fontSize: '15px', fontWeight: '900' }}>{item.name}</div>
-              </div>
-              <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: tokens.accent[item.cat] }}></div>
-            </div>
-          ))}
-        </div>
-  
-        {/* POKÉBOLA (APENAS NO VAULT) */}
         {setupMode === 'extra' && (
-          <div style={{ textAlign: 'center', marginTop: '40px' }}>
-            <button className="pokebola-btn" onClick={() => alert('Pokémon Vault!')} style={{ width: '60px', height: '60px', borderRadius: '50%', border: '4px solid #000', background: '#fff', position: 'relative', overflow: 'hidden' }}>
-              <div style={{ position: 'absolute', top: 0, width: '100%', height: '50%', background: '#ff0000', borderBottom: '4px solid #000' }}></div>
-              <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: '12px', height: '12px', background: '#fff', border: '4px solid #000', borderRadius: '50%', zIndex: 2 }}></div>
+          <div style={{ textAlign: 'center', marginTop: '10px', paddingBottom: '70px', position: 'relative', zIndex: 10 }}>
+            <button className="vault-orb" onClick={() => alert('Vault Access!')}>
+              <div className="orb-up"></div>
+              <div className="orb-core"></div>
             </button>
           </div>
         )}
