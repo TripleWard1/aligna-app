@@ -57,6 +57,7 @@ export default function App() {
   const [selectedPart, setSelectedPart] = useState(null);
   const [setupSearch, setSetupSearch] = useState('');
   const [setupFilter, setSetupFilter] = useState('ALL');
+  const [vaultSelectedId, setVaultSelectedId] = useState(null);
   
   const renderSetupTab = () => {
     const tokens = {
@@ -88,7 +89,21 @@ export default function App() {
         { id: 'ex_mac', name: 'MacBook Air M3', brand: 'Apple 15"', icon: '🍎', pos: { top: '72%', left: '85%' }, img: '/specs/macbook.jpg', specs: 'Liquid Retina | M3 Chip', cat: 'INPUT' },
         { id: 'ex_tcl', name: 'Console Display', brand: 'TCL 55"', icon: '🎮', pos: { top: '50%', left: '92%' }, img: '/specs/tcl.jpg', specs: '4K HDR | 120Hz Gaming Mode', cat: 'DISPLAY' },
         { id: 'ex_switch', name: 'Nintendo Hub', brand: 'Switch OLED', icon: '🕹️', pos: { top: '60%', left: '80%' }, img: '/specs/switch.jpg', specs: 'Pro Controllers | Dock', cat: 'PC' },
-        { id: 'ex_vault_1', name: 'The Vault', brand: 'Retro Collection', icon: '⭐', pos: { top: '45%', left: '81%' }, img: 'meu-setup-vault.jpg', isVault: true, specs: 'Card Collection | Rare Hardware', cat: 'VAULT' },
+        { 
+          id: 'ex_vault_1', 
+          name: 'The Vault', 
+          brand: 'Retro Collection', 
+          icon: '⭐', 
+          pos: { top: '45%', left: '81%' }, 
+          img: 'meu-setup-vault.jpg', 
+          isVault: true, 
+          specs: 'Card Collection | Rare Hardware', 
+          cat: 'VAULT',
+          hotspots: [
+            { id: 0, label: 'Cards', sub: 'Collection', top: '42%', left: '35%' },
+            { id: 1, label: 'Rare', sub: 'Hardware', top: '58%', left: '68%' }
+          ]
+        },
       ]
     };
   
@@ -103,66 +118,22 @@ export default function App() {
         <style>{`
           @import url('https://fonts.googleapis.com/css2?family=Syncopate:wght@700&family=Outfit:wght@300;400;600;800&display=swap');
   
-          .setup-mobile-pro { 
-            background: ${tokens.bg}; 
-            color: ${tokens.text}; 
-            min-height: 100vh; 
-            font-family: 'Outfit', sans-serif; 
-            padding-bottom: 140px;
-            position: relative;
-            overflow-x: hidden;
-          }
-  
-          .setup-mobile-pro::before {
-            content: ''; position: fixed; inset: 0;
-            background-image: radial-gradient(circle at 2px 2px, rgba(0,0,0,0.03) 1px, transparent 0), linear-gradient(to bottom, transparent, #FFFFFF 80%);
-            background-size: 24px 24px, 100% 100%; z-index: 1; pointer-events: none;
-          }
-  
-          .setup-mobile-pro::after {
-            content: ''; position: fixed; inset: 0;
-            background: radial-gradient(circle at 10% 20%, rgba(112, 161, 255, 0.1) 0%, transparent 40%), radial-gradient(circle at 90% 80%, rgba(255, 71, 87, 0.08) 0%, transparent 40%);
-            animation: blobFloat 20s infinite alternate ease-in-out; z-index: 0; pointer-events: none; opacity: 0.6;
-          }
-  
-          @keyframes blobFloat {
-            0% { transform: scale(1) translate(0, 0); }
-            100% { transform: scale(1.1) translate(20px, 40px); }
-          }
+          /* REVERSÃO DESIGN PÁGINA PRINCIPAL */
+          .setup-mobile-pro { background: ${tokens.bg}; color: ${tokens.text}; min-height: 100vh; font-family: 'Outfit', sans-serif; padding-bottom: 140px; position: relative; overflow-x: hidden; }
+          .setup-mobile-pro::before { content: ''; position: fixed; inset: 0; background-image: radial-gradient(circle at 2px 2px, rgba(0,0,0,0.03) 1px, transparent 0), linear-gradient(to bottom, transparent, #FFFFFF 80%); background-size: 24px 24px, 100% 100%; z-index: 1; pointer-events: none; }
+          .setup-mobile-pro::after { content: ''; position: fixed; inset: 0; background: radial-gradient(circle at 10% 20%, rgba(112, 161, 255, 0.1) 0%, transparent 40%), radial-gradient(circle at 90% 80%, rgba(255, 71, 87, 0.08) 0%, transparent 40%); animation: blobFloat 20s infinite alternate ease-in-out; z-index: 0; pointer-events: none; opacity: 0.6; }
+          @keyframes blobFloat { 0% { transform: scale(1) translate(0, 0); } 100% { transform: scale(1.1) translate(20px, 40px); } }
   
           .st-header { padding: 40px 24px 20px; position: relative; z-index: 10; }
           .st-header h1 { font-family: 'Syncopate'; font-size: 16px; letter-spacing: 4px; margin: 0; background: linear-gradient(90deg, #1A1B1E, #7C7E8B); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
           .st-header p { font-size: 11px; font-weight: 600; color: ${tokens.muted}; text-transform: uppercase; letter-spacing: 1px; margin-top: 4px; }
-  
           .st-nav-pills { display: flex; background: #E9ECF5; padding: 6px; border-radius: 24px; margin-top: 25px; box-shadow: inset 0 2px 6px rgba(0,0,0,0.05); }
           .st-pill { flex: 1; border: none; background: transparent; color: ${tokens.muted}; padding: 14px; border-radius: 20px; font-size: 12px; font-weight: 800; transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
           .st-pill.active { background: #FFFFFF; color: ${tokens.text}; box-shadow: 0 8px 20px rgba(0,0,0,0.08); transform: translateY(-1px); }
   
-          /* IMAGE DYNAMICS & CINEMATIC ZOOM */
-          .st-photo-container { 
-            position: relative; margin: 0 24px; border-radius: 36px; 
-            border: 1px solid rgba(255,255,255,0.8);
-            box-shadow: 0 30px 60px -20px rgba(0,0,0,0.15), 0 0 0 10px rgba(255,255,255,0.5);
-            z-index: 10; overflow: hidden;
-            background: #000;
-          }
-          
-          .st-main-img { 
-            width: 100%; display: block; 
-            transition: transform 0.9s cubic-bezier(0.19, 1, 0.22, 1), filter 0.9s ease;
-            transform-origin: var(--zoom-x) var(--zoom-y);
-            will-change: transform;
-          }
-  
-          .st-main-img.zoom-active {
-            transform: scale(1.95);
-            filter: brightness(0.8) contrast(1.05);
-          }
-  
-          @media (max-width: 768px) {
-            .st-main-img.zoom-active { transform: scale(1.75); }
-          }
-  
+          .st-photo-container { position: relative; margin: 0 24px; border-radius: 36px; border: 1px solid rgba(255,255,255,0.8); box-shadow: 0 30px 60px -20px rgba(0,0,0,0.15), 0 0 0 10px rgba(255,255,255,0.5); z-index: 10; overflow: hidden; background: #000; }
+          .st-main-img { width: 100%; display: block; transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1), filter 0.8s ease; transform-origin: var(--zoom-x) var(--zoom-y); will-change: transform; }
+          .st-main-img.zoom-active { transform: scale(1.8); filter: brightness(0.7) contrast(1.1); }
           .st-hotspot { position: absolute; width: 40px; height: 40px; transform: translate(-50%, -50%); display: flex; align-items: center; justify-content: center; z-index: 15; cursor: pointer; transition: opacity 0.4s; }
           .st-hotspot-inner { width: 32px; height: 32px; background: #FFF; border-radius: 50%; border: 3px solid var(--color); display: flex; align-items: center; justify-content: center; box-shadow: 0 10px 20px rgba(0,0,0,0.2); transition: 0.3s; }
           .st-hotspot:hover .st-hotspot-inner { transform: scale(1.2); box-shadow: 0 0 0 6px rgba(255,255,255,0.4), 0 15px 30px rgba(0,0,0,0.3); }
@@ -172,22 +143,45 @@ export default function App() {
           .st-item { background: #FFFFFF; padding: 22px; border-radius: 30px; display: flex; align-items: center; gap: 20px; position: relative; border: 1px solid rgba(0,0,0,0.03); box-shadow: 0 10px 25px -5px rgba(0,0,0,0.04); transition: 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
           .st-item::before { content: ''; position: absolute; left: 0; top: 25%; width: 4px; height: 50%; background: var(--accent); border-radius: 0 4px 4px 0; }
           .st-item:hover { transform: translateY(-6px); box-shadow: 0 20px 40px -10px rgba(0,0,0,0.08); }
-          .st-item:active { transform: scale(0.97); }
-          .st-card-icon { width: 65px; height: 65px; background: #F8F9FD; border-radius: 22px; display: flex; align-items: center; justify-content: center; font-size: 28px; border: 1px solid rgba(0,0,0,0.04); box-shadow: inset 0 2px 4px rgba(0,0,0,0.02); }
+          .st-card-icon { width: 65px; height: 65px; background: #F8F9FD; border-radius: 22px; display: flex; align-items: center; justify-content: center; font-size: 28px; border: 1px solid rgba(0,0,0,0.04); }
           .st-rarity-tag { font-size: 8px; font-weight: 900; color: #FFF; background: var(--accent); padding: 3px 8px; border-radius: 6px; letter-spacing: 1px; position: absolute; top: -8px; left: 22px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
   
-          /* THE VAULT MODAL IMAGE FIX */
-          .st-sheet { position: fixed; left: 0; right: 0; bottom: 0; background: #FFFFFF; border-top-left-radius: 44px; border-top-right-radius: 44px; z-index: 2000; padding: 45px 28px; transform: translateY(100%); transition: transform 0.6s cubic-bezier(0.19, 1, 0.22, 1); box-shadow: 0 -25px 50px rgba(0,0,0,0.1); }
+          .st-sheet { position: fixed; left: 0; right: 0; bottom: 0; background: #FFFFFF; border-top-left-radius: 44px; border-top-right-radius: 44px; z-index: 2000; padding: 45px 28px; transform: translateY(100%); transition: transform 0.6s cubic-bezier(0.19, 1, 0.22, 1); box-shadow: 0 -25px 50px rgba(0,0,0,0.1); max-height: 85vh; overflow-y: auto; }
           .st-sheet.open { transform: translateY(0); }
-          .st-modal-hero { width: 100%; aspect-ratio: 16/9; border-radius: 28px; object-fit: cover; box-shadow: 0 15px 35px rgba(0,0,0,0.1); margin-bottom: 25px; }
-          .st-spec-pill { background: #F8F9FD; padding: 18px; border-radius: 20px; border: 1px solid rgba(0,0,0,0.02); display: flex; align-items: center; gap: 15px; font-size: 14px; font-weight: 600; }
-  
           .st-sheet-overlay { position: fixed; inset: 0; background: rgba(26, 27, 30, 0.4); backdrop-filter: blur(4px); z-index: 1999; opacity: 0; pointer-events: none; transition: 0.6s; }
           .st-sheet-overlay.show { opacity: 1; pointer-events: auto; }
   
-          .vault-orb { width: 80px; height: 80px; border-radius: 50%; border: 6px solid #1A1B1E; background: #FFF; position: relative; overflow: hidden; box-shadow: 0 15px 30px rgba(0,0,0,0.15); transition: 0.4s; }
-          .orb-up { position: absolute; top: 0; width: 100%; height: 50%; background: #2ED573; border-bottom: 6px solid #1A1B1E; }
-          .orb-core { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 24px; height: 24px; background: #FFF; border: 6px solid #1A1B1E; border-radius: 50%; z-index: 2; }
+          /* UPGRADES EXCLUSIVOS DO VAULT FOCUS MODE */
+          .vault-hero-frame { 
+            position: relative; border-radius: 30px; overflow: hidden; 
+            background: #F1F3F7; min-height: 320px; display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1), inset 0 0 0 1px rgba(0,0,0,0.05);
+            margin-bottom: 30px;
+          }
+          .vault-hero-frame img { width: 100%; height: 100%; object-fit: contain; z-index: 1; }
+          .vault-hero-frame::before { content: ''; position: absolute; inset: 0; background: radial-gradient(circle at center, transparent 40%, rgba(0,0,0,0.02)); z-index: 2; pointer-events: none; }
+  
+          /* LEADER LINES SIMPLIFICADAS */
+          .v-line { position: absolute; background: var(--vault-color); height: 1.5px; opacity: 0; transition: 0.3s ease-out; transform-origin: left center; z-index: 3; pointer-events: none; }
+          .st-vault-hotspot:hover + .v-line, .st-vault-hotspot.active + .v-line { opacity: 0.6; width: 30px; }
+  
+          /* TOOLTIP INTELIGENTE E DISCRETO */
+          .v-tooltip {
+            position: absolute; background: #FFF; border-radius: 18px; padding: 6px; width: 150px;
+            box-shadow: 0 12px 30px rgba(0,0,0,0.15); opacity: 0; transform: translateY(10px);
+            transition: 0.2s cubic-bezier(0.2, 0.8, 0.2, 1); z-index: 110; pointer-events: none;
+          }
+          .st-vault-hotspot:hover .v-tooltip, .st-vault-hotspot:focus-within .v-tooltip { opacity: 1; transform: translateY(0); }
+          .v-tooltip.pos-right { left: 25px; top: -20px; }
+          .v-tooltip.pos-left { right: 25px; top: -20px; }
+          .v-thumb { width: 100%; height: 90px; border-radius: 12px; object-fit: cover; margin-bottom: 6px; border: 1px solid rgba(0,0,0,0.04); }
+  
+          .st-spec-pill { background: #F8F9FD; padding: 18px; border-radius: 20px; border: 1px solid rgba(0,0,0,0.02); display: flex; align-items: center; gap: 15px; font-size: 14px; font-weight: 600; transition: 0.3s; cursor: pointer; }
+          .st-spec-pill.active { background: #FFF; border-color: var(--vault-color); box-shadow: 0 10px 25px -5px rgba(255, 211, 42, 0.25); transform: translateX(6px); }
+  
+          .st-vault-hotspot { position: absolute; transform: translate(-50%, -50%); z-index: 100; cursor: pointer; outline: none; }
+          .st-vault-dot { width: 18px; height: 18px; background: #FFF; border: 4px solid var(--vault-color); border-radius: 50%; box-shadow: 0 0 10px rgba(0,0,0,0.2); transition: 0.3s; }
+          .st-vault-hotspot.active .st-vault-dot { transform: scale(1.3); box-shadow: 0 0 15px var(--vault-color); }
         `}</style>
   
         <header className="st-header">
@@ -200,96 +194,91 @@ export default function App() {
         </header>
   
         <div className="st-photo-container">
-          <img 
-            src="/Foto Principal Setup.jpg" 
-            className={`st-main-img ${selectedPart ? 'zoom-active' : ''}`} 
-            alt="Setup Board" 
-          />
+          <img src="/Foto Principal Setup.jpg" className={`st-main-img ${selectedPart ? 'zoom-active' : ''}`} alt="Setup" />
           {rawItems.map(item => (
-            <div 
-              key={item.id} 
-              className={`st-hotspot ${selectedPart ? 'hidden' : ''}`} 
-              style={{ '--color': tokens.accent[item.cat], top: item.pos.top, left: item.pos.left }}
-              onClick={() => setSelectedPart(item)}
-            >
-              <div className="st-hotspot-inner">
-                <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: tokens.accent[item.cat] }}></div>
-              </div>
+            <div key={item.id} className={`st-hotspot ${selectedPart ? 'hidden' : ''}`} style={{ '--color': tokens.accent[item.cat], top: item.pos.top, left: item.pos.left }} onClick={() => { setSelectedPart(item); setVaultSelectedId(null); }}>
+              <div className="st-hotspot-inner"><div style={{ width: '6px', height: '6px', borderRadius: '50%', background: tokens.accent[item.cat] }}></div></div>
             </div>
           ))}
         </div>
   
         <div className="st-list">
           {filteredItems.map(item => (
-            <div 
-              key={item.id} 
-              className="st-item" 
-              style={{ 
-                '--accent': tokens.accent[item.cat],
-                borderLeft: selectedPart?.id === item.id ? `6px solid ${tokens.accent[item.cat]}` : '1px solid rgba(0,0,0,0.03)'
-              }} 
-              onClick={() => { setSelectedPart(item); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
-            >
-              {item.isVault && <div className="st-rarity-tag" style={{ '--accent': tokens.accent[item.cat] }}>SPECIAL EDITION</div>}
+            <div key={item.id} className="st-item" style={{ '--accent': tokens.accent[item.cat], borderLeft: selectedPart?.id === item.id ? `6px solid ${tokens.accent[item.cat]}` : '1px solid rgba(0,0,0,0.03)' }} onClick={() => { setSelectedPart(item); setVaultSelectedId(null); window.scrollTo({ top: 0, behavior: 'smooth' }); }}>
+              {item.isVault && <div className="st-rarity-tag">SPECIAL EDITION</div>}
               <div className="st-card-icon">{item.icon}</div>
               <div style={{ flex: 1 }}>
-                <div style={{ fontSize: '10px', color: tokens.accent[item.cat], fontWeight: '800', textTransform: 'uppercase', letterSpacing: '1px' }}>{item.brand}</div>
-                <div style={{ fontSize: '18px', fontWeight: '800', color: tokens.text, marginTop: '2px' }}>{item.name}</div>
-                <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
-                  <div style={{ fontSize: '9px', background: '#F0F2F8', padding: '4px 8px', borderRadius: '6px', color: tokens.muted, fontWeight: '700' }}>{item.cat}</div>
-                  <div style={{ fontSize: '9px', background: '#F0F2F8', padding: '4px 8px', borderRadius: '6px', color: tokens.muted, fontWeight: '700' }}>ID_{item.id.slice(-2)}</div>
-                </div>
+                <div style={{ fontSize: '10px', color: tokens.accent[item.cat], fontWeight: '800', textTransform: 'uppercase' }}>{item.brand}</div>
+                <div style={{ fontSize: '18px', fontWeight: '800', color: tokens.text }}>{item.name}</div>
               </div>
-              <div style={{ opacity: 0.3, fontWeight: '900' }}>❯</div>
             </div>
           ))}
         </div>
   
-        <div className={`st-sheet-overlay ${selectedPart ? 'show' : ''}`} onClick={() => setSelectedPart(null)}></div>
+        <div className={`st-sheet-overlay ${selectedPart ? 'show' : ''}`} onClick={() => { setSelectedPart(null); setVaultSelectedId(null); }}></div>
   
         <div className={`st-sheet ${selectedPart ? 'open' : ''}`}>
           {selectedPart && (
             <div>
               <div style={{ width: '50px', height: '6px', background: '#EEE', borderRadius: '10px', margin: '-15px auto 35px' }}></div>
               
-              {/* GRANDE IMAGEM DO MÓDULO (Para o Vault ser visível) */}
-              <img src={selectedPart.img} className="st-modal-hero" alt={selectedPart.name} />
-              
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '30px' }}>
-                 <div>
-                    <div style={{ background: `${tokens.accent[selectedPart.cat]}15`, color: tokens.accent[selectedPart.cat], padding: '4px 10px', borderRadius: '8px', fontSize: '10px', fontWeight: '900', display: 'inline-block', marginBottom: '8px' }}>{selectedPart.cat} MODULE</div>
-                    <h3 style={{ margin: 0, fontSize: '28px', fontWeight: '800', lineHeight: 1.1 }}>{selectedPart.name}</h3>
-                    <div style={{ fontSize: '13px', color: tokens.muted, fontWeight: '600', marginTop: '5px' }}>By {selectedPart.brand}</div>
-                 </div>
+              {/* VAULT HERO DYNAMICS */}
+              <div className="vault-hero-frame">
+                <img src={selectedPart.img} className={selectedPart.cat === 'VAULT' ? 'contain' : 'cover'} />
+                
+                {selectedPart.cat === 'VAULT' && selectedPart.hotspots?.map(hs => (
+                  <div key={hs.id}>
+                    <div 
+                      className={`st-vault-hotspot ${vaultSelectedId === hs.id ? 'active' : ''}`}
+                      style={{ top: hs.top, left: hs.left, '--vault-color': tokens.accent.VAULT }}
+                      onClick={(e) => { e.stopPropagation(); setVaultSelectedId(hs.id); }}
+                    >
+                      <div className="st-vault-dot"></div>
+                      
+                      {/* TOOLTIP INTELIGENTE */}
+                      <div className={`v-tooltip ${parseFloat(hs.left) > 50 ? 'pos-left' : 'pos-right'}`}>
+                        <img src={selectedPart.img} className="v-thumb" />
+                        <div style={{ textAlign: 'center' }}>
+                          <div style={{ fontWeight: '800', fontSize: '12px' }}>{hs.label}</div>
+                          <div style={{ fontSize: '9px', color: tokens.muted }}>{hs.sub}</div>
+                        </div>
+                      </div>
+                    </div>
+                    {/* LEADER LINE SVG-STYLE PSEUDO */}
+                    <div className="v-line" style={{ 
+                      top: hs.top, left: hs.left, 
+                      transform: `rotate(${parseFloat(hs.left) > 50 ? '180deg' : '0deg'}) translateX(10px)`,
+                      '--vault-color': tokens.accent.VAULT 
+                    }}></div>
+                  </div>
+                ))}
+              </div>
+  
+              <div style={{ marginBottom: '25px' }}>
+                <div style={{ background: `${tokens.accent[selectedPart.cat]}15`, color: tokens.accent[selectedPart.cat], padding: '4px 10px', borderRadius: '8px', fontSize: '10px', fontWeight: '900', display: 'inline-block' }}>{selectedPart.cat} MODULE</div>
+                <h3 style={{ margin: '8px 0 0', fontSize: '28px', fontWeight: '800' }}>{selectedPart.name}</h3>
               </div>
   
               <div style={{ display: 'grid', gap: '14px' }}>
                 {selectedPart.specs.split('|').map((s, i) => (
-                  <div key={i} className="st-spec-pill">
+                  <div 
+                    key={i} 
+                    className={`st-spec-pill ${vaultSelectedId === i ? 'active' : ''}`}
+                    style={{ '--vault-color': tokens.accent.VAULT }}
+                    onClick={() => selectedPart.cat === 'VAULT' && setVaultSelectedId(i)}
+                  >
                     <span style={{ color: tokens.accent[selectedPart.cat], opacity: 0.4 }}>✦</span>
                     {s.trim()}
                   </div>
                 ))}
               </div>
-              
-              <button 
-                onClick={() => setSelectedPart(null)} 
-                style={{ width: '100%', marginTop: '40px', padding: '24px', borderRadius: '28px', border: 'none', background: tokens.text, color: '#FFF', fontWeight: '800', fontSize: '15px', letterSpacing: '1px' }}
-              >
+  
+              <button onClick={() => { setSelectedPart(null); setVaultSelectedId(null); }} style={{ width: '100%', marginTop: '40px', padding: '24px', borderRadius: '28px', border: 'none', background: tokens.text, color: '#FFF', fontWeight: '800', fontSize: '15px' }}>
                 DISMISS MODULE
               </button>
             </div>
           )}
         </div>
-  
-        {setupMode === 'extra' && (
-          <div style={{ textAlign: 'center', marginTop: '10px', paddingBottom: '70px', position: 'relative', zIndex: 10 }}>
-            <button className="vault-orb" onClick={() => alert('Vault Access!')}>
-              <div className="orb-up"></div>
-              <div className="orb-core"></div>
-            </button>
-          </div>
-        )}
       </div>
     );
   };
