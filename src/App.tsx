@@ -235,7 +235,18 @@ export default function App() {
           .st-main-img.zoom-active { transform: scale(1.8); filter: brightness(0.7) contrast(1.1); }
           
           .st-hotspot { position: absolute; width: 40px; height: 40px; transform: translate(-50%, -50%); display: flex; align-items: center; justify-content: center; z-index: 15; cursor: pointer; }
-          .st-hotspot-inner { width: 32px; height: 32px; background: #FFF; border-radius: 50%; border: 3px solid var(--color); display: flex; align-items: center; justify-content: center; box-shadow: 0 10px 20px rgba(0,0,0,0.2); transition: 0.3s; }
+          
+          /* ALTERAÇÃO AQUI: FUNDO TRANSPARENTE PÁGINA PRINCIPAL */
+          .st-hotspot-inner { 
+              width: 32px; height: 32px; 
+              background: transparent; 
+              border-radius: 50%; 
+              border: 3px solid var(--color); 
+              display: flex; align-items: center; justify-content: center; 
+              box-shadow: 0 10px 20px rgba(0,0,0,0.2); 
+              transition: 0.3s; 
+          }
+          
           .st-hotspot.hidden { opacity: 0; pointer-events: none; }
   
           .st-list { padding: 40px 24px; display: grid; gap: 20px; position: relative; z-index: 10; }
@@ -263,10 +274,20 @@ export default function App() {
           .v-thumb { width: 100%; height: 90px; border-radius: 12px; object-fit: cover; margin-bottom: 6px; border: 1px solid rgba(0,0,0,0.04); }
   
           .st-spec-pill { background: #F8F9FD; padding: 18px; border-radius: 20px; border: 1px solid rgba(0,0,0,0.02); display: flex; align-items: center; gap: 15px; font-size: 14px; font-weight: 600; transition: 0.3s; cursor: pointer; }
-          .st-spec-pill.active { background: #FFF; border-color: var(--vault-color); box-shadow: 0 10px 25px -5px rgba(255, 211, 42, 0.25); transform: translateX(6px); }
+          .st-spec-pill.active { background: #FFF; border-color: var(--vault-color); box-shadow: 0 10px 25px -5px rgba(255, 211, 42, 0.25); transform: translateX(60px); }
   
           .st-vault-hotspot { position: absolute; transform: translate(-50%, -50%); z-index: 100; cursor: pointer; outline: none; }
-          .st-vault-dot { width: 18px; height: 18px; background: #FFF; border: 4px solid var(--vault-color); border-radius: 50%; box-shadow: 0 0 10px rgba(0,0,0,0.2); transition: 0.3s; }
+          
+          /* ALTERAÇÃO AQUI: FUNDO TRANSPARENTE FOCUS MODE */
+          .st-vault-dot { 
+              width: 18px; height: 18px; 
+              background: transparent; 
+              border: 4px solid var(--vault-color); 
+              border-radius: 50%; 
+              box-shadow: 0 0 10px rgba(0,0,0,0.2); 
+              transition: 0.3s; 
+          }
+          
           .st-vault-hotspot.active .st-vault-dot { transform: scale(1.3); box-shadow: 0 0 15px var(--vault-color); }
         `}</style>
   
