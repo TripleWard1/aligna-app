@@ -9,6 +9,17 @@ import './Setup.css';
 
 const TWELVE_DATA_KEY = "49563e179ee146c5a53279200c654f29";
 
+const handleLogin = () => {
+  // Verifica se o email e a senha preenchidos batem com os gravados nas definições
+  if (email === settings.email && password === settings.password) {
+    if (typeof triggerHaptic === 'function') triggerHaptic('medium');
+    setUser(email); // Define o utilizador ativo para entrar na app
+    localStorage.setItem('f_user', email); // Guarda a sessão no navegador
+  } else {
+    alert("Dados incorretos. Tenta novamente!");
+  }
+};
+
 // Objeto CATEGORIES atualizado no seu Código Principal
 const CATEGORIES = {
   alimentacao: { label: 'Alimentação', icon: '🍔', color: '#FF9500' },
@@ -48,6 +59,8 @@ const expenseCategories = [
 const ASSET_TYPES = ['ETF', 'Ações', 'Crypto', 'Bonds', 'PPR', 'Outro'];
 const AVATARS = ['👤', '👨‍💻', '👩‍💼', '🧥', '🎨', '🚀', '🐱', '🦁', '⭐'];
 const ACC_ICONS = ['👛', '🏦', '🐖', '💳', '💎', '📊', '💰'];
+
+
 
 export default function App() {
   // --- SISTEMA DE FEEDBACK (SOM E VIBRAÇÃO) ---
@@ -1132,7 +1145,23 @@ const filteredCards = pokemonCards
             {selectingUser && (
               <div style={{ marginTop: '20px', backgroundColor: 'white', padding: '20px', borderRadius: '25px', boxShadow: '0 20px 40px rgba(0,0,0,0.08)' }}>
                 <input type="password" placeholder="Password" autoFocus value={loginPass} onChange={e => setLoginPass(e.target.value)} style={{ width: '100%', padding: '15px', borderRadius: '15px', border: '1px solid #F2F2F7', boxSizing: 'border-box', marginBottom: '10px', backgroundColor: '#F8F9FB', fontSize: '16px' }} />
-                <button onClick={() => handleEntry(selectingUser)} style={{ width: '100%', padding: '15px', backgroundColor: '#007AFF', color: 'white', border: 'none', borderRadius: '15px', fontWeight: '800' }}>Entrar</button>
+                <button 
+  onClick={handleLogin} 
+  style={{ 
+    width: '100%', 
+    padding: '18px', 
+    backgroundColor: '#007AFF', 
+    color: 'white', 
+    borderRadius: '18px', 
+    border: 'none', 
+    fontSize: '16px', 
+    fontWeight: '900', 
+    marginTop: '10px',
+    cursor: 'pointer'
+  }}
+>
+  Entrar
+</button>
               </div>
             )}
 
