@@ -79,29 +79,128 @@ export default function App() {
   
     const setupData = {
       principal: [
-        { id: 'main_pc', name: 'Unidade Central', brand: 'Phanteks P500a', icon: '🖥️', pos: { top: '52%', left: '32%' }, img: '/specs/pc_build.jpg', specs: 'Ryzen 5 5600X | RTX 3080 TUF | 32GB RAM', cat: 'PC' },
-        { id: 'main_monitors', name: 'Visual Matrix', brand: 'Triple MSI', icon: '📺', pos: { top: '55%', left: '22%' }, img: '/specs/monitors.jpg', specs: 'MAG274QRF-QD | 2x G-Series 27"', cat: 'DISPLAY' },
-        { id: 'main_perifericos', name: 'Input Deck', brand: 'Custom Keys', icon: '⌨️', pos: { top: '65%', left: '28%' }, img: '/specs/perifericos.jpg', specs: 'Higround | Razer Naga | GMK67', cat: 'INPUT' },
-        { id: 'main_audio', name: 'Studio Audio', brand: 'Astro & FDuce', icon: '🎙️', pos: { top: '80%', left: '15%' }, img: '/specs/audio.jpg', specs: 'Astro A50 | Mic SL40X | Mixer Fifine', cat: 'AUDIO' },
-        { id: 'main_lights', name: 'Govee Ambient', brand: 'Smart Lights', icon: '💡', pos: { top: '34%', left: '20%' }, img: '/specs/lights.jpg', specs: '2x Glide Bar | 2x Rope Light', cat: 'LIGHTS' },
+        { 
+          id: 'main_pc', 
+          name: 'PC', 
+          brand: 'COMPONENTES', 
+          icon: '🖥️', 
+          pos: { top: '52%', left: '32%' }, 
+          img: '/specs/pc_build.jpg', 
+          cat: 'PC',
+          specs: 'Caixa: Phanteks P500a | Motherboard: Asus Rog Strix B550-E Gaming | Memórias: Gskill Trident Z DDR4 6000MHz CL30 | CPU: AMD Ryzen 5 5600X | GPU: Nvidia GeForce RTX 3080 (ASUS TUF Gaming) | Fonte: NZXT Gold 850W | Cooler: Corsair H100i Platinum',
+          hotspots: [
+            { id: 0, label: 'Caixa', sub: 'Phanteks', top: '30%', left: '50%' },
+            { id: 1, label: 'GPU', sub: 'RTX 3080', top: '55%', left: '45%' },
+            { id: 2, label: 'RAM', sub: 'Gskill', top: '40%', left: '60%' },
+            { id: 3, label: 'Cooler', sub: 'Corsair', top: '25%', left: '55%' }
+          ]
+        },
+        { 
+          id: 'main_monitors', 
+          name: 'MONITORES', 
+          brand: 'MAG274QRF-QD', 
+          icon: '📺', 
+          pos: { top: '55%', left: '22%' }, 
+          img: '/specs/monitors.jpg', 
+          cat: 'DISPLAY',
+          specs: 'Monitor: MAG274QRF-QD 27"',
+          hotspots: [{ id: 0, label: 'Monitor Principal', sub: 'MSI 27"', top: '50%', left: '50%' }]
+        },
+        { 
+          id: 'main_perifericos', 
+          name: 'DESK SETUP', 
+          brand: 'PERIFÉRICOS + MESA', 
+          icon: '⌨️', 
+          pos: { top: '65%', left: '28%' }, 
+          img: '/specs/perifericos.jpg', 
+          cat: 'INPUT',
+          specs: 'Rato: Logitech G703 Lightspeed | Teclado: Higround Basecamp 65+ SNOWSTONE | Microfone: FDuce SL40X | Mixer: Fifine Mixer | Braço Microfone: Elgato Low Profile Arm | Barra de Luz: Xiaomi Mi Computer Light | LED: Govee Rope Light | Desk: IKEA LAGKAPTEN + Alex',
+          hotspots: [
+            { id: 0, label: 'Rato', sub: 'G703', top: '70%', left: '60%' },
+            { id: 1, label: 'Teclado', sub: 'Higround', top: '65%', left: '45%' },
+            { id: 2, label: 'Mic', sub: 'FDuce', top: '40%', left: '30%' }
+          ]
+        },
+        { 
+          id: 'main_audio', 
+          name: 'AUDIO', 
+          brand: 'Astro A50 & XSANYUN', 
+          icon: '🎙️', 
+          pos: { top: '80%', left: '15%' }, 
+          img: '/specs/audio.jpg', 
+          cat: 'AUDIO',
+          specs: 'Headset: Astro A50 | Colunas: xSanuyn',
+          hotspots: [
+            { id: 0, label: 'Headset', sub: 'Astro A50', top: '40%', left: '50%' },
+            { id: 1, label: 'Colunas', sub: 'xSanuyn', top: '70%', left: '50%' }
+          ]
+        },
+        { 
+          id: 'main_lights', 
+          name: 'TOP SHELF', 
+          brand: 'GOVEE + DECORAÇÃO', 
+          icon: '💡', 
+          pos: { top: '34%', left: '20%' }, 
+          img: '/specs/lights.jpg', 
+          cat: 'LIGHTS',
+          specs: 'Misc: 2 Quadros 3D Personalizados | Decoração: 5 Plantas IKEA | LED: Govee Light Strip',
+          hotspots: [
+            { id: 0, label: 'Quadros 3D', sub: 'Nintendo/DC', top: '40%', left: '40%' },
+            { id: 1, label: 'Plantas', sub: 'IKEA', top: '50%', left: '60%' }
+          ]
+        },
       ],
       extra: [
-        { id: 'ex_mac', name: 'MacBook Air M3', brand: 'Apple 15"', icon: '🍎', pos: { top: '72%', left: '85%' }, img: '/specs/macbook.jpg', specs: 'Liquid Retina | M3 Chip', cat: 'INPUT' },
-        { id: 'ex_tcl', name: 'Console Display', brand: 'TCL 55"', icon: '🎮', pos: { top: '50%', left: '92%' }, img: '/specs/tcl.jpg', specs: '4K HDR | 120Hz Gaming Mode', cat: 'DISPLAY' },
-        { id: 'ex_switch', name: 'Nintendo Hub', brand: 'Switch OLED', icon: '🕹️', pos: { top: '60%', left: '80%' }, img: '/specs/switch.jpg', specs: 'Pro Controllers | Dock', cat: 'PC' },
+        { 
+          id: 'ex_mac', 
+          name: 'LAPTOP DESK SETUP', 
+          brand: 'MACBOOK M3 15"', 
+          icon: '🍎', 
+          pos: { top: '72%', left: '85%' }, 
+          img: '/specs/macbook.jpg', 
+          cat: 'INPUT',
+          specs: 'Laptop: Macbook M3 15" | Rato: Logitech Pebble | Desk: IKEA LAGKAPTEN + Alex',
+          hotspots: [{ id: 0, label: 'Macbook', sub: 'M3 Chip', top: '50%', left: '50%' }]
+        },
+        { 
+          id: 'ex_tcl', 
+          name: 'TV', 
+          brand: 'TCL 55"', 
+          icon: '🎮', 
+          pos: { top: '50%', left: '92%' }, 
+          img: '/specs/tcl.jpg', 
+          cat: 'DISPLAY',
+          specs: 'TV: TCL 55"',
+          hotspots: [{ id: 0, label: 'Display', sub: '4K HDR', top: '50%', left: '50%' }]
+        },
+        { 
+          id: 'ex_switch', 
+          name: 'Nintendo Hub', 
+          brand: 'Switch', 
+          icon: '🕹️', 
+          pos: { top: '60%', left: '80%' }, 
+          img: '/specs/switch.jpg', 
+          cat: 'PC',
+          specs: 'Consola: Nintendo Switch Preta | Comandos: 2 x Nintendo Switch Pro Controller',
+          hotspots: [
+            { id: 0, label: 'Switch', sub: 'Console', top: '50%', left: '50%' },
+            { id: 1, label: 'Pro Controller', sub: 'Nintendo', top: '70%', left: '40%' }
+          ]
+        },
         { 
           id: 'ex_vault_1', 
-          name: 'The Vault', 
+          name: 'COLLECTIBLES', 
           brand: 'Retro Collection', 
           icon: '⭐', 
           pos: { top: '45%', left: '81%' }, 
           img: 'meu-setup-vault.jpg', 
           isVault: true, 
-          specs: 'Card Collection | Rare Hardware', 
           cat: 'VAULT',
+          specs: 'Consola: Dreamcast + Comando Original | Collectibles: Sealed Shrouded Fable ETB | Collectibles: Sealed White Flare ETB | Collectibles: Sealed Black Bolt ETB',
           hotspots: [
-            { id: 0, label: 'Cards', sub: 'Collection', top: '42%', left: '35%' },
-            { id: 1, label: 'Rare', sub: 'Hardware', top: '58%', left: '68%' }
+            { id: 0, label: 'Dreamcast', sub: 'Console + Pad', top: '40%', left: '30%' },
+            { id: 1, label: 'ETB Shrouded', sub: 'Sealed', top: '55%', left: '50%' },
+            { id: 2, label: 'ETB Flare/Bolt', sub: 'Sealed', top: '65%', left: '70%' }
           ]
         },
       ]
@@ -118,7 +217,7 @@ export default function App() {
         <style>{`
           @import url('https://fonts.googleapis.com/css2?family=Syncopate:wght@700&family=Outfit:wght@300;400;600;800&display=swap');
   
-          /* REVERSÃO DESIGN PÁGINA PRINCIPAL */
+          /* DESIGN PÁGINA PRINCIPAL REVERTIDO */
           .setup-mobile-pro { background: ${tokens.bg}; color: ${tokens.text}; min-height: 100vh; font-family: 'Outfit', sans-serif; padding-bottom: 140px; position: relative; overflow-x: hidden; }
           .setup-mobile-pro::before { content: ''; position: fixed; inset: 0; background-image: radial-gradient(circle at 2px 2px, rgba(0,0,0,0.03) 1px, transparent 0), linear-gradient(to bottom, transparent, #FFFFFF 80%); background-size: 24px 24px, 100% 100%; z-index: 1; pointer-events: none; }
           .setup-mobile-pro::after { content: ''; position: fixed; inset: 0; background: radial-gradient(circle at 10% 20%, rgba(112, 161, 255, 0.1) 0%, transparent 40%), radial-gradient(circle at 90% 80%, rgba(255, 71, 87, 0.08) 0%, transparent 40%); animation: blobFloat 20s infinite alternate ease-in-out; z-index: 0; pointer-events: none; opacity: 0.6; }
@@ -128,49 +227,36 @@ export default function App() {
           .st-header h1 { font-family: 'Syncopate'; font-size: 16px; letter-spacing: 4px; margin: 0; background: linear-gradient(90deg, #1A1B1E, #7C7E8B); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
           .st-header p { font-size: 11px; font-weight: 600; color: ${tokens.muted}; text-transform: uppercase; letter-spacing: 1px; margin-top: 4px; }
           .st-nav-pills { display: flex; background: #E9ECF5; padding: 6px; border-radius: 24px; margin-top: 25px; box-shadow: inset 0 2px 6px rgba(0,0,0,0.05); }
-          .st-pill { flex: 1; border: none; background: transparent; color: ${tokens.muted}; padding: 14px; border-radius: 20px; font-size: 12px; font-weight: 800; transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+          .st-pill { flex: 1; border: none; background: transparent; color: ${tokens.muted}; padding: 14px; border-radius: 20px; font-size: 12px; font-weight: 800; transition: 0.4s; }
           .st-pill.active { background: #FFFFFF; color: ${tokens.text}; box-shadow: 0 8px 20px rgba(0,0,0,0.08); transform: translateY(-1px); }
   
           .st-photo-container { position: relative; margin: 0 24px; border-radius: 36px; border: 1px solid rgba(255,255,255,0.8); box-shadow: 0 30px 60px -20px rgba(0,0,0,0.15), 0 0 0 10px rgba(255,255,255,0.5); z-index: 10; overflow: hidden; background: #000; }
-          .st-main-img { width: 100%; display: block; transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1), filter 0.8s ease; transform-origin: var(--zoom-x) var(--zoom-y); will-change: transform; }
+          .st-main-img { width: 100%; display: block; transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1), filter 0.8s ease; transform-origin: var(--zoom-x) var(--zoom-y); }
           .st-main-img.zoom-active { transform: scale(1.8); filter: brightness(0.7) contrast(1.1); }
-          .st-hotspot { position: absolute; width: 40px; height: 40px; transform: translate(-50%, -50%); display: flex; align-items: center; justify-content: center; z-index: 15; cursor: pointer; transition: opacity 0.4s; }
+          
+          .st-hotspot { position: absolute; width: 40px; height: 40px; transform: translate(-50%, -50%); display: flex; align-items: center; justify-content: center; z-index: 15; cursor: pointer; }
           .st-hotspot-inner { width: 32px; height: 32px; background: #FFF; border-radius: 50%; border: 3px solid var(--color); display: flex; align-items: center; justify-content: center; box-shadow: 0 10px 20px rgba(0,0,0,0.2); transition: 0.3s; }
-          .st-hotspot:hover .st-hotspot-inner { transform: scale(1.2); box-shadow: 0 0 0 6px rgba(255,255,255,0.4), 0 15px 30px rgba(0,0,0,0.3); }
           .st-hotspot.hidden { opacity: 0; pointer-events: none; }
   
           .st-list { padding: 40px 24px; display: grid; gap: 20px; position: relative; z-index: 10; }
-          .st-item { background: #FFFFFF; padding: 22px; border-radius: 30px; display: flex; align-items: center; gap: 20px; position: relative; border: 1px solid rgba(0,0,0,0.03); box-shadow: 0 10px 25px -5px rgba(0,0,0,0.04); transition: 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
+          .st-item { background: #FFFFFF; padding: 22px; border-radius: 30px; display: flex; align-items: center; gap: 20px; position: relative; border: 1px solid rgba(0,0,0,0.03); box-shadow: 0 10px 25px -5px rgba(0,0,0,0.04); transition: 0.3s; }
           .st-item::before { content: ''; position: absolute; left: 0; top: 25%; width: 4px; height: 50%; background: var(--accent); border-radius: 0 4px 4px 0; }
-          .st-item:hover { transform: translateY(-6px); box-shadow: 0 20px 40px -10px rgba(0,0,0,0.08); }
           .st-card-icon { width: 65px; height: 65px; background: #F8F9FD; border-radius: 22px; display: flex; align-items: center; justify-content: center; font-size: 28px; border: 1px solid rgba(0,0,0,0.04); }
-          .st-rarity-tag { font-size: 8px; font-weight: 900; color: #FFF; background: var(--accent); padding: 3px 8px; border-radius: 6px; letter-spacing: 1px; position: absolute; top: -8px; left: 22px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+          .st-rarity-tag { font-size: 8px; font-weight: 900; color: #FFF; background: var(--accent); padding: 3px 8px; border-radius: 6px; position: absolute; top: -8px; left: 22px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
   
           .st-sheet { position: fixed; left: 0; right: 0; bottom: 0; background: #FFFFFF; border-top-left-radius: 44px; border-top-right-radius: 44px; z-index: 2000; padding: 45px 28px; transform: translateY(100%); transition: transform 0.6s cubic-bezier(0.19, 1, 0.22, 1); box-shadow: 0 -25px 50px rgba(0,0,0,0.1); max-height: 85vh; overflow-y: auto; }
           .st-sheet.open { transform: translateY(0); }
           .st-sheet-overlay { position: fixed; inset: 0; background: rgba(26, 27, 30, 0.4); backdrop-filter: blur(4px); z-index: 1999; opacity: 0; pointer-events: none; transition: 0.6s; }
           .st-sheet-overlay.show { opacity: 1; pointer-events: auto; }
   
-          /* UPGRADES EXCLUSIVOS DO VAULT FOCUS MODE */
-          .vault-hero-frame { 
-            position: relative; border-radius: 30px; overflow: hidden; 
-            background: #F1F3F7; min-height: 320px; display: flex; align-items: center; justify-content: center;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.1), inset 0 0 0 1px rgba(0,0,0,0.05);
-            margin-bottom: 30px;
-          }
+          /* FOCUS MODE UPGRADES */
+          .vault-hero-frame { position: relative; border-radius: 30px; overflow: hidden; background: #F1F3F7; min-height: 320px; display: flex; align-items: center; justify-content: center; margin-bottom: 30px; box-shadow: 0 15px 35px rgba(0,0,0,0.1); }
           .vault-hero-frame img { width: 100%; height: 100%; object-fit: contain; z-index: 1; }
-          .vault-hero-frame::before { content: ''; position: absolute; inset: 0; background: radial-gradient(circle at center, transparent 40%, rgba(0,0,0,0.02)); z-index: 2; pointer-events: none; }
-  
-          /* LEADER LINES SIMPLIFICADAS */
-          .v-line { position: absolute; background: var(--vault-color); height: 1.5px; opacity: 0; transition: 0.3s ease-out; transform-origin: left center; z-index: 3; pointer-events: none; }
+          
+          .v-line { position: absolute; background: var(--vault-color); height: 1.5px; opacity: 0; transition: 0.3s; transform-origin: left center; z-index: 3; pointer-events: none; }
           .st-vault-hotspot:hover + .v-line, .st-vault-hotspot.active + .v-line { opacity: 0.6; width: 30px; }
   
-          /* TOOLTIP INTELIGENTE E DISCRETO */
-          .v-tooltip {
-            position: absolute; background: #FFF; border-radius: 18px; padding: 6px; width: 150px;
-            box-shadow: 0 12px 30px rgba(0,0,0,0.15); opacity: 0; transform: translateY(10px);
-            transition: 0.2s cubic-bezier(0.2, 0.8, 0.2, 1); z-index: 110; pointer-events: none;
-          }
+          .v-tooltip { position: absolute; background: #FFF; border-radius: 18px; padding: 6px; width: 150px; box-shadow: 0 12px 30px rgba(0,0,0,0.15); opacity: 0; transform: translateY(10px); transition: 0.2s; z-index: 110; pointer-events: none; }
           .st-vault-hotspot:hover .v-tooltip, .st-vault-hotspot:focus-within .v-tooltip { opacity: 1; transform: translateY(0); }
           .v-tooltip.pos-right { left: 25px; top: -20px; }
           .v-tooltip.pos-left { right: 25px; top: -20px; }
@@ -188,15 +274,15 @@ export default function App() {
           <h1>GEAR COLLECT</h1>
           <p>Hardware Collection // System 2025</p>
           <div className="st-nav-pills">
-            <button className={`st-pill ${setupMode === 'principal' ? 'active' : ''}`} onClick={() => setSetupMode('principal')}>STATION ALPHA</button>
-            <button className={`st-pill ${setupMode === 'extra' ? 'active' : ''}`} onClick={() => setSetupMode('extra')}>THE VAULT</button>
+            <button className={`st-pill ${setupMode === 'principal' ? 'active' : ''}`} onClick={() => setSetupMode('principal')}>MAIN SETUP</button>
+            <button className={`st-pill ${setupMode === 'extra' ? 'active' : ''}`} onClick={() => setSetupMode('extra')}>SECOND SETUP</button>
           </div>
         </header>
   
         <div className="st-photo-container">
           <img src="/Foto Principal Setup.jpg" className={`st-main-img ${selectedPart ? 'zoom-active' : ''}`} alt="Setup" />
           {rawItems.map(item => (
-            <div key={item.id} className={`st-hotspot ${selectedPart ? 'hidden' : ''}`} style={{ '--color': tokens.accent[item.cat], top: item.pos.top, left: item.pos.left }} onClick={() => { setSelectedPart(item); setVaultSelectedId(null); }}>
+            <div key={item.id} className={`st-hotspot ${selectedPart ? 'hidden' : ''}`} style={{ '--color': tokens.accent[item.cat], top: item.pos.top, left: item.pos.left }} onClick={() => { setSelectedPart(item); setVaultSelectedId(null); triggerHaptic('medium'); }}>
               <div className="st-hotspot-inner"><div style={{ width: '6px', height: '6px', borderRadius: '50%', background: tokens.accent[item.cat] }}></div></div>
             </div>
           ))}
@@ -222,20 +308,16 @@ export default function App() {
             <div>
               <div style={{ width: '50px', height: '6px', background: '#EEE', borderRadius: '10px', margin: '-15px auto 35px' }}></div>
               
-              {/* VAULT HERO DYNAMICS */}
               <div className="vault-hero-frame">
-                <img src={selectedPart.img} className={selectedPart.cat === 'VAULT' ? 'contain' : 'cover'} />
-                
-                {selectedPart.cat === 'VAULT' && selectedPart.hotspots?.map(hs => (
+                <img src={selectedPart.img} alt={selectedPart.name} />
+                {selectedPart.hotspots?.map(hs => (
                   <div key={hs.id}>
                     <div 
                       className={`st-vault-hotspot ${vaultSelectedId === hs.id ? 'active' : ''}`}
-                      style={{ top: hs.top, left: hs.left, '--vault-color': tokens.accent.VAULT }}
-                      onClick={(e) => { e.stopPropagation(); setVaultSelectedId(hs.id); }}
+                      style={{ top: hs.top, left: hs.left, '--vault-color': tokens.accent[selectedPart.cat] }}
+                      onClick={(e) => { e.stopPropagation(); setVaultSelectedId(hs.id); triggerHaptic('light'); }}
                     >
                       <div className="st-vault-dot"></div>
-                      
-                      {/* TOOLTIP INTELIGENTE */}
                       <div className={`v-tooltip ${parseFloat(hs.left) > 50 ? 'pos-left' : 'pos-right'}`}>
                         <img src={selectedPart.img} className="v-thumb" />
                         <div style={{ textAlign: 'center' }}>
@@ -244,12 +326,7 @@ export default function App() {
                         </div>
                       </div>
                     </div>
-                    {/* LEADER LINE SVG-STYLE PSEUDO */}
-                    <div className="v-line" style={{ 
-                      top: hs.top, left: hs.left, 
-                      transform: `rotate(${parseFloat(hs.left) > 50 ? '180deg' : '0deg'}) translateX(10px)`,
-                      '--vault-color': tokens.accent.VAULT 
-                    }}></div>
+                    <div className="v-line" style={{ top: hs.top, left: hs.left, transform: `rotate(${parseFloat(hs.left) > 50 ? '180deg' : '0deg'}) translateX(10px)`, '--vault-color': tokens.accent[selectedPart.cat] }}></div>
                   </div>
                 ))}
               </div>
@@ -264,8 +341,8 @@ export default function App() {
                   <div 
                     key={i} 
                     className={`st-spec-pill ${vaultSelectedId === i ? 'active' : ''}`}
-                    style={{ '--vault-color': tokens.accent.VAULT }}
-                    onClick={() => selectedPart.cat === 'VAULT' && setVaultSelectedId(i)}
+                    style={{ '--vault-color': tokens.accent[selectedPart.cat] }}
+                    onClick={() => setVaultSelectedId(i)}
                   >
                     <span style={{ color: tokens.accent[selectedPart.cat], opacity: 0.4 }}>✦</span>
                     {s.trim()}
@@ -281,14 +358,6 @@ export default function App() {
         </div>
       </div>
     );
-  };
-  
-  const triggerHaptic = (style = 'medium') => {
-    if (typeof window !== 'undefined' && window.navigator && window.navigator.vibrate) {
-      if (style === 'light') window.navigator.vibrate(10);
-      else if (style === 'medium') window.navigator.vibrate(30);
-      else if (style === 'error') window.navigator.vibrate([50, 30, 50]);
-    }
   };
 
   // --- ESTADOS DO INVENTÁRIO ---
