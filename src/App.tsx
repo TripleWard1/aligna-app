@@ -619,6 +619,12 @@ const [isSearching, setIsSearching] = useState(false);
   const [list, setList] = useState([]);
   const [allUsers, setAllUsers] = useState({});
   const [activeTab, setActiveTab] = useState('home');
+  const triggerHaptic = (style = 'light') => {
+    if (window.navigator && window.navigator.vibrate) {
+      const duration = style === 'heavy' ? 100 : style === 'medium' ? 50 : 20;
+      window.navigator.vibrate(duration);
+    }
+  };
   const [showAddAccount, setShowAddAccount] = useState(false);
   const [transType, setTransType] = useState('expense');
   const [newAccName, setNewAccName] = useState('');
