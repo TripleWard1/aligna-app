@@ -225,7 +225,7 @@ const SetupComponent = () => {
         .st-item { background: #FFFFFF; padding: 22px; border-radius: 30px; display: flex; align-items: center; gap: 20px; border: 1px solid rgba(0,0,0,0.03); cursor: pointer; }
         .st-card-icon { width: 65px; height: 65px; background: #F8F9FD; border-radius: 22px; display: flex; align-items: center; justify-content: center; font-size: 28px; }
 
-        /* CORREÇÃO DO SCROLL NA JANELA (SHEET) */
+        /* AJUSTE PARA NÃO CORTAR A IMAGEM NO TOPO */
         .st-sheet { 
           position: fixed; 
           bottom: 0; 
@@ -235,19 +235,19 @@ const SetupComponent = () => {
           border-top-left-radius: 44px; 
           border-top-right-radius: 44px; 
           z-index: 2000; 
-          padding: 45px 28px 140px; /* Padding extra no fundo para não bater na tab bar */
+          padding: 24px 28px 140px; 
           transform: translateY(100%); 
           transition: 0.6s cubic-bezier(0.19, 1, 0.22, 1); 
-          max-height: 85vh; /* Altura máxima para garantir que não ocupa o ecrã todo */
-          overflow-y: auto; /* Ativa o scroll interno */
-          -webkit-overflow-scrolling: touch; /* Scroll suave no iOS */
+          max-height: 92vh; 
+          overflow-y: auto; 
+          -webkit-overflow-scrolling: touch; 
         }
         .st-sheet.open { transform: translateY(0); }
         .st-sheet-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); backdrop-filter: blur(4px); z-index: 1999; display: none; }
         .st-sheet-overlay.show { display: block; }
 
-        .vault-hero-frame { position: relative; border-radius: 30px; overflow: hidden; background: #F1F3F7; margin-bottom: 30px; }
-        .vault-hero-frame img { width: 100%; display: block; }
+        .vault-hero-frame { position: relative; border-radius: 30px; overflow: hidden; background: #F1F3F7; margin-bottom: 30px; margin-top: 10px; }
+        .vault-hero-frame img { width: 100%; display: block; object-fit: contain; }
         .st-vault-hotspot { position: absolute; transform: translate(-50%, -50%); }
         .st-vault-dot { width: 18px; height: 18px; border: 4px solid var(--vault-color); border-radius: 50%; }
         
