@@ -203,12 +203,13 @@ const SetupComponent = () => {
         <style>{`
           @import url('https://fonts.googleapis.com/css2?family=Syncopate:wght@700&family=Outfit:wght@300;400;600;800&display=swap');
           .setup-mobile-pro { background: ${tokens.bg}; color: ${tokens.text}; min-height: 100vh; font-family: 'Outfit', sans-serif; padding-bottom: 60px; position: relative; overflow-x: hidden; }
-          .st-header { padding: 40px 24px 20px; position: relative; z-index: 10; }
+          .st-header { padding: 80px 24px 20px; position: relative; z-index: 10; text-align: center; }
           .st-header h1 { font-family: 'Syncopate'; font-size: 16px; letter-spacing: 4px; margin: 0; background: linear-gradient(90deg, #1A1B1E, #7C7E8B); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
           .st-header p { font-size: 11px; font-weight: 600; color: ${tokens.muted}; text-transform: uppercase; letter-spacing: 1px; margin-top: 4px; }
           
-          .st-nav-pills { display: flex; background: #E9ECF5; padding: 6px; border-radius: 24px; margin-top: 25px; box-shadow: inset 0 2px 6px rgba(0,0,0,0.05); }
-          .st-pill { flex: 1; border: none; background: transparent; color: ${tokens.muted}; padding: 14px; border-radius: 20px; font-size: 12px; font-weight: 800; transition: 0.4s; cursor: pointer; }
+          .st-nav-container { display: flex; justify-content: center; width: 100%; margin-top: 25px; }
+          .st-nav-pills { display: flex; background: #E9ECF5; padding: 6px; border-radius: 24px; box-shadow: inset 0 2px 6px rgba(0,0,0,0.05); width: fit-content; }
+          .st-pill { border: none; background: transparent; color: ${tokens.muted}; padding: 14px 24px; border-radius: 20px; font-size: 12px; font-weight: 800; transition: 0.4s; cursor: pointer; }
           .st-pill.active { background: #FFFFFF; color: ${tokens.text}; box-shadow: 0 8px 20px rgba(0,0,0,0.08); transform: translateY(-1px); }
   
           .st-photo-container { position: relative; margin: 0 24px; border-radius: 36px; border: 1px solid rgba(255,255,255,0.8); box-shadow: 0 30px 60px -20px rgba(0,0,0,0.15), 0 0 0 10px rgba(255,255,255,0.5); z-index: 10; overflow: hidden; background: #000; }
@@ -240,16 +241,18 @@ const SetupComponent = () => {
           .st-spec-pill { background: #F8F9FD; padding: 18px; border-radius: 20px; border: 1px solid rgba(0,0,0,0.02); display: flex; align-items: center; gap: 15px; font-size: 14px; font-weight: 600; transition: 0.3s; cursor: pointer; }
         `}</style>
 
-        <button onClick={handleShare} style={{ position: 'absolute', top: '40px', right: '24px', background: 'white', padding: '10px 16px', borderRadius: '14px', border: '1px solid rgba(0,0,0,0.05)', fontSize: '10px', fontWeight: '900', boxShadow: '0 4px 12px rgba(0,0,0,0.05)', zIndex: 100, cursor: 'pointer' }}>
+        <button onClick={handleShare} style={{ position: 'absolute', top: '24px', right: '24px', background: 'white', padding: '10px 16px', borderRadius: '14px', border: '1px solid rgba(0,0,0,0.05)', fontSize: '10px', fontWeight: '900', boxShadow: '0 4px 12px rgba(0,0,0,0.05)', zIndex: 100, cursor: 'pointer' }}>
           PARTILHAR 📤
         </button>
   
         <header className="st-header">
-          <h1>GEAR COLLECT</h1>
-          <p>Hardware Collection // System 2025</p>
-          <div className="st-nav-pills">
-            <button className={`st-pill ${setupMode === 'principal' ? 'active' : ''}`} onClick={() => setSetupMode('principal')}>MAIN SETUP</button>
-            <button className={`st-pill ${setupMode === 'extra' ? 'active' : ''}`} onClick={() => setSetupMode('extra')}>SECOND SETUP</button>
+          <h1>DUAL SETUP</h1>
+          <p>Hugo Barros // Setup Battlestation</p>
+          <div className="st-nav-container">
+            <div className="st-nav-pills">
+              <button className={`st-pill ${setupMode === 'principal' ? 'active' : ''}`} onClick={() => setSetupMode('principal')}>MAIN SETUP</button>
+              <button className={`st-pill ${setupMode === 'extra' ? 'active' : ''}`} onClick={() => setSetupMode('extra')}>SECOND SETUP</button>
+            </div>
           </div>
         </header>
   
