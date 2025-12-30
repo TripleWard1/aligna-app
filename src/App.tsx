@@ -70,20 +70,23 @@ export default function App() {
 // import { useState, useEffect } from 'react';
 
 useEffect(() => {
-  // 1. Vamos ler o que está escrito na URL após o "?"
+  // Captura os parâmetros da URL
   const params = new URLSearchParams(window.location.search);
   const tabParam = params.get('tab');
 
-  // 2. Se o parâmetro for 'setup', forçamos a troca de aba
+  // SÓ muda para setup se o parâmetro estiver lá explicitamente
   if (tabParam === 'setup') {
-    // Substitui 'setActiveTab' pelo nome REAL da tua função de estado
-    // Exemplo: se usas 'setAba', escreve setAba('setup');
+    // Substitui 'setActiveTab' pelo nome da tua função (ex: setView)
     setActiveTab('setup'); 
     
-    // Opcional: Limpa a URL para o link ficar "bonito" novamente
+    // IMPORTANTE: Limpa o parâmetro da URL após entrar. 
+    // Assim, se o user fizer "refresh", ele não fica preso no setup.
     window.history.replaceState({}, '', window.location.pathname);
+  } else {
+    // Se não houver parâmetro (link normal), garante que começa na Home
+    // setActiveTab('home'); 
   }
-}, []); // Este [] faz o código correr apenas 1 vez quando a app abre
+}, []);
   const [setupMode, setSetupMode] = useState('principal');
   const [selectedPart, setSelectedPart] = useState(null);
   const [setupSearch, setSetupSearch] = useState('');
