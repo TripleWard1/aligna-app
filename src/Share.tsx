@@ -225,7 +225,23 @@ const SetupComponent = () => {
         .st-item { background: #FFFFFF; padding: 22px; border-radius: 30px; display: flex; align-items: center; gap: 20px; border: 1px solid rgba(0,0,0,0.03); cursor: pointer; }
         .st-card-icon { width: 65px; height: 65px; background: #F8F9FD; border-radius: 22px; display: flex; align-items: center; justify-content: center; font-size: 28px; }
 
-        .st-sheet { position: fixed; bottom: 0; left: 0; right: 0; background: #FFFFFF; border-top-left-radius: 44px; border-top-right-radius: 44px; z-index: 2000; padding: 45px 28px 120px; transform: translateY(100%); transition: 0.6s cubic-bezier(0.19, 1, 0.22, 1); max-height: 90vh; overflow-y: auto; }
+        /* CORREÇÃO DO SCROLL NA JANELA (SHEET) */
+        .st-sheet { 
+          position: fixed; 
+          bottom: 0; 
+          left: 0; 
+          right: 0; 
+          background: #FFFFFF; 
+          border-top-left-radius: 44px; 
+          border-top-right-radius: 44px; 
+          z-index: 2000; 
+          padding: 45px 28px 140px; /* Padding extra no fundo para não bater na tab bar */
+          transform: translateY(100%); 
+          transition: 0.6s cubic-bezier(0.19, 1, 0.22, 1); 
+          max-height: 85vh; /* Altura máxima para garantir que não ocupa o ecrã todo */
+          overflow-y: auto; /* Ativa o scroll interno */
+          -webkit-overflow-scrolling: touch; /* Scroll suave no iOS */
+        }
         .st-sheet.open { transform: translateY(0); }
         .st-sheet-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); backdrop-filter: blur(4px); z-index: 1999; display: none; }
         .st-sheet-overlay.show { display: block; }
@@ -239,7 +255,6 @@ const SetupComponent = () => {
         
         .st-spec-pill { background: #F8F9FD; padding: 16px; border-radius: 18px; font-size: 14px; font-weight: 600; margin-bottom: 10px; }
 
-        /* --- CORREÇÃO FINAL DE CENTRALIZAÇÃO DA TAB BAR --- */
         .st-bottom-nav-wrapper {
           position: fixed;
           bottom: 30px;
@@ -249,7 +264,7 @@ const SetupComponent = () => {
           justify-content: center;
           align-items: center;
           z-index: 9999;
-          pointer-events: none; /* Deixa clicar no que está atrás se não for na barra */
+          pointer-events: none;
         }
         .st-bottom-nav { 
           display: flex; 
@@ -261,7 +276,7 @@ const SetupComponent = () => {
           border-radius: 40px; 
           box-shadow: 0 15px 35px rgba(0,0,0,0.15); 
           border: 1px solid rgba(255,255,255,0.5);
-          pointer-events: auto; /* Reativa cliques apenas na barra */
+          pointer-events: auto;
         }
         .st-nav-item { background: none; border: none; font-size: 24px; cursor: pointer; opacity: 0.3; transition: 0.3s; padding: 8px; }
         .st-nav-item.active { opacity: 1; transform: scale(1.1); }
@@ -330,7 +345,6 @@ const SetupComponent = () => {
         )}
       </div>
 
-      {/* --- TAB BAR COM WRAPPER DE CENTRALIZAÇÃO ABSOLUTA --- */}
       <div className="st-bottom-nav-wrapper">
         <nav className="st-bottom-nav">
           <button className={`st-nav-item ${activeTab === 'pokemon' ? 'active' : ''}`} onClick={() => setActiveTab('pokemon')}>⚪</button>
