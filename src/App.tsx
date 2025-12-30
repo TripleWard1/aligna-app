@@ -66,15 +66,24 @@ export default function App() {
   // --- SISTEMA DE FEEDBACK (SOM E VIBRAÇÃO) ---
   const [audio] = useState(new Audio('https://www.myinstants.com/media/sounds/coin.mp3'));
   // 1. ESTADOS (Garante que estes estão no topo, fora da função render)
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    if (params.get('tab') === 'setup') {
-      // Aqui deves usar a função que muda a aba do teu menu inferior
-      // Baseado no teu print (ícone do monitor azul), deve ser algo como:
-      // setTab('setup'); ou setActiveView('setup');
-      console.log("A abrir aba de Setup via link...");
-    }
-  }, []);
+ // Importante: garante que o useEffect está importado no topo: 
+// import { useState, useEffect } from 'react';
+
+useEffect(() => {
+  // 1. Vamos ler o que está escrito na URL após o "?"
+  const params = new URLSearchParams(window.location.search);
+  const tabParam = params.get('tab');
+
+  // 2. Se o parâmetro for 'setup', forçamos a troca de aba
+  if (tabParam === 'setup') {
+    // Substitui 'setActiveTab' pelo nome REAL da tua função de estado
+    // Exemplo: se usas 'setAba', escreve setAba('setup');
+    setActiveTab('setup'); 
+    
+    // Opcional: Limpa a URL para o link ficar "bonito" novamente
+    window.history.replaceState({}, '', window.location.pathname);
+  }
+}, []); // Este [] faz o código correr apenas 1 vez quando a app abre
   const [setupMode, setSetupMode] = useState('principal');
   const [selectedPart, setSelectedPart] = useState(null);
   const [setupSearch, setSetupSearch] = useState('');
