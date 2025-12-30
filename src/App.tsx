@@ -98,26 +98,36 @@ export default function App() {
           brand: 'COMPONENTES', 
           icon: '🖥️', 
           pos: { top: '52%', left: '32%' }, 
-          img: '/specs/pc_build.jpg', 
+          img: 'pc.jpg', 
           cat: 'PC',
-          specs: 'Caixa: Phanteks P500a | Motherboard: Asus Rog Strix B550-E Gaming | Memórias: Gskill Trident Z DDR4 6000MHz CL30 | CPU: AMD Ryzen 5 5600X | GPU: Nvidia GeForce RTX 3080 (ASUS TUF Gaming) | Fonte: NZXT Gold 850W | Cooler: Corsair H100i Platinum',
+          specs: 'Caixa: Phanteks P500a | Motherboard: Asus Rog Strix B550-E Gaming | Memórias: Gskill Trident Z DDR4 6000MHz CL30 | CPU: AMD Ryzen 5 5600X | GPU: Nvidia GeForce RTX 3080 (ASUS TUF Gaming) | Fonte: NZXT Gold 850W | Cooler: Corsair H100i Platinum | Decoração: Funko Stormtrooper | Plantas: IKEA FEJKA',
           hotspots: [
-            { id: 0, label: 'Caixa', sub: 'Phanteks', top: '30%', left: '50%' },
-            { id: 1, label: 'GPU', sub: 'RTX 3080', top: '55%', left: '45%' },
-            { id: 2, label: 'RAM', sub: 'Gskill', top: '40%', left: '60%' },
-            { id: 3, label: 'Cooler', sub: 'Corsair', top: '25%', left: '55%' }
+            { id: 0, label: 'Caixa', sub: 'Phanteks P500a', top: '95%', left: '85%' },
+            { id: 1, label: 'GPU', sub: 'RTX 3080 TUF', top: '65%', left: '45%' },
+            { id: 2, label: 'RAM', sub: 'Gskill Trident Z', top: '40%', left: '55%' },
+            { id: 3, label: 'Cooler', sub: 'Corsair H100i', top: '45%', left: '42%' },
+            { id: 4, label: 'Motherboard', sub: 'ROG Strix B550-E', top: '35%', left: '35%' },
+            { id: 5, label: 'Fonte', sub: 'NZXT 850W Gold', top: '90%', left: '20%' },
+            { id: 6, label: 'Funko', sub: 'Stormtrooper', top: '8%', left: '52%' },
+            { id: 7, label: 'Plantas', sub: 'IKEA FEJKA', top: '12%', left: '25%' },
+            { id: 8, label: 'CPU', sub: 'AMD Ryzen 5 5600X', top: '43%', left: '48%' }
           ]
         },
         { 
           id: 'main_monitors', 
           name: 'MONITORES', 
-          brand: 'MAG274QRF-QD', 
+          brand: 'MSI TRIPLE SETUP', 
           icon: '📺', 
           pos: { top: '55%', left: '22%' }, 
-          img: '/specs/monitors.jpg', 
+          img: 'monitores.jpg', 
           cat: 'DISPLAY',
-          specs: 'Monitor: MAG274QRF-QD 27"',
-          hotspots: [{ id: 0, label: 'Monitor Principal', sub: 'MSI 27"', top: '50%', left: '50%' }]
+          specs: 'Principal: MSI Optix MAG274QRF-QD 27" | Secundário Topo: MSI G2712F 27" | Vertical: MSI G2722 27" | Webcam: Logitech C920',
+          hotspots: [
+            { id: 0, label: 'Monitor Central', sub: 'MAG274QRF-QD', top: '72%', left: '62%' },
+            { id: 1, label: 'Monitor Topo', sub: 'MSI G2712F', top: '22%', left: '64%' },
+            { id: 2, label: 'Monitor Vertical', sub: 'MSI G2722', top: '48%', left: '24%' },
+            { id: 3, label: 'Webcam', sub: 'Logitech C920', top: '15%', left: '28%' }
+          ]
         },
         { 
           id: 'main_perifericos', 
@@ -125,13 +135,21 @@ export default function App() {
           brand: 'PERIFÉRICOS + MESA', 
           icon: '⌨️', 
           pos: { top: '65%', left: '28%' }, 
-          img: '/specs/perifericos.jpg', 
+          img: 'desk.jpg', 
           cat: 'INPUT',
-          specs: 'Rato: Logitech G703 Lightspeed | Teclado: Higround Basecamp 65+ SNOWSTONE | Microfone: FDuce SL40X | Mixer: Fifine Mixer | Braço Microfone: Elgato Low Profile Arm | Barra de Luz: Xiaomi Mi Computer Light | LED: Govee Rope Light | Desk: IKEA LAGKAPTEN + Alex',
+          specs: 'Rato: Logitech G703 Lightspeed | Teclado: Higround Basecamp 65+ SNOWSTONE | Microfone: FDuce SL40X | Mixer: Fifine Mixer | Braço Microfone: Elgato Low Profile Arm | Rato: Razer Naga Wireless | LED: Govee Rope Light | Desk: IKEA LAGKAPTEN + Alex | Misc: Stream Deck Mk.2 | Luz: Barra de Luz Xiaomi | Cabo: Epomaker Coiled Aviator Cable',
           hotspots: [
-            { id: 0, label: 'Rato', sub: 'G703', top: '70%', left: '60%' },
-            { id: 1, label: 'Teclado', sub: 'Higround', top: '65%', left: '45%' },
-            { id: 2, label: 'Mic', sub: 'FDuce', top: '40%', left: '30%' }
+            { id: 0, label: 'Rato', sub: 'Logitech G703', top: '40%', left: '68%' },
+            { id: 1, label: 'Teclado', sub: 'Higround 65+ Snowstone', top: '55%', left: '52%' },
+            { id: 2, label: 'Microfone', sub: 'FDuce SL40X', top: '25%', left: '72%' },
+            { id: 3, label: 'Mixer', sub: 'Fifine SC3', top: '30%', left: '53%' },
+            { id: 4, label: 'Braço Mic', sub: 'Elgato Low Profile', top: '28%', left: '85%' },
+            { id: 5, label: 'Rato', sub: 'Razer Naga Wireless', top: '40%', left: '35%' },
+            { id: 6, label: 'LED', sub: 'Govee Rope', top: '55%', left: '85%' },
+            { id: 7, label: 'Mesa', sub: 'Gavetas Alex + Tampo LAGKAPTEN', top: '85%', left: '50%' },
+            { id: 8, label: 'Misc', sub: 'Stream Deck Mk.2', top: '45%', left: '20%' },
+            { id: 9, label: 'Luz', sub: 'Barra Luz Xiaomi', top: '65%', left: '5%' },
+            { id: 10, label: 'Cabo', sub: 'Epomaker Coiled Aviator Cable', top: '45%', left: '52%' }
           ]
         },
         { 
@@ -140,12 +158,15 @@ export default function App() {
           brand: 'Astro A50 & XSANYUN', 
           icon: '🎙️', 
           pos: { top: '80%', left: '15%' }, 
-          img: '/specs/audio.jpg', 
+          img: 'audio.jpg', 
           cat: 'AUDIO',
-          specs: 'Headset: Astro A50 | Colunas: xSanuyn',
+          specs: 'Headset: Astro A50 | Colunas: xSanuyn | Suporte: RICOO Suporte de Coluna | LED: Govee Bar | Misc: Art3d Painéis de Parede',
           hotspots: [
-            { id: 0, label: 'Headset', sub: 'Astro A50', top: '40%', left: '50%' },
-            { id: 1, label: 'Colunas', sub: 'xSanuyn', top: '70%', left: '50%' }
+            { id: 0, label: 'Headset', sub: 'Astro A50', top: '75%', left: '46%' },
+            { id: 1, label: 'Colunas', sub: 'xSanuyn', top: '25%', left: '42%' },
+            { id: 2, label: 'LED', sub: 'Govee Bar', top: '15%', left: '65%' },
+            { id: 3, label: 'Paineis', sub: 'Art3d Wall', top: '45%', left: '70%' },
+            { id: 4, label: 'Suporte', sub: 'RICOO Wall Mount', top: '32%', left: '42%' }
           ]
         },
         { 
@@ -154,12 +175,15 @@ export default function App() {
           brand: 'GOVEE + DECORAÇÃO', 
           icon: '💡', 
           pos: { top: '34%', left: '20%' }, 
-          img: '/specs/lights.jpg', 
+          img: 'topshelf.jpg', 
           cat: 'LIGHTS',
-          specs: 'Misc: 2 Quadros 3D Personalizados | Decoração: 5 Plantas IKEA | LED: Govee Light Strip',
+          specs: 'Estante: IKEA LACK | Dioramas: Custom Nintendo Switch & Dreamcast | Decoração: 5 Plantas IKEA | LED: Govee Led Strip',
           hotspots: [
-            { id: 0, label: 'Quadros 3D', sub: 'Nintendo/DC', top: '40%', left: '40%' },
-            { id: 1, label: 'Plantas', sub: 'IKEA', top: '50%', left: '60%' }
+            { id: 0, label: 'Diorama', sub: 'Custom Nintendo Switch', top: '50%', left: '49%' },
+            { id: 1, label: 'Diorama', sub: 'Custom Dreamcast', top: '57%', left: '85%' },
+            { id: 2, label: 'Plantas', sub: 'IKEA FEJKA', top: '61%', left: '21%' },
+            { id: 3, label: 'Estante', sub: 'IKEA LACK Black', top: '75%', left: '43%' },
+            { id: 4, label: 'LED Strip', sub: 'Govee RGBIC', top: '70%', left: '16%' }
           ]
         },
       ],
@@ -352,13 +376,52 @@ export default function App() {
                       onClick={(e) => { e.stopPropagation(); setVaultSelectedId(hs.id); triggerHaptic('light'); }}
                     >
                       <div className="st-vault-dot"></div>
-                      <div className={`v-tooltip ${parseFloat(hs.left) > 50 ? 'pos-left' : 'pos-right'}`}>
-                        <img src={selectedPart.img} className="v-thumb" />
-                        <div style={{ textAlign: 'center' }}>
-                          <div style={{ fontWeight: '800', fontSize: '12px' }}>{hs.label}</div>
-                          <div style={{ fontSize: '9px', color: tokens.muted }}>{hs.sub}</div>
-                        </div>
-                      </div>
+                      <div className={`v-tooltip ${parseFloat(hs.left) > 50 ? 'pos-left' : 'pos-right'}`} 
+  style={{ 
+    width: 'auto', 
+    minWidth: '120px', 
+    padding: '12px 16px',
+    background: 'rgba(255, 255, 255, 0.85)',
+    backdropFilter: 'blur(12px)',
+    WebkitBackdropFilter: 'blur(12px)',
+    borderRadius: '16px',
+    border: `1px solid ${tokens.accent[selectedPart.cat]}30`,
+    boxShadow: '0 10px 30px -5px rgba(0,0,0,0.15)',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    gap: '2px'
+  }}
+>
+  <div style={{ 
+    fontSize: '9px', 
+    fontWeight: '900', 
+    color: tokens.accent[selectedPart.cat], 
+    letterSpacing: '1.5px', 
+    textTransform: 'uppercase',
+    marginBottom: '2px'
+  }}>
+    {hs.label}
+  </div>
+  <div style={{ 
+    fontSize: '13px', 
+    fontWeight: '700', 
+    color: tokens.text, 
+    letterSpacing: '-0.3px'
+  }}>
+    {hs.sub}
+  </div>
+  
+  {/* Pequeno indicador visual no fundo */}
+  <div style={{ 
+    width: '20px', 
+    height: '3px', 
+    background: tokens.accent[selectedPart.cat], 
+    borderRadius: '2px', 
+    marginTop: '6px',
+    opacity: 0.6 
+  }} />
+</div>
                     </div>
                     <div className="v-line" style={{ top: hs.top, left: hs.left, transform: `rotate(${parseFloat(hs.left) > 50 ? '180deg' : '0deg'}) translateX(10px)`, '--vault-color': tokens.accent[selectedPart.cat] }}></div>
                   </div>
@@ -385,7 +448,7 @@ export default function App() {
               </div>
   
               <button onClick={() => { setSelectedPart(null); setVaultSelectedId(null); }} style={{ width: '100%', marginTop: '40px', padding: '24px', borderRadius: '28px', border: 'none', background: tokens.text, color: '#FFF', fontWeight: '800', fontSize: '15px' }}>
-                DISMISS MODULE
+                FECHAR JANELA
               </button>
             </div>
           )}
