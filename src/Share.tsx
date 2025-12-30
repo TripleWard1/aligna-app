@@ -8,16 +8,23 @@ const SetupComponent = () => {
   const [vaultSelectedId, setVaultSelectedId] = useState(null);
   const sheetRef = useRef(null);
 
-  // --- CONTROLO DE SCROLL: FAZ RESET QUANDO ABRE ---
+  // --- BLOQUEIO E RESET DE SCROLL RIGOROSO ---
   useEffect(() => {
     if (selectedPart) {
-      document.body.style.overflow = 'hidden';
-      // Força a janela a começar no topo absoluto para ver a imagem toda
+      const scrollY = window.scrollY;
+      document.body.style.position = 'fixed';
+      document.body.style.top = `-${scrollY}px`;
+      document.body.style.width = '100%';
+      
       if (sheetRef.current) {
         sheetRef.current.scrollTop = 0;
       }
     } else {
-      document.body.style.overflow = 'unset';
+      const scrollY = document.body.style.top;
+      document.body.style.position = '';
+      document.body.style.top = '';
+      document.body.style.width = '';
+      window.scrollTo(0, parseInt(scrollY || '0') * -1);
     }
   }, [selectedPart]);
 
@@ -214,13 +221,12 @@ const SetupComponent = () => {
         .st-header { padding: 80px 24px 20px; text-align: center; }
         .st-header h1 { font-family: 'Syncopate'; font-size: 16px; letter-spacing: 4px; margin: 0; background: linear-gradient(90deg, #1A1B1E, #7C7E8B); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         
-        .st-nav-container { display: flex; justify-content: center; margin-top: 25px; }
-        .st-nav-pills { display: flex; background: #E9ECF5; padding: 6px; border-radius: 24px; }
-        .st-pill { border: none; background: transparent; color: ${tokens.muted}; padding: 14px 24px; border-radius: 20px; font-size: 12px; font-weight: 800; cursor: pointer; transition: 0.3s; }
+        .st-nav-pills { display: flex; background: #E9ECF5; padding: 6px; border-radius: 24px; margin: 25px auto 0; width: fit-content; }
+        .st-pill { border: none; background: transparent; color: ${tokens.muted}; padding: 14px 24px; border-radius: 20px; font-size: 12px; font-weight: 800; cursor: pointer; }
         .st-pill.active { background: #FFFFFF; color: ${tokens.text}; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
 
-        .st-photo-container { position: relative; margin: 0 auto; width: calc(100% - 48px); max-width: 600px; border-radius: 36px; overflow: hidden; background: #000; box-shadow: 0 20px 40px rgba(0,0,0,0.1); }
-        .st-main-img { width: 100%; display: block; transition: 0.8s cubic-bezier(0.16, 1, 0.3, 1); transform-origin: var(--zoom-x) var(--zoom-y); }
+        .st-photo-container { position: relative; margin: 0 auto; width: calc(100% - 48px); max-width: 600px; border-radius: 36px; overflow: hidden; background: #000; }
+        .st-main-img { width: 100%; display: block; transition: 0.8s; transform-origin: var(--zoom-x) var(--zoom-y); }
         .st-main-img.zoom-active { transform: scale(1.8); filter: brightness(0.6); }
         
         .st-hotspot { position: absolute; width: 40px; height: 40px; transform: translate(-50%, -50%); display: flex; align-items: center; justify-content: center; z-index: 15; }
@@ -232,49 +238,44 @@ const SetupComponent = () => {
 
         .st-sheet { 
           position: fixed; 
-          bottom: 0; 
+          top: 0; /* MUDANÇA PARA TOP 0 PARA EVITAR CÁLCULOS DE ALTURA */
           left: 0; 
           right: 0; 
+          bottom: 0;
           background: #FFFFFF; 
-          border-top-left-radius: 44px; 
-          border-top-right-radius: 44px; 
           z-index: 2000; 
-          padding: 24px 28px 140px; 
+          padding: 0; 
           transform: translateY(100%); 
-          transition: 0.6s cubic-bezier(0.19, 1, 0.22, 1); 
-          max-height: 95vh; 
+          transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
           overflow-y: auto; 
+          overscroll-behavior: contain; /* IMPEDE QUE O SCROLL PASSE PARA O FUNDO */
           -webkit-overflow-scrolling: touch; 
         }
         .st-sheet.open { transform: translateY(0); }
-        .st-sheet-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); backdrop-filter: blur(4px); z-index: 1999; display: none; }
-        .st-sheet-overlay.show { display: block; }
+        .st-sheet-content { padding: 20px 24px 160px; }
 
         .vault-hero-frame { 
           position: relative; 
           width: 100%;
-          height: auto;
-          min-height: 200px;
-          margin: 0 0 30px 0; /* Colado ao topo da janela */
-          display: block;
-          overflow: visible; 
+          line-height: 0; /* REMOVE ESPAÇOS FANTASMA NO TOPO */
+          margin-bottom: 30px;
         }
         
         .vault-hero-frame img { 
           width: 100%;
-          height: auto !important; 
-          max-height: none !important; 
+          height: auto; 
           display: block; 
-          border-radius: 24px;
-          object-fit: contain; 
+          border-bottom-left-radius: 40px;
+          border-bottom-right-radius: 40px;
+          object-fit: cover; 
         }
         
         .st-vault-hotspot { position: absolute; transform: translate(-50%, -50%); z-index: 10; }
         .st-vault-dot { width: 20px; height: 20px; border: 4px solid var(--vault-color); border-radius: 50%; background: white; box-shadow: 0 0 10px rgba(0,0,0,0.2); }
         
-        .v-tooltip { position: absolute; background: white; border-radius: 18px; padding: 12px; width: 140px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); z-index: 110; bottom: 30px; left: 50%; transform: translateX(-50%); text-align: center; }
+        .v-tooltip { position: absolute; background: white; border-radius: 18px; padding: 12px; width: 140px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); z-index: 110; bottom: 30px; left: 50%; transform: translateX(-50%); text-align: center; line-height: 1.2; }
         
-        .st-spec-pill { background: #F8F9FD; padding: 16px; border-radius: 18px; font-size: 14px; font-weight: 600; margin-bottom: 10px; }
+        .st-spec-pill { background: #F8F9FD; padding: 16px; border-radius: 18px; font-size: 14px; font-weight: 600; margin-bottom: 10px; color: ${tokens.text}; }
 
         .st-bottom-nav-wrapper {
           position: fixed;
@@ -283,38 +284,33 @@ const SetupComponent = () => {
           right: 0;
           display: flex;
           justify-content: center;
-          align-items: center;
           z-index: 9999;
           pointer-events: none;
         }
         .st-bottom-nav { 
           display: flex; 
-          align-items: center;
           gap: 30px; 
           background: rgba(255, 255, 255, 0.9); 
           backdrop-filter: blur(20px); 
           padding: 12px 40px; 
           border-radius: 40px; 
           box-shadow: 0 15px 35px rgba(0,0,0,0.15); 
-          border: 1px solid rgba(255,255,255,0.5);
           pointer-events: auto;
         }
-        .st-nav-item { background: none; border: none; font-size: 24px; cursor: pointer; opacity: 0.3; transition: 0.3s; padding: 8px; }
+        .st-nav-item { background: none; border: none; font-size: 24px; cursor: pointer; opacity: 0.3; transition: 0.3s; }
         .st-nav-item.active { opacity: 1; transform: scale(1.1); }
       `}</style>
 
-      <button onClick={handleShare} style={{ position: 'absolute', top: '24px', right: '24px', background: 'white', padding: '10px 16px', borderRadius: '14px', border: 'none', fontSize: '10px', fontWeight: '900', boxShadow: '0 4px 12px rgba(0,0,0,0.05)', zIndex: 100 }}>
+      <button onClick={handleShare} style={{ position: 'absolute', top: '24px', right: '24px', background: 'white', padding: '10px 16px', borderRadius: '14px', border: 'none', fontSize: '10px', fontWeight: '900', zIndex: 100 }}>
         PARTILHAR 📤
       </button>
 
       <header className="st-header">
         <h1>DUAL SETUP</h1>
         <p>Hugo Barros // Battlestation</p>
-        <div className="st-nav-container">
-          <div className="st-nav-pills">
-            <button className={`st-pill ${setupMode === 'principal' ? 'active' : ''}`} onClick={() => setSetupMode('principal')}>MAIN SETUP</button>
-            <button className={`st-pill ${setupMode === 'extra' ? 'active' : ''}`} onClick={() => setSetupMode('extra')}>SECOND SETUP</button>
-          </div>
+        <div className="st-nav-pills">
+          <button className={`st-pill ${setupMode === 'principal' ? 'active' : ''}`} onClick={() => setSetupMode('principal')}>MAIN SETUP</button>
+          <button className={`st-pill ${setupMode === 'extra' ? 'active' : ''}`} onClick={() => setSetupMode('extra')}>SECOND SETUP</button>
         </div>
       </header>
 
@@ -339,12 +335,9 @@ const SetupComponent = () => {
         ))}
       </div>
 
-      <div className={`st-sheet-overlay ${selectedPart ? 'show' : ''}`} onClick={() => setSelectedPart(null)}></div>
-      
-      {/* REF ADICIONADA PARA RESET DE SCROLL */}
       <div ref={sheetRef} className={`st-sheet ${selectedPart ? 'open' : ''}`}>
         {selectedPart && (
-          <div>
+          <>
             <div className="vault-hero-frame">
               <img src={selectedPart.img} alt={selectedPart.name} />
               {selectedPart.hotspots?.map(hs => (
@@ -359,12 +352,15 @@ const SetupComponent = () => {
                 </div>
               ))}
             </div>
-            <h3 style={{ fontSize: '24px', fontWeight: '800' }}>{selectedPart.name}</h3>
-            {selectedPart.specs.split('|').map((s, i) => (
-              <div key={i} className="st-spec-pill">{s.trim()}</div>
-            ))}
-            <button onClick={() => setSelectedPart(null)} style={{ width: '100%', marginTop: '20px', padding: '20px', borderRadius: '20px', background: tokens.text, color: 'white', fontWeight: '800', border: 'none' }}>FECHAR JANELA</button>
-          </div>
+            
+            <div className="st-sheet-content">
+              <h3 style={{ fontSize: '28px', fontWeight: '800', marginBottom: '20px' }}>{selectedPart.name}</h3>
+              {selectedPart.specs.split('|').map((s, i) => (
+                <div key={i} className="st-spec-pill">{s.trim()}</div>
+              ))}
+              <button onClick={() => setSelectedPart(null)} style={{ width: '100%', marginTop: '30px', padding: '24px', borderRadius: '24px', background: tokens.text, color: 'white', fontWeight: '800', border: 'none', fontSize: '16px' }}>FECHAR JANELA</button>
+            </div>
+          </>
         )}
       </div>
 
