@@ -234,38 +234,39 @@ const SetupComponent = () => {
           border-top-left-radius: 44px; 
           border-top-right-radius: 44px; 
           z-index: 2000; 
-          padding: 30px 24px 140px; 
+          padding: 24px 28px 140px; 
           transform: translateY(100%); 
-          transition: 0.5s cubic-bezier(0.19, 1, 0.22, 1); 
-          max-height: 88vh; 
+          transition: 0.6s cubic-bezier(0.19, 1, 0.22, 1); 
+          max-height: 92vh; 
           overflow-y: auto; 
-          -webkit-overflow-scrolling: touch;
+          -webkit-overflow-scrolling: touch; 
         }
         .st-sheet.open { transform: translateY(0); }
         .st-sheet-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); backdrop-filter: blur(4px); z-index: 1999; display: none; }
         .st-sheet-overlay.show { display: block; }
 
-        /* CORREÇÃO DEFINITIVA DA IMAGEM CORTADA */
+        /* CORREÇÃO DO CORTA DA IMAGEM */
         .vault-hero-frame { 
           position: relative; 
-          width: 100%;
           border-radius: 30px; 
-          overflow: visible; /* Garante que os tooltips apareçam */
+          overflow: hidden; 
           background: #F1F3F7; 
-          margin-bottom: 25px;
+          margin-bottom: 30px; 
+          margin-top: 10px;
+          width: 100%;
           display: block;
         }
         .vault-hero-frame img { 
           width: 100%; 
-          height: auto; /* Deixa a imagem fluir naturalmente */
+          height: auto; 
           display: block; 
-          border-radius: 30px;
+          object-fit: initial; /* Remove restrições de contenção */
         }
         
-        .st-vault-hotspot { position: absolute; transform: translate(-50%, -50%); z-index: 100; }
+        .st-vault-hotspot { position: absolute; transform: translate(-50%, -50%); }
         .st-vault-dot { width: 18px; height: 18px; border: 4px solid var(--vault-color); border-radius: 50%; background: white; }
         
-        .v-tooltip { position: absolute; background: white; border-radius: 18px; padding: 12px; width: 140px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); z-index: 110; bottom: 30px; left: 50%; transform: translateX(-50%); text-align: center; }
+        .v-tooltip { position: absolute; background: white; border-radius: 18px; padding: 12px; width: 140px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); z-index: 110; top: -50px; left: 50%; transform: translateX(-50%); text-align: center; }
         
         .st-spec-pill { background: #F8F9FD; padding: 16px; border-radius: 18px; font-size: 14px; font-weight: 600; margin-bottom: 10px; }
 
