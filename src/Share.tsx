@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 
 const SetupComponent = () => {
   const [hasEntered, setHasEntered] = useState(false);
+  const [isExiting, setIsExiting] = useState(false); // Para a transição da landing
   const [setupMode, setSetupMode] = useState('principal');
   const [selectedPart, setSelectedPart] = useState(null);
   const [activeTab, setActiveTab] = useState('setup');
@@ -52,6 +53,14 @@ const SetupComponent = () => {
     } catch (err) {
       console.error('Erro ao copiar link:', err);
     }
+  };
+
+  // Função de entrada com transição
+  const handleEnter = () => {
+    setIsExiting(true);
+    setTimeout(() => {
+      setHasEntered(true);
+    }, 800);
   };
 
   const setupData = {
@@ -211,10 +220,14 @@ const SetupComponent = () => {
 
   if (!hasEntered) {
     return (
-      <div onClick={() => setHasEntered(true)} style={{
+      <div onClick={handleEnter} style={{
         height: '100vh', background: '#000', display: 'flex', flexDirection: 'column', 
         alignItems: 'center', justifyContent: 'center', color: '#fff', textAlign: 'center',
-        padding: '40px', cursor: 'pointer', fontFamily: 'Outfit, sans-serif'
+        padding: '40px', cursor: 'pointer', fontFamily: 'Outfit, sans-serif',
+        transition: 'all 0.8s cubic-bezier(0.4, 0, 0.2, 1)',
+        opacity: isExiting ? 0 : 1,
+        transform: isExiting ? 'scale(1.1)' : 'scale(1)',
+        overflow: 'hidden'
       }}>
         <style>{`
           @import url('https://fonts.googleapis.com/css2?family=Syncopate:wght@700&family=Outfit:wght@300;400;600;800&display=swap');
@@ -232,9 +245,11 @@ const SetupComponent = () => {
   return (
     <div className="setup-mobile-pro" style={{ 
         '--zoom-x': selectedPart ? selectedPart.pos.left : '50%',
-        '--zoom-y': selectedPart ? selectedPart.pos.top : '50%'
+        '--zoom-y': selectedPart ? selectedPart.pos.top : '50%',
+        animation: 'fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards'
     } as any}>
       <style>{`
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
         .setup-mobile-pro { background: ${tokens.bg}; color: ${tokens.text}; min-height: 100vh; font-family: 'Outfit', sans-serif; padding-bottom: 140px; position: relative; overflow-x: hidden; }
         
         .st-header { padding: 80px 24px 20px; text-align: center; }
@@ -248,8 +263,9 @@ const SetupComponent = () => {
         .st-main-img { width: 100%; display: block; transition: 0.8s; transform-origin: var(--zoom-x) var(--zoom-y); }
         .st-main-img.zoom-active { transform: scale(1.8); filter: brightness(0.6); }
         
-        .st-hotspot { position: absolute; width: 40px; height: 40px; transform: translate(-50%, -50%); display: flex; align-items: center; justify-content: center; z-index: 15; cursor: pointer; }
-        .st-hotspot-inner { width: 32px; height: 32px; border-radius: 50%; border: 3px solid var(--color); display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.1); backdrop-filter: blur(2px); }
+        /* Círculos menores e sem blur */
+        .st-hotspot { position: absolute; width: 34px; height: 34px; transform: translate(-50%, -50%); display: flex; align-items: center; justify-content: center; z-index: 15; cursor: pointer; }
+        .st-hotspot-inner { width: 26px; height: 26px; border-radius: 50%; border: 3px solid var(--color); display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.1); }
 
         .st-list { padding: 40px 24px; display: grid; gap: 20px; max-width: 600px; margin: 0 auto; }
         .st-item { background: #FFFFFF; padding: 22px; border-radius: 30px; display: flex; align-items: center; gap: 20px; border: 1px solid rgba(0,0,0,0.03); cursor: pointer; transition: 0.3s; }
@@ -283,8 +299,9 @@ const SetupComponent = () => {
         .vault-hero-frame img { width: 100%; height: auto; display: block; object-fit: cover; }
         
         .st-vault-hotspot { position: absolute; transform: translate(-50%, -50%); z-index: 10; cursor: pointer; }
-        .st-vault-dot { width: 20px; height: 20px; border: 4px solid var(--vault-color); border-radius: 50%; background: white; box-shadow: 0 0 10px rgba(0,0,0,0.2); }
+        .st-vault-dot { width: 18px; height: 18px; border: 3px solid var(--vault-color); border-radius: 50%; background: white; box-shadow: 0 0 10px rgba(0,0,0,0.2); }
         .v-tooltip { position: absolute; background: white; border-radius: 18px; padding: 12px; width: 140px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); z-index: 110; bottom: 30px; left: 50%; transform: translateX(-50%); text-align: center; line-height: 1.2; }
+        .v-close-x { position: absolute; top: -10px; right: -10px; width: 24px; height: 24px; background: #1A1B1E; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 800; box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
         
         .st-spec-pill { background: #F8F9FD; padding: 16px; border-radius: 18px; font-size: 14px; font-weight: 600; margin-bottom: 10px; color: ${tokens.text}; border: 1px solid rgba(0,0,0,0.02); }
 
@@ -343,6 +360,7 @@ const SetupComponent = () => {
                   <div className="st-vault-dot"></div>
                   {vaultSelectedId === hs.id && (
                     <div className="v-tooltip">
+                      <div className="v-close-x">✕</div>
                       <div style={{ fontSize: '10px', fontWeight: '900', color: tokens.accent[selectedPart.cat], textTransform: 'uppercase' }}>{hs.label}</div>
                       <div style={{ fontSize: '12px', fontWeight: '700' }}>{hs.sub}</div>
                     </div>
