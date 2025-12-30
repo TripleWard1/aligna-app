@@ -66,6 +66,15 @@ export default function App() {
   // --- SISTEMA DE FEEDBACK (SOM E VIBRAÇÃO) ---
   const [audio] = useState(new Audio('https://www.myinstants.com/media/sounds/coin.mp3'));
   // 1. ESTADOS (Garante que estes estão no topo, fora da função render)
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('tab') === 'setup') {
+      // Aqui deves usar a função que muda a aba do teu menu inferior
+      // Baseado no teu print (ícone do monitor azul), deve ser algo como:
+      // setTab('setup'); ou setActiveView('setup');
+      console.log("A abrir aba de Setup via link...");
+    }
+  }, []);
   const [setupMode, setSetupMode] = useState('principal');
   const [selectedPart, setSelectedPart] = useState(null);
   const [setupSearch, setSetupSearch] = useState('');
@@ -93,19 +102,27 @@ export default function App() {
     };
   
     const handleShare = async () => {
+      // Criamos o link que aponta especificamente para o teu setup
+      const shareUrl = `${window.location.origin}${window.location.pathname}?tab=setup`;
+  
       const shareData = {
         title: 'Meu Setup - Aligna',
         text: 'Vê os detalhes do meu hardware e periféricos no meu setup interativo!',
-        url: window.location.href,
+        url: shareUrl, // Usamos a nova URL aqui
       };
+  
       try {
         if (navigator.share) {
+          // O erro de 'await' desaparece porque a função agora é 'async'
           await navigator.share(shareData);
         } else {
-          navigator.clipboard.writeText(window.location.href);
-          alert('Link copiado!');
+          // Fallback: Copia o link do setup para o clipboard
+          await navigator.clipboard.writeText(shareUrl);
+          alert('Link do Setup copiado! ✨');
         }
-      } catch (err) { console.log(err); }
+      } catch (err) { 
+        console.log('Erro ao partilhar:', err); 
+      }
     };
 
     const setupData = {
@@ -365,16 +382,20 @@ export default function App() {
         `}</style>
 
 <button 
-            onClick={handleShare}
-            style={{
-              position: 'absolute', top: '40px', right: '24px',
-              background: 'white', padding: '10px 16px', borderRadius: '14px',
-              border: '1px solid rgba(0,0,0,0.05)', fontSize: '10px', fontWeight: '900',
-              boxShadow: '0 4px 12px rgba(0,0,0,0.05)', display: 'flex', gap: '8px', zIndex: 100
-            }}
-          >
-            PARTILHAR 📤
-          </button>
+  onClick={(e) => {
+    e.preventDefault();
+    handleShare();
+  }}
+  style={{
+    position: 'absolute', top: '0', right: '0',
+    background: 'white', padding: '10px 16px', borderRadius: '14px',
+    border: '1px solid rgba(0,0,0,0.05)', fontSize: '10px', fontWeight: '900',
+    boxShadow: '0 4px 12px rgba(0,0,0,0.05)', display: 'flex', gap: '8px', zIndex: 100,
+    cursor: 'pointer'
+  }}
+>
+  PARTILHAR 📤
+</button>
   
         <header className="st-header">
           <h1>GEAR COLLECT</h1>
