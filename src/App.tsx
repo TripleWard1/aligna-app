@@ -292,7 +292,25 @@ export default function App() {
           .st-card-icon { width: 65px; height: 65px; background: #F8F9FD; border-radius: 22px; display: flex; align-items: center; justify-content: center; font-size: 28px; border: 1px solid rgba(0,0,0,0.04); }
           .st-rarity-tag { font-size: 8px; font-weight: 900; color: #FFF; background: var(--accent); padding: 3px 8px; border-radius: 6px; position: absolute; top: -8px; left: 22px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
   
-          .st-sheet { position: fixed; left: 0; right: 0; bottom: 0; background: #FFFFFF; border-top-left-radius: 44px; border-top-right-radius: 44px; z-index: 2000; padding: 45px 28px; transform: translateY(100%); transition: transform 0.6s cubic-bezier(0.19, 1, 0.22, 1); box-shadow: 0 -25px 50px rgba(0,0,0,0.1); max-height: 85vh; overflow-y: auto; }
+          .st-sheet { 
+            position: fixed; 
+            left: 0; 
+            right: 0; 
+            bottom: 0; 
+            background: #FFFFFF; 
+            border-top-left-radius: 44px; 
+            border-top-right-radius: 44px; 
+            z-index: 2000; 
+            /* Aumentamos o padding inferior para 160px para subir o botão */
+            padding: 45px 28px 160px; 
+            transform: translateY(100%); 
+            transition: transform 0.6s cubic-bezier(0.19, 1, 0.22, 1); 
+            box-shadow: 0 -25px 50px rgba(0,0,0,0.1); 
+            max-height: 90vh; 
+            overflow-y: auto; 
+            /* Garante que o scroll seja suave em iOS */
+            -webkit-overflow-scrolling: touch; 
+          }
           .st-sheet.open { transform: translateY(0); }
           .st-sheet-overlay { position: fixed; inset: 0; background: rgba(26, 27, 30, 0.4); backdrop-filter: blur(4px); z-index: 1999; opacity: 0; pointer-events: none; transition: 0.6s; }
           .st-sheet-overlay.show { opacity: 1; pointer-events: auto; }
