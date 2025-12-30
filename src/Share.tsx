@@ -225,7 +225,6 @@ const SetupComponent = () => {
         .st-item { background: #FFFFFF; padding: 22px; border-radius: 30px; display: flex; align-items: center; gap: 20px; border: 1px solid rgba(0,0,0,0.03); cursor: pointer; }
         .st-card-icon { width: 65px; height: 65px; background: #F8F9FD; border-radius: 22px; display: flex; align-items: center; justify-content: center; font-size: 28px; }
 
-        /* AJUSTE PARA NÃO CORTAR A IMAGEM NO TOPO */
         .st-sheet { 
           position: fixed; 
           bottom: 0; 
@@ -235,23 +234,38 @@ const SetupComponent = () => {
           border-top-left-radius: 44px; 
           border-top-right-radius: 44px; 
           z-index: 2000; 
-          padding: 24px 28px 140px; 
+          padding: 30px 24px 140px; 
           transform: translateY(100%); 
-          transition: 0.6s cubic-bezier(0.19, 1, 0.22, 1); 
-          max-height: 92vh; 
+          transition: 0.5s cubic-bezier(0.19, 1, 0.22, 1); 
+          max-height: 88vh; 
           overflow-y: auto; 
-          -webkit-overflow-scrolling: touch; 
+          -webkit-overflow-scrolling: touch;
         }
         .st-sheet.open { transform: translateY(0); }
         .st-sheet-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); backdrop-filter: blur(4px); z-index: 1999; display: none; }
         .st-sheet-overlay.show { display: block; }
 
-        .vault-hero-frame { position: relative; border-radius: 30px; overflow: hidden; background: #F1F3F7; margin-bottom: 30px; margin-top: 10px; }
-        .vault-hero-frame img { width: 100%; display: block; object-fit: contain; }
-        .st-vault-hotspot { position: absolute; transform: translate(-50%, -50%); }
-        .st-vault-dot { width: 18px; height: 18px; border: 4px solid var(--vault-color); border-radius: 50%; }
+        /* CORREÇÃO DEFINITIVA DA IMAGEM CORTADA */
+        .vault-hero-frame { 
+          position: relative; 
+          width: 100%;
+          border-radius: 30px; 
+          overflow: visible; /* Garante que os tooltips apareçam */
+          background: #F1F3F7; 
+          margin-bottom: 25px;
+          display: block;
+        }
+        .vault-hero-frame img { 
+          width: 100%; 
+          height: auto; /* Deixa a imagem fluir naturalmente */
+          display: block; 
+          border-radius: 30px;
+        }
         
-        .v-tooltip { position: absolute; background: white; border-radius: 18px; padding: 12px; width: 140px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); z-index: 110; top: -50px; left: 50%; transform: translateX(-50%); text-align: center; }
+        .st-vault-hotspot { position: absolute; transform: translate(-50%, -50%); z-index: 100; }
+        .st-vault-dot { width: 18px; height: 18px; border: 4px solid var(--vault-color); border-radius: 50%; background: white; }
+        
+        .v-tooltip { position: absolute; background: white; border-radius: 18px; padding: 12px; width: 140px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); z-index: 110; bottom: 30px; left: 50%; transform: translateX(-50%); text-align: center; }
         
         .st-spec-pill { background: #F8F9FD; padding: 16px; border-radius: 18px; font-size: 14px; font-weight: 600; margin-bottom: 10px; }
 
@@ -325,7 +339,7 @@ const SetupComponent = () => {
             <div className="vault-hero-frame">
               <img src={selectedPart.img} alt={selectedPart.name} />
               {selectedPart.hotspots?.map(hs => (
-                <div key={hs.id} className="st-vault-hotspot" style={{ top: hs.top, left: hs.left, '--vault-color': tokens.accent[selectedPart.cat as keyof typeof tokens.accent] } as any} onClick={() => setVaultSelectedId(hs.id)}>
+                <div key={hs.id} className="st-vault-hotspot" style={{ top: hs.top, left: hs.left, '--vault-color': tokens.accent[selectedPart.cat as keyof typeof tokens.accent] } as any} onClick={() => setVaultSelectedId(vaultSelectedId === hs.id ? null : hs.id)}>
                   <div className="st-vault-dot"></div>
                   {vaultSelectedId === hs.id && (
                     <div className="v-tooltip">
