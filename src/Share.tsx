@@ -111,7 +111,7 @@ const SetupComponent = () => {
           { id: 7, label: 'Mesa', sub: 'Gavetas Alex + Tampo LAGKAPTEN', top: '85%', left: '50%' },
           { id: 8, label: 'Misc', sub: 'Stream Deck Mk.2', top: '45%', left: '20%' },
           { id: 9, label: 'Luz', sub: 'Barra Luz Xiaomi', top: '65%', left: '5%' },
-          { id: 10, label: 'Cabo', sub: 'Epomaker Coiled Aviator Cable', top: '45%', left: '52%' }
+          { id: 10, label: 'Cabo', some: 'Epomaker Coiled Aviator Cable', top: '45%', left: '52%' }
         ]
       },
       { 
@@ -254,16 +254,19 @@ const SetupComponent = () => {
 
         .vault-hero-frame { 
           position: relative; 
-          width: 100%;
+          width: calc(100% - 48px); /* Margem igual à do menu principal */
+          margin: 20px auto 30px; /* Margem no topo e centralizado */
           line-height: 0;
-          background: #000; /* Fundo preto para as bordas se a imagem for menor */
+          border-radius: 36px; /* Cantos arredondados iguais à foto principal */
+          overflow: hidden; /* Garante que a imagem respeite os cantos */
+          background: #000; 
         }
         
         .vault-hero-frame img { 
           width: 100%;
           height: auto; 
           display: block; 
-          object-fit: contain; /* GARANTE QUE A FOTO É VISTA POR INTEIRO SEM CORTE */
+          object-fit: contain; 
         }
         
         .st-vault-hotspot { position: absolute; transform: translate(-50%, -50%); z-index: 10; }
