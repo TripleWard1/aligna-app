@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 
 const SetupComponent = () => {
   const [hasEntered, setHasEntered] = useState(false);
-  const [isExiting, setIsExiting] = useState(false); // Estado para a transição
+  const [isExiting, setIsExiting] = useState(false);
   const [setupMode, setSetupMode] = useState('principal');
   const [selectedPart, setSelectedPart] = useState(null);
   const [activeTab, setActiveTab] = useState('setup');
@@ -59,7 +59,7 @@ const SetupComponent = () => {
     setIsExiting(true);
     setTimeout(() => {
       setHasEntered(true);
-    }, 800); // Duração da animação de saída
+    }, 800);
   };
 
   const setupData = {
@@ -248,11 +248,7 @@ const SetupComponent = () => {
         animation: 'fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards'
     } as any}>
       <style>{`
-        @keyframes fadeInUp {
-          from { opacity: 0; transform: translateY(20px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
         .setup-mobile-pro { background: ${tokens.bg}; color: ${tokens.text}; min-height: 100vh; font-family: 'Outfit', sans-serif; padding-bottom: 140px; position: relative; overflow-x: hidden; }
         
         .st-header { padding: 80px 24px 20px; text-align: center; }
@@ -262,8 +258,19 @@ const SetupComponent = () => {
         .st-pill { border: none; background: transparent; color: ${tokens.muted}; padding: 14px 24px; border-radius: 20px; font-size: 12px; font-weight: 800; cursor: pointer; }
         .st-pill.active { background: #FFFFFF; color: ${tokens.text}; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
 
-        .st-photo-container { position: relative; margin: 0 auto; width: calc(100% - 48px); max-width: 600px; border-radius: 36px; overflow: hidden; background: #000; box-shadow: 0 20px 40px rgba(0,0,0,0.1); }
-        .st-main-img { width: 100%; display: block; transition: 0.8s; transform-origin: var(--zoom-x) var(--zoom-y); }
+        /* IMAGEM COM 4 CANTOS ARREDONDADOS E ASPECT-RATIO CONTROLADO */
+        .st-photo-container { 
+          position: relative; 
+          margin: 0 auto; 
+          width: calc(100% - 48px); 
+          max-width: 600px; 
+          border-radius: 36px; 
+          overflow: hidden; 
+          background: #000; 
+          box-shadow: 0 20px 40px rgba(0,0,0,0.1); 
+          aspect-ratio: 4 / 5;
+        }
+        .st-main-img { width: 100%; height: 100%; object-fit: cover; display: block; transition: 0.8s; transform-origin: var(--zoom-x) var(--zoom-y); }
         .st-main-img.zoom-active { transform: scale(1.8); filter: brightness(0.6); }
         
         .st-hotspot { position: absolute; width: 40px; height: 40px; transform: translate(-50%, -50%); display: flex; align-items: center; justify-content: center; z-index: 15; cursor: pointer; }
@@ -274,31 +281,22 @@ const SetupComponent = () => {
         .st-item:active { transform: scale(0.98); background: #fdfdfd; }
         .st-card-icon { width: 65px; height: 65px; background: #F8F9FD; border-radius: 22px; display: flex; align-items: center; justify-content: center; font-size: 28px; }
 
-        .st-sheet { 
-          position: fixed; 
-          top: 0; left: 0; right: 0; bottom: 0;
-          background: #FFFFFF; 
-          z-index: 2000; 
-          transform: translateY(100%); 
-          transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-          overflow-y: auto; 
-          overscroll-behavior: contain; 
-          -webkit-overflow-scrolling: touch;
-        }
+        .st-sheet { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: #FFFFFF; z-index: 2000; transform: translateY(100%); transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1); overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; }
         .st-sheet.open { transform: translateY(0); }
         .st-sheet-content { padding: 0 24px 160px; }
 
+        /* VISTA DE DETALHE TAMBÉM COM 4 CANTOS ARREDONDADOS */
         .vault-hero-frame { 
           position: relative; 
           width: calc(100% - 48px);
           margin: 24px auto 30px;
-          line-height: 0;
           border-radius: 36px;
           overflow: hidden;
           background: #f0f0f0;
           box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+          aspect-ratio: 4 / 5;
         }
-        .vault-hero-frame img { width: 100%; height: auto; display: block; object-fit: cover; }
+        .vault-hero-frame img { width: 100%; height: 100%; display: block; object-fit: cover; }
         
         .st-vault-hotspot { position: absolute; transform: translate(-50%, -50%); z-index: 10; cursor: pointer; }
         .st-vault-dot { width: 20px; height: 20px; border: 4px solid var(--vault-color); border-radius: 50%; background: white; box-shadow: 0 0 10px rgba(0,0,0,0.2); }
@@ -327,7 +325,7 @@ const SetupComponent = () => {
         </div>
       </header>
 
-      {/* Foto Principal com Hotspots */}
+      {/* Foto Principal */}
       <div className="st-photo-container">
         <img src="/Foto Principal Setup.jpg" className={`st-main-img ${selectedPart ? 'zoom-active' : ''}`} alt="Setup" />
         {rawItems.map(item => (
@@ -350,7 +348,7 @@ const SetupComponent = () => {
         ))}
       </div>
 
-      {/* Sheet / Detalhes do Item */}
+      {/* Sheet / Detalhes */}
       <div ref={sheetRef} className={`st-sheet ${selectedPart ? 'open' : ''}`}>
         {selectedPart && (
           <>
