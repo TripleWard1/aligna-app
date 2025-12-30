@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 
 const SetupComponent = () => {
   const [setupMode, setSetupMode] = useState('principal');
@@ -6,12 +6,20 @@ const SetupComponent = () => {
   const [activeTab, setActiveTab] = useState('setup');
   const [showToast, setShowToast] = useState(false);
   const [vaultSelectedId, setVaultSelectedId] = useState(null);
+  const sheetRef = useRef(null);
 
-  // --- BLOQUEIO DE SCROLL NO FUNDO ---
+  // --- CONTROLO DE SCROLL E FOCO ---
   useEffect(() => {
     if (selectedPart) {
+      // Bloqueia o fundo totalmente
+      document.documentElement.style.overflow = 'hidden';
       document.body.style.overflow = 'hidden';
+      // Faz reset ao scroll da sheet para garantir que começa no topo da imagem
+      if (sheetRef.current) {
+        sheetRef.current.scrollTop = 0;
+      }
     } else {
+      document.documentElement.style.overflow = 'unset';
       document.body.style.overflow = 'unset';
     }
   }, [selectedPart]);
@@ -237,7 +245,7 @@ const SetupComponent = () => {
           padding: 24px 28px 140px; 
           transform: translateY(100%); 
           transition: 0.6s cubic-bezier(0.19, 1, 0.22, 1); 
-          max-height: 92vh; 
+          max-height: 100vh; /* Ocupa o ecrã todo para não cortar */
           overflow-y: auto; 
           -webkit-overflow-scrolling: touch; 
         }
@@ -245,24 +253,20 @@ const SetupComponent = () => {
         .st-sheet-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); backdrop-filter: blur(4px); z-index: 1999; display: none; }
         .st-sheet-overlay.show { display: block; }
 
-        /* --- CORREÇÃO DEFINITIVA DO CORTE --- */
         .vault-hero-frame { 
           position: relative; 
           width: 100%;
-          height: auto;
-          min-height: 200px;
-          margin: 10px 0 30px 0;
+          margin: 0 0 30px 0; /* Removi margem topo para colar em cima */
           display: block;
-          overflow: visible; /* Hotspots podem sair um pouco da borda */
+          overflow: visible; 
         }
         
         .vault-hero-frame img { 
           width: 100%;
-          height: auto !important; /* Força a altura natural do ficheiro */
-          max-height: none !important; /* Remove qualquer limite herdado */
+          height: auto !important;
           display: block; 
           border-radius: 24px;
-          object-fit: contain; /* Garante que 100% da imagem é renderizada */
+          object-fit: contain; 
         }
         
         .st-vault-hotspot { position: absolute; transform: translate(-50%, -50%); z-index: 10; }
@@ -325,7 +329,7 @@ const SetupComponent = () => {
 
       <div className="st-list">
         {rawItems.map(item => (
-          <div key={item.id} className="st-item" onClick={() => { setSelectedPart(item); window.scrollTo({ top: 0, behavior: 'smooth' }); }}>
+          <div key={item.id} className="st-item" onClick={() => { setSelectedPart(item); }}>
             <div className="st-card-icon">{item.icon}</div>
             <div style={{ flex: 1 }}>
               <div style={{ fontSize: '10px', color: tokens.accent[item.cat as keyof typeof tokens.accent], fontWeight: '800' }}>{item.brand}</div>
@@ -336,7 +340,9 @@ const SetupComponent = () => {
       </div>
 
       <div className={`st-sheet-overlay ${selectedPart ? 'show' : ''}`} onClick={() => setSelectedPart(null)}></div>
-      <div className={`st-sheet ${selectedPart ? 'open' : ''}`}>
+      
+      {/* REF ADICIONADA AQUI PARA RESET DE SCROLL */}
+      <div ref={sheetRef} className={`st-sheet ${selectedPart ? 'open' : ''}`}>
         {selectedPart && (
           <div>
             <div className="vault-hero-frame">
