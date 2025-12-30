@@ -8,18 +8,15 @@ const SetupComponent = () => {
   const [vaultSelectedId, setVaultSelectedId] = useState(null);
   const sheetRef = useRef(null);
 
-  // --- CONTROLO DE SCROLL E FOCO ---
+  // --- CONTROLO DE SCROLL: FAZ RESET QUANDO ABRE ---
   useEffect(() => {
     if (selectedPart) {
-      // Bloqueia o fundo totalmente
-      document.documentElement.style.overflow = 'hidden';
       document.body.style.overflow = 'hidden';
-      // Faz reset ao scroll da sheet para garantir que começa no topo da imagem
+      // Força a janela a começar no topo absoluto para ver a imagem toda
       if (sheetRef.current) {
         sheetRef.current.scrollTop = 0;
       }
     } else {
-      document.documentElement.style.overflow = 'unset';
       document.body.style.overflow = 'unset';
     }
   }, [selectedPart]);
@@ -245,7 +242,7 @@ const SetupComponent = () => {
           padding: 24px 28px 140px; 
           transform: translateY(100%); 
           transition: 0.6s cubic-bezier(0.19, 1, 0.22, 1); 
-          max-height: 100vh; /* Ocupa o ecrã todo para não cortar */
+          max-height: 95vh; 
           overflow-y: auto; 
           -webkit-overflow-scrolling: touch; 
         }
@@ -256,14 +253,17 @@ const SetupComponent = () => {
         .vault-hero-frame { 
           position: relative; 
           width: 100%;
-          margin: 0 0 30px 0; /* Removi margem topo para colar em cima */
+          height: auto;
+          min-height: 200px;
+          margin: 0 0 30px 0; /* Colado ao topo da janela */
           display: block;
           overflow: visible; 
         }
         
         .vault-hero-frame img { 
           width: 100%;
-          height: auto !important;
+          height: auto !important; 
+          max-height: none !important; 
           display: block; 
           border-radius: 24px;
           object-fit: contain; 
@@ -329,7 +329,7 @@ const SetupComponent = () => {
 
       <div className="st-list">
         {rawItems.map(item => (
-          <div key={item.id} className="st-item" onClick={() => { setSelectedPart(item); }}>
+          <div key={item.id} className="st-item" onClick={() => setSelectedPart(item)}>
             <div className="st-card-icon">{item.icon}</div>
             <div style={{ flex: 1 }}>
               <div style={{ fontSize: '10px', color: tokens.accent[item.cat as keyof typeof tokens.accent], fontWeight: '800' }}>{item.brand}</div>
@@ -341,7 +341,7 @@ const SetupComponent = () => {
 
       <div className={`st-sheet-overlay ${selectedPart ? 'show' : ''}`} onClick={() => setSelectedPart(null)}></div>
       
-      {/* REF ADICIONADA AQUI PARA RESET DE SCROLL */}
+      {/* REF ADICIONADA PARA RESET DE SCROLL */}
       <div ref={sheetRef} className={`st-sheet ${selectedPart ? 'open' : ''}`}>
         {selectedPart && (
           <div>
