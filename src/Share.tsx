@@ -9,6 +9,7 @@ const SetupComponent = () => {
   const [vaultSelectedId, setVaultSelectedId] = useState(null);
   const sheetRef = useRef(null);
 
+  // Bloqueio de Scroll quando o modal está aberto
   useEffect(() => {
     if (selectedPart) {
       const scrollY = window.scrollY;
@@ -112,7 +113,7 @@ const SetupComponent = () => {
           { id: 7, label: 'Mesa', sub: 'Gavetas Alex + Tampo LAGKAPTEN', top: '85%', left: '50%' },
           { id: 8, label: 'Misc', sub: 'Stream Deck Mk.2', top: '45%', left: '20%' },
           { id: 9, label: 'Luz', sub: 'Barra Luz Xiaomi', top: '65%', left: '5%' },
-          { id: 10, label: 'Cabo', some: 'Epomaker Coiled Aviator Cable', top: '45%', left: '52%' }
+          { id: 10, label: 'Cabo', sub: 'Epomaker Coiled Aviator Cable', top: '45%', left: '52%' }
         ]
       },
       { 
@@ -148,7 +149,7 @@ const SetupComponent = () => {
           { id: 3, label: 'Estante', sub: 'IKEA LACK Black', top: '75%', left: '43%' },
           { id: 4, label: 'LED Strip', sub: 'Govee RGBIC', top: '70%', left: '16%' }
         ]
-      },
+      }
     ],
     extra: [
       { 
@@ -202,7 +203,7 @@ const SetupComponent = () => {
           { id: 1, label: 'ETB Shrouded', sub: 'Sealed', top: '55%', left: '50%' },
           { id: 2, label: 'ETB Flare/Bolt', sub: 'Sealed', top: '65%', left: '70%' }
         ]
-      },
+      }
     ]
   };
 
@@ -221,7 +222,7 @@ const SetupComponent = () => {
           @keyframes pulse { 0% { opacity: 0.3; } 50% { opacity: 0.8; } 100% { opacity: 0.3; } }
         `}</style>
         <div style={{ fontSize: '40px', marginBottom: '20px' }}>🖥️</div>
-        <h1 style={{ fontFamily: 'Syncopate', fontSize: '20px', letter-spacing: '6px', marginBottom: '10px' }}>HUGO BARROS</h1>
+        <h1 style={{ fontFamily: 'Syncopate', fontSize: '20px', letterSpacing: '6px', marginBottom: '10px' }}>HUGO BARROS</h1>
         <p style={{ fontSize: '14px', color: '#7C7E8B', marginBottom: '60px' }}>BATTLESTATION // 2025</p>
         <div className="pulse">CLICK TO EXPLORE</div>
       </div>
@@ -243,15 +244,16 @@ const SetupComponent = () => {
         .st-pill { border: none; background: transparent; color: ${tokens.muted}; padding: 14px 24px; border-radius: 20px; font-size: 12px; font-weight: 800; cursor: pointer; }
         .st-pill.active { background: #FFFFFF; color: ${tokens.text}; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
 
-        .st-photo-container { position: relative; margin: 0 auto; width: calc(100% - 48px); max-width: 600px; border-radius: 36px; overflow: hidden; background: #000; }
+        .st-photo-container { position: relative; margin: 0 auto; width: calc(100% - 48px); max-width: 600px; border-radius: 36px; overflow: hidden; background: #000; box-shadow: 0 20px 40px rgba(0,0,0,0.1); }
         .st-main-img { width: 100%; display: block; transition: 0.8s; transform-origin: var(--zoom-x) var(--zoom-y); }
         .st-main-img.zoom-active { transform: scale(1.8); filter: brightness(0.6); }
         
-        .st-hotspot { position: absolute; width: 40px; height: 40px; transform: translate(-50%, -50%); display: flex; align-items: center; justify-content: center; z-index: 15; }
-        .st-hotspot-inner { width: 32px; height: 32px; border-radius: 50%; border: 3px solid var(--color); display: flex; align-items: center; justify-content: center; }
+        .st-hotspot { position: absolute; width: 40px; height: 40px; transform: translate(-50%, -50%); display: flex; align-items: center; justify-content: center; z-index: 15; cursor: pointer; }
+        .st-hotspot-inner { width: 32px; height: 32px; border-radius: 50%; border: 3px solid var(--color); display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.1); backdrop-filter: blur(2px); }
 
         .st-list { padding: 40px 24px; display: grid; gap: 20px; max-width: 600px; margin: 0 auto; }
-        .st-item { background: #FFFFFF; padding: 22px; border-radius: 30px; display: flex; align-items: center; gap: 20px; border: 1px solid rgba(0,0,0,0.03); cursor: pointer; }
+        .st-item { background: #FFFFFF; padding: 22px; border-radius: 30px; display: flex; align-items: center; gap: 20px; border: 1px solid rgba(0,0,0,0.03); cursor: pointer; transition: 0.3s; }
+        .st-item:active { transform: scale(0.98); background: #fdfdfd; }
         .st-card-icon { width: 65px; height: 65px; background: #F8F9FD; border-radius: 22px; display: flex; align-items: center; justify-content: center; font-size: 28px; }
 
         .st-sheet { 
@@ -259,82 +261,89 @@ const SetupComponent = () => {
           top: 0; left: 0; right: 0; bottom: 0;
           background: #FFFFFF; 
           z-index: 2000; 
-          padding: 0; 
           transform: translateY(100%); 
           transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
           overflow-y: auto; 
           overscroll-behavior: contain; 
+          -webkit-overflow-scrolling: touch;
         }
         .st-sheet.open { transform: translateY(0); }
-        .st-sheet-content { padding: 20px 24px 160px; }
+        .st-sheet-content { padding: 0 24px 160px; }
 
         .vault-hero-frame { 
           position: relative; 
           width: calc(100% - 48px);
-          margin: 20px auto 30px;
+          margin: 24px auto 30px;
           line-height: 0;
           border-radius: 36px;
           overflow: hidden;
-          background: #000; 
+          background: #f0f0f0;
+          box-shadow: 0 10px 30px rgba(0,0,0,0.05);
         }
-        .vault-hero-frame img { width: 100%; height: auto; display: block; object-fit: contain; }
+        .vault-hero-frame img { width: 100%; height: auto; display: block; object-fit: cover; }
         
-        .st-vault-hotspot { position: absolute; transform: translate(-50%, -50%); z-index: 10; }
+        .st-vault-hotspot { position: absolute; transform: translate(-50%, -50%); z-index: 10; cursor: pointer; }
         .st-vault-dot { width: 20px; height: 20px; border: 4px solid var(--vault-color); border-radius: 50%; background: white; box-shadow: 0 0 10px rgba(0,0,0,0.2); }
         .v-tooltip { position: absolute; background: white; border-radius: 18px; padding: 12px; width: 140px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); z-index: 110; bottom: 30px; left: 50%; transform: translateX(-50%); text-align: center; line-height: 1.2; }
-        .st-spec-pill { background: #F8F9FD; padding: 16px; border-radius: 18px; font-size: 14px; font-weight: 600; margin-bottom: 10px; color: ${tokens.text}; }
+        
+        .st-spec-pill { background: #F8F9FD; padding: 16px; border-radius: 18px; font-size: 14px; font-weight: 600; margin-bottom: 10px; color: ${tokens.text}; border: 1px solid rgba(0,0,0,0.02); }
 
         .st-bottom-nav-wrapper { position: fixed; bottom: 30px; left: 0; right: 0; display: flex; justify-content: center; z-index: 9999; pointer-events: none; }
-        .st-bottom-nav { display: flex; gap: 30px; background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(20px); padding: 12px 40px; border-radius: 40px; box-shadow: 0 15px 35px rgba(0,0,0,0.15); pointer-events: auto; }
+        .st-bottom-nav { display: flex; gap: 30px; background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(20px); padding: 12px 40px; border-radius: 40px; box-shadow: 0 15px 35px rgba(0,0,0,0.15); pointer-events: auto; border: 1px solid rgba(255,255,255,0.5); }
         .st-nav-item { background: none; border: none; font-size: 24px; cursor: pointer; opacity: 0.3; transition: 0.3s; }
         .st-nav-item.active { opacity: 1; transform: scale(1.1); }
       `}</style>
 
-      <button onClick={handleShare} style={{ position: 'absolute', top: '24px', right: '24px', background: 'white', padding: '10px 16px', borderRadius: '14px', border: 'none', fontSize: '10px', fontWeight: '900', zIndex: 100 }}>
+      {/* Botão Partilhar */}
+      <button onClick={handleShare} style={{ position: 'absolute', top: '24px', right: '24px', background: 'white', padding: '10px 16px', borderRadius: '14px', border: 'none', fontSize: '10px', fontWeight: '900', zIndex: 100, boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}>
         PARTILHAR 📤
       </button>
 
+      {/* Cabeçalho */}
       <header className="st-header">
         <h1>DUAL SETUP</h1>
-        <p>Hugo Barros // Battlestation</p>
+        <p style={{ fontWeight: 600, marginTop: '8px', opacity: 0.6 }}>Hugo Barros // Battlestation</p>
         <div className="st-nav-pills">
           <button className={`st-pill ${setupMode === 'principal' ? 'active' : ''}`} onClick={() => setSetupMode('principal')}>MAIN SETUP</button>
           <button className={`st-pill ${setupMode === 'extra' ? 'active' : ''}`} onClick={() => setSetupMode('extra')}>SECOND SETUP</button>
         </div>
       </header>
 
+      {/* Foto Principal com Hotspots */}
       <div className="st-photo-container">
         <img src="/Foto Principal Setup.jpg" className={`st-main-img ${selectedPart ? 'zoom-active' : ''}`} alt="Setup" />
         {rawItems.map(item => (
-          <div key={item.id} className="st-hotspot" style={{ '--color': tokens.accent[item.cat as keyof typeof tokens.accent], top: item.pos.top, left: item.pos.left } as any} onClick={() => setSelectedPart(item)}>
-            <div className="st-hotspot-inner"><div style={{ width: '6px', height: '6px', borderRadius: '50%', background: tokens.accent[item.cat as keyof typeof tokens.accent] }}></div></div>
+          <div key={item.id} className="st-hotspot" style={{ '--color': tokens.accent[item.cat], top: item.pos.top, left: item.pos.left } as any} onClick={() => setSelectedPart(item)}>
+            <div className="st-hotspot-inner"><div style={{ width: '6px', height: '6px', borderRadius: '50%', background: tokens.accent[item.cat] }}></div></div>
           </div>
         ))}
       </div>
 
+      {/* Lista de Itens */}
       <div className="st-list">
         {rawItems.map(item => (
           <div key={item.id} className="st-item" onClick={() => setSelectedPart(item)}>
             <div className="st-card-icon">{item.icon}</div>
             <div style={{ flex: 1 }}>
-              <div style={{ fontSize: '10px', color: tokens.accent[item.cat as keyof typeof tokens.accent], fontWeight: '800' }}>{item.brand}</div>
+              <div style={{ fontSize: '10px', color: tokens.accent[item.cat], fontWeight: '800', textTransform: 'uppercase', letterSpacing: '1px' }}>{item.brand}</div>
               <div style={{ fontSize: '18px', fontWeight: '800' }}>{item.name}</div>
             </div>
           </div>
         ))}
       </div>
 
+      {/* Sheet / Detalhes do Item */}
       <div ref={sheetRef} className={`st-sheet ${selectedPart ? 'open' : ''}`}>
         {selectedPart && (
           <>
             <div className="vault-hero-frame">
               <img src={selectedPart.img} alt={selectedPart.name} />
               {selectedPart.hotspots?.map(hs => (
-                <div key={hs.id} className="st-vault-hotspot" style={{ top: hs.top, left: hs.left, '--vault-color': tokens.accent[selectedPart.cat as keyof typeof tokens.accent] } as any} onClick={() => setVaultSelectedId(vaultSelectedId === hs.id ? null : hs.id)}>
+                <div key={hs.id} className="st-vault-hotspot" style={{ top: hs.top, left: hs.left, '--vault-color': tokens.accent[selectedPart.cat] } as any} onClick={() => setVaultSelectedId(vaultSelectedId === hs.id ? null : hs.id)}>
                   <div className="st-vault-dot"></div>
                   {vaultSelectedId === hs.id && (
                     <div className="v-tooltip">
-                      <div style={{ fontSize: '10px', fontWeight: '900', color: tokens.accent[selectedPart.cat as keyof typeof tokens.accent] }}>{hs.label}</div>
+                      <div style={{ fontSize: '10px', fontWeight: '900', color: tokens.accent[selectedPart.cat], textTransform: 'uppercase' }}>{hs.label}</div>
                       <div style={{ fontSize: '12px', fontWeight: '700' }}>{hs.sub}</div>
                     </div>
                   )}
@@ -347,12 +356,13 @@ const SetupComponent = () => {
               {selectedPart.specs.split('|').map((s, i) => (
                 <div key={i} className="st-spec-pill">{s.trim()}</div>
               ))}
-              <button onClick={() => setSelectedPart(null)} style={{ width: '100%', marginTop: '30px', padding: '24px', borderRadius: '24px', background: tokens.text, color: 'white', fontWeight: '800', border: 'none', fontSize: '16px' }}>FECHAR JANELA</button>
+              <button onClick={() => setSelectedPart(null)} style={{ width: '100%', marginTop: '30px', padding: '24px', borderRadius: '24px', background: tokens.text, color: 'white', fontWeight: '800', border: 'none', fontSize: '16px', cursor: 'pointer' }}>FECHAR JANELA</button>
             </div>
           </>
         )}
       </div>
 
+      {/* Tab Bar Inferior */}
       <div className="st-bottom-nav-wrapper">
         <nav className="st-bottom-nav">
           <button className={`st-nav-item ${activeTab === 'pokemon' ? 'active' : ''}`} onClick={() => setActiveTab('pokemon')}>⚪</button>
@@ -360,8 +370,9 @@ const SetupComponent = () => {
         </nav>
       </div>
 
+      {/* Toast de Cópia */}
       {showToast && (
-        <div style={{ position: 'fixed', bottom: '110px', left: '50%', transform: 'translateX(-50%)', background: '#1A1B1E', color: 'white', padding: '12px 24px', borderRadius: '20px', fontWeight: '800', zIndex: 9999 }}>LINK COPIADO ✨</div>
+        <div style={{ position: 'fixed', bottom: '110px', left: '50%', transform: 'translateX(-50%)', background: '#1A1B1E', color: 'white', padding: '12px 24px', borderRadius: '20px', fontWeight: '800', zIndex: 9999, boxShadow: '0 10px 30px rgba(0,0,0,0.2)' }}>LINK COPIADO ✨</div>
       )}
     </div>
   );
