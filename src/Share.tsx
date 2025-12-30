@@ -8,14 +8,12 @@ const SetupComponent = () => {
   const [vaultSelectedId, setVaultSelectedId] = useState(null);
   const sheetRef = useRef(null);
 
-  // --- BLOQUEIO E RESET DE SCROLL RIGOROSO ---
   useEffect(() => {
     if (selectedPart) {
       const scrollY = window.scrollY;
       document.body.style.position = 'fixed';
       document.body.style.top = `-${scrollY}px`;
       document.body.style.width = '100%';
-      
       if (sheetRef.current) {
         sheetRef.current.scrollTop = 0;
       }
@@ -238,7 +236,7 @@ const SetupComponent = () => {
 
         .st-sheet { 
           position: fixed; 
-          top: 0; /* MUDANÇA PARA TOP 0 PARA EVITAR CÁLCULOS DE ALTURA */
+          top: 0; 
           left: 0; 
           right: 0; 
           bottom: 0;
@@ -248,7 +246,7 @@ const SetupComponent = () => {
           transform: translateY(100%); 
           transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
           overflow-y: auto; 
-          overscroll-behavior: contain; /* IMPEDE QUE O SCROLL PASSE PARA O FUNDO */
+          overscroll-behavior: contain; 
           -webkit-overflow-scrolling: touch; 
         }
         .st-sheet.open { transform: translateY(0); }
@@ -257,17 +255,15 @@ const SetupComponent = () => {
         .vault-hero-frame { 
           position: relative; 
           width: 100%;
-          line-height: 0; /* REMOVE ESPAÇOS FANTASMA NO TOPO */
-          margin-bottom: 30px;
+          line-height: 0;
+          background: #000; /* Fundo preto para as bordas se a imagem for menor */
         }
         
         .vault-hero-frame img { 
           width: 100%;
           height: auto; 
           display: block; 
-          border-bottom-left-radius: 40px;
-          border-bottom-right-radius: 40px;
-          object-fit: cover; 
+          object-fit: contain; /* GARANTE QUE A FOTO É VISTA POR INTEIRO SEM CORTE */
         }
         
         .st-vault-hotspot { position: absolute; transform: translate(-50%, -50%); z-index: 10; }
