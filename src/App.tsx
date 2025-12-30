@@ -5,6 +5,7 @@ import { ref, push, onValue, set, remove, update, get } from "firebase/database"
 import { jsPDF } from "jspdf";
 import "jspdf-autotable";
 import './Setup.css';
+import Share from './Share'; // Importa a página pública
 
 
 const TWELVE_DATA_KEY = "49563e179ee146c5a53279200c654f29";
@@ -63,6 +64,11 @@ const ACC_ICONS = ['👛', '🏦', '🐖', '💳', '💎', '📊', '💰'];
 
 
 export default function App() {
+  // --- LÓGICA DE ROTEAMENTO PARA STACKBLITZ ---
+  // Se o URL terminar em /share, ignora tudo e mostra a página de partilha
+  if (window.location.pathname === '/share') {
+    return <Share />;
+  }
   // --- SISTEMA DE FEEDBACK (SOM E VIBRAÇÃO) ---
   const [audio] = useState(new Audio('https://www.myinstants.com/media/sounds/coin.mp3'));
   // 1. ESTADOS (Garante que estes estão no topo, fora da função render)
@@ -114,13 +120,13 @@ useEffect(() => {
     };
   
     const handleShare = async () => {
-      // Criamos o link que aponta especificamente para o teu setup
-      const shareUrl = `${window.location.origin}${window.location.pathname}?tab=setup`;
-  
+      // Agora o link aponta para a rota /share que criámos
+      const shareUrl = `${window.location.origin}/share`;
+    
       const shareData = {
         title: 'Meu Setup - Aligna',
-        text: 'Vê os detalhes do meu hardware e periféricos no meu setup interativo!',
-        url: shareUrl, // Usamos a nova URL aqui
+        text: 'Vê o meu setup interativo sem precisar de login!',
+        url: shareUrl, 
       };
   
       try {
