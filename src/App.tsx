@@ -70,6 +70,7 @@ export default function App() {
   }
   // --- SISTEMA DE FEEDBACK (SOM E VIBRAÇÃO) ---
   const [audio] = useState(new Audio('https://www.myinstants.com/media/sounds/coin.mp3'));
+  
   // 1. ESTADOS (Garante que estes estão no topo, fora da função render)
  // Importante: garante que o useEffect está importado no topo: 
 // import { useState, useEffect } from 'react';
@@ -97,6 +98,7 @@ useEffect(() => {
   const [setupSearch, setSetupSearch] = useState('');
   const [setupFilter, setSetupFilter] = useState('ALL');
   const [vaultSelectedId, setVaultSelectedId] = useState(null);
+  const [showToast, setShowToast] = useState(false);
 
   
   
@@ -121,22 +123,21 @@ useEffect(() => {
     const handleShare = async () => {
       const shareUrl = `${window.location.origin}/share`;
     
-      const shareData = {
-        title: 'Meu Setup - Aligna',
-        text: 'Vê os detalhes do meu hardware e periféricos no meu setup interativo!',
-        url: shareUrl, 
-      };
-    
       try {
-        if (navigator.share) {
-          // Agora o await é permitido
-          await navigator.share(shareData);
-        } else {
-          await navigator.clipboard.writeText(shareUrl);
-          alert('Link do Setup copiado! ✨');
-        }
-      } catch (err) { 
-        console.log('Erro ao partilhar:', err); 
+        // 1. Copia o link para o clipboard
+        await navigator.clipboard.writeText(shareUrl);
+        
+        // 2. Vibração para dar feedback físico ao clique [cite: 2025-12-17]
+        triggerHaptic('medium'); 
+    
+        // 3. Ativa o teu popup nativo (o balão "LINK COPIADO")
+        setShowToast(true);
+        
+        // 4. Esconde o balão após 2.5 segundos [cite: 2025-12-18]
+        setTimeout(() => setShowToast(false), 2500);
+        
+      } catch (err) {
+        console.error('Erro ao copiar link:', err);
       }
     };
 
@@ -2458,6 +2459,38 @@ const filteredCards = pokemonCards
     )}
 
   </div>
+    )}
+
+{showToast && (
+      <div style={{
+        position: 'fixed',
+        bottom: '120px',
+        left: '50%',
+        transform: 'translateX(-50%)',
+        background: 'rgba(26, 27, 30, 0.95)',
+        backdropFilter: 'blur(10px)',
+        color: 'white',
+        padding: '14px 28px',
+        borderRadius: '20px',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '12px',
+        zIndex: 20000, // Z-index alto para ficar acima de tudo
+        boxShadow: '0 20px 40px rgba(0,0,0,0.3)',
+        border: '1px solid rgba(255,255,255,0.1)',
+        animation: 'toastIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)'
+      }}>
+        <style>{`
+          @keyframes toastIn {
+            from { opacity: 0; transform: translate(-50%, 20px) scale(0.9); }
+            to { opacity: 1; transform: translate(-50%, 0) scale(1); }
+          }
+        `}</style>
+        <span style={{ fontSize: '18px' }}>✨</span>
+        <span style={{ fontFamily: 'Outfit', fontWeight: '700', fontSize: '13px', letterSpacing: '1px' }}>
+          LINK COPIADO!
+        </span>
+      </div>
     )}
 
 {activeTab === 'setup' && (
