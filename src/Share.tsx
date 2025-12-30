@@ -80,21 +80,76 @@ const SetupComponent = () => {
       <div onClick={handleEnter} style={{
         height: '100vh', background: '#000', display: 'flex', flexDirection: 'column', 
         alignItems: 'center', justifyContent: 'center', color: '#fff', textAlign: 'center',
-        padding: '40px', cursor: 'pointer', fontFamily: 'Outfit, sans-serif',
+        cursor: 'pointer', fontFamily: 'Outfit, sans-serif',
         transition: 'all 0.6s ease', opacity: isExiting ? 0 : 1, transform: isExiting ? 'scale(1.1)' : 'scale(1)',
         position: 'relative', overflow: 'hidden'
       }}>
-        <img src="/Foto Principal Setup.jpg" style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'cover', opacity: 0.4, filter: 'grayscale(40%) contrast(120%)' }} alt="Background" />
+        <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }}>
+           <img src="/Foto Principal Setup.jpg" style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'left center' }} alt="Setup" />
+        </div>
+        
         <style>{`
-          @import url('https://fonts.googleapis.com/css2?family=Syncopate:wght@700&family=Outfit:wght@300;400;600;800&display=swap');
-          .pulse { animation: pulse 2s infinite; font-family: 'Syncopate'; font-size: 14px; letter-spacing: 4px; opacity: 0.6; z-index: 2; }
-          @keyframes pulse { 0% { opacity: 0.3; } 50% { opacity: 0.8; } 100% { opacity: 0.3; } }
+          @import url('https://fonts.googleapis.com/css2?family=Inter:wght@900&family=Outfit:wght@300;400;500;600;700;800&display=swap');
+          
+          .pulse-button { 
+            animation: pulse-glow 2s infinite; 
+            font-family: 'Inter'; 
+            font-size: 16px; 
+            letter-spacing: 5px; 
+            font-weight: 900;
+            z-index: 2; 
+            color: #FFFFFF;
+            padding: 18px 40px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(5px);
+            border-radius: 100px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            text-shadow: 0 0 10px rgba(255,255,255,0.5);
+          }
+
+          @keyframes pulse-glow { 
+            0% { transform: scale(1); box-shadow: 0 0 0px rgba(255,255,255,0); } 
+            50% { transform: scale(1.05); box-shadow: 0 0 30px rgba(255,255,255,0.3); background: rgba(255,255,255,0.15); } 
+            100% { transform: scale(1); box-shadow: 0 0 0px rgba(255,255,255,0); } 
+          }
+
+          .landing-overlay { 
+            position: absolute; inset: 0;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.1), rgba(0,0,0,0.4));
+            z-index: 1;
+          }
+
+          .landing-capsule {
+            background: linear-gradient(135deg, rgba(255,255,255,0.2), rgba(255,255,255,0.05));
+            backdrop-filter: blur(1px);
+            padding: 10px 28px;
+            border-radius: 100px;
+            border: 1px solid rgba(255,255,255,0.25);
+            display: inline-block;
+            margin-bottom: 24px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+          }
+
+          .main-glass-card {
+            background: rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(7px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 50px;
+            padding: 50px 30px;
+            z-index: 2;
+            position: relative;
+            max-width: 90%;
+            box-shadow: inset 0 0 20px rgba(255,255,255,0.05);
+          }
         `}</style>
-        <div style={{ position: 'relative', zIndex: 2 }}>
-          <div style={{ fontSize: '40px', marginBottom: '20px' }}>🖥️</div>
-          <h1 style={{ fontFamily: 'Syncopate', fontSize: '20px', letterSpacing: '6px', marginBottom: '10px' }}>HUGO BARROS</h1>
-          <p style={{ fontSize: '14px', color: '#7C7E8B', marginBottom: '60px' }}>BATTLESTATION // 2025</p>
-          <div className="pulse">CLICK TO EXPLORE</div>
+        <div className="landing-overlay" />
+        <div className="main-glass-card">
+          <div className="landing-capsule">
+            <span style={{ fontSize: '13px', fontWeight: '800', letterSpacing: '4px', color: '#FFF' }}>BATTLESTATIONS</span>
+          </div>
+          <h1 style={{ fontFamily: 'Inter', fontSize: '38px', letterSpacing: '3px', marginBottom: '12px', fontWeight: '900' }}>HUGO BARROS</h1>
+          <p style={{ fontSize: '14px', color: 'rgba(255,255,255,0.5)', marginBottom: '100px', letterSpacing: '4px', fontWeight: '600' }}>EDIÇÃO 2025</p>
+          <div className="pulse-button">CLICA PARA EXPLORAR</div>
         </div>
       </div>
     );
@@ -104,75 +159,213 @@ const SetupComponent = () => {
     <div className="setup-mobile-pro" style={{ '--zoom-x': selectedPart ? selectedPart.pos.left : '50%', '--zoom-y': selectedPart ? selectedPart.pos.top : '50%' } as any}>
       <style>{`
         .setup-mobile-pro { 
-          background: ${tokens.bg}; 
-          color: ${tokens.text}; 
+          background: #000; 
+          color: #FFF; 
           min-height: 100vh; 
           font-family: 'Outfit', sans-serif; 
-          padding-bottom: 140px; 
+          padding-bottom: 60px; 
           position: relative; 
           overflow-x: hidden; 
-          background-image: radial-gradient(#d1d5db 0.8px, transparent 0.8px);
-          background-size: 24px 24px;
         }
-        .st-header { 
-          padding: 80px 24px 40px; 
-          text-align: center; 
-          background: linear-gradient(180deg, rgba(255,255,255,1) 0%, rgba(255,255,255,0) 100%);
+        .setup-mobile-pro::before {
+            content: "";
+            position: fixed;
+            inset: 0;
+            background-image: url("/Foto Principal Setup.jpg");
+            background-size: cover;
+            background-position: center;
+            filter: blur(3px) brightness(0.6);
+            opacity: 0.7;
+            z-index: 0;
         }
-        .st-header h1 { 
-          font-family: 'Syncopate'; 
-          font-size: 16px; 
-          letter-spacing: 4px; 
-          margin: 0; 
-          background: linear-gradient(90deg, #1A1B1E, #7C7E8B); 
-          -webkit-background-clip: text; 
-          -webkit-text-fill-color: transparent; 
-        }
-        .st-nav-pills { display: flex; background: rgba(0,0,0,0.05); padding: 6px; border-radius: 24px; margin: 25px auto 0; width: fit-content; backdrop-filter: blur(10px); }
-        .st-pill { border: none; background: transparent; color: ${tokens.muted}; padding: 14px 24px; border-radius: 20px; font-size: 12px; font-weight: 800; cursor: pointer; }
-        .st-pill.active { background: #FFFFFF; color: ${tokens.text}; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
 
-        .st-photo-container { position: relative; margin: 0 auto; width: calc(100% - 48px); max-width: 600px; border-radius: 36px; overflow: hidden; background: #000; box-shadow: 0 20px 40px rgba(0,0,0,0.1); border: 4px solid white; }
-        .st-main-img { width: 100%; display: block; transition: 0.8s; transform-origin: var(--zoom-x) var(--zoom-y); }
+        .st-header { 
+          position: relative;
+          z-index: 1;
+          padding: 60px 24px 30px; 
+          text-align: center; 
+        }
+        
+        .header-capsule-main {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 20px 30px;
+            border-radius: 35px;
+            display: inline-block;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+        }
+
+        .st-header h1 { 
+          font-family: 'Inter'; 
+          font-size: 18px; 
+          letter-spacing: 2px; 
+          margin: 0; 
+          color: #FFF;
+          font-weight: 900;
+        }
+
+        .st-nav-pills { 
+            display: flex; 
+            background: rgba(255, 255, 255, 0.05); 
+            padding: 4px; 
+            border-radius: 100px; 
+            margin: 20px auto 0; 
+            width: fit-content; 
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .st-pill { 
+            border: none; 
+            background: transparent; 
+            color: rgba(255,255,255,0.4); 
+            padding: 10px 20px; 
+            border-radius: 100px; 
+            font-size: 11px; 
+            font-weight: 800; 
+            cursor: pointer; 
+            transition: 0.3s;
+        }
+        .st-pill.active { 
+            background: #FFFFFF; 
+            color: #000; 
+            box-shadow: 0 4px 15px rgba(255,255,255,0.2); 
+        }
+
+        .st-photo-container { 
+            position: relative; 
+            z-index: 1;
+            margin: 0 auto; 
+            width: calc(100% - 40px); 
+            max-width: 600px; 
+            border-radius: 40px; 
+            overflow: hidden; 
+            background: #000; 
+            box-shadow: 0 25px 50px rgba(0,0,0,0.4); 
+            border: 5px solid rgba(255,255,255,0.1); 
+        }
+        .st-main-img { width: 100%; height: auto; display: block; transition: 0.8s; transform-origin: var(--zoom-x) var(--zoom-y); }
         .st-main-img.zoom-active { transform: scale(1.8); filter: brightness(0.6); }
         
         .st-hotspot { position: absolute; width: 32px; height: 32px; transform: translate(-50%, -50%); display: flex; align-items: center; justify-content: center; z-index: 15; cursor: pointer; }
         .st-hotspot-inner { width: 24px; height: 24px; border-radius: 50%; border: 3px solid var(--color); display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.1); box-shadow: 0 0 15px var(--color); }
 
-        .st-list { padding: 40px 24px; display: grid; gap: 20px; max-width: 600px; margin: 0 auto; }
-        .st-item { background: #FFFFFF; padding: 22px; border-radius: 30px; display: flex; align-items: center; gap: 20px; border-left: 6px solid var(--item-color); cursor: pointer; transition: 0.3s; box-shadow: 0 8px 20px rgba(0,0,0,0.04); }
-        .st-item:active { transform: scale(0.98); background: #fdfdfd; }
-        .st-card-icon { width: 65px; height: 65px; background: #F8F9FD; border-radius: 22px; display: flex; align-items: center; justify-content: center; font-size: 28px; }
+        .st-list { position: relative; z-index: 1; padding: 30px 20px; display: grid; gap: 14px; max-width: 600px; margin: 0 auto; }
+        
+        .st-item { 
+            background: rgba(255, 255, 255, 0.98); 
+            padding: 16px 20px; 
+            border-radius: 22px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: flex-start;
+            gap: 16px; 
+            border-left: 5px solid var(--item-color); 
+            cursor: pointer; 
+            transition: 0.2s; 
+            box-shadow: 0 6px 18px rgba(0,0,0,0.08); 
+            color: ${tokens.text};
+            min-height: 85px; 
+            width: 100%;
+            box-sizing: border-box;
+        }
+        
+        .st-card-icon { 
+            flex-shrink: 0;
+            width: 50px; 
+            height: 50px; 
+            background: #F4F6FB; 
+            border-radius: 16px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            font-size: 24px; 
+        }
 
-        .st-sheet { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: #FFFFFF; z-index: 2000; transform: translateY(100%); transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1); overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; }
+        .st-item-text { display: flex; flex-direction: column; justify-content: center; overflow: hidden; }
+        .st-label-main { 
+            font-family: 'Inter', sans-serif; 
+            font-size: 11px; 
+            font-weight: 900; 
+            color: #1A1B1E; 
+            margin-bottom: 4px; 
+            letter-spacing: 1px;
+            text-transform: uppercase; 
+        }
+        .st-label-sub { 
+            font-size: 16px; 
+            font-weight: 700; 
+            color: #555; 
+            line-height: 1.2; 
+        }
+
+        .st-sheet { 
+            position: fixed; 
+            top: 0; left: 0; right: 0; bottom: 0; 
+            background: rgba(15, 15, 20, 0.9); 
+            backdrop-filter: blur(25px);
+            z-index: 2000; 
+            transform: translateY(100%); 
+            transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1); 
+            overflow-y: auto; 
+            color: #FFF;
+        }
         .st-sheet.open { transform: translateY(0); }
         .st-sheet-content { padding: 0 24px 160px; }
 
-        .vault-hero-frame { position: relative; width: calc(100% - 48px); margin: 24px auto 30px; line-height: 0; border-radius: 36px; overflow: hidden; background: #000; box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
+        .vault-hero-frame { position: relative; width: calc(100% - 40px); margin: 24px auto 30px; line-height: 0; border-radius: 36px; overflow: hidden; background: #000; box-shadow: 0 20px 40px rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1); }
         .vault-hero-frame img { width: 100%; height: auto; display: block; }
         
-        .st-vault-hotspot { position: absolute; transform: translate(-50%, -50%); z-index: 10; cursor: pointer; }
-        .st-vault-dot { width: 20px; height: 20px; border: 4px solid var(--vault-color); border-radius: 50%; background: white; box-shadow: 0 0 10px rgba(0,0,0,0.2); }
-        .v-tooltip { position: absolute; background: white; border-radius: 18px; padding: 12px; width: 140px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); z-index: 110; bottom: 30px; left: 50%; transform: translateX(-50%); text-align: center; line-height: 1.2; }
-        .v-close-x { position: absolute; top: -8px; right: -8px; width: 20px; height: 20px; background: #000; color: #fff; border-radius: 50%; font-size: 10px; display: flex; align-items: center; justify-content: center; border: 2px solid #fff; }
+        .st-vault-hotspot { position: absolute; width: 24px; height: 24px; transform: translate(-50%, -50%); display: flex; align-items: center; justify-content: center; z-index: 10; cursor: pointer; }
+        .st-vault-dot { width: 12px; height: 12px; border-radius: 50%; background: #FFF; border: 3px solid var(--vault-color); box-shadow: 0 0 15px var(--vault-color); transition: 0.3s; }
+        
+        .v-tooltip { 
+            position: absolute; 
+            bottom: 40px; 
+            background: rgba(255, 255, 255, 0.9); 
+            backdrop-filter: blur(20px);
+            padding: 12px 24px; 
+            border-radius: 100px; 
+            width: max-content; 
+            color: #000; 
+            box-shadow: 0 15px 35px rgba(0,0,0,0.3); 
+            animation: vPop 0.5s cubic-bezier(0.2, 1, 0.3, 1.2); 
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border: 1.5px solid rgba(255,255,255,0.4);
+        }
+        @keyframes vPop { from { opacity: 0; transform: translateY(20px) scale(0.9); } to { opacity: 1; transform: translateY(0) scale(1); } }
+        
+        .v-tooltip span:first-of-type { font-weight: 800; font-size: 14px; text-transform: uppercase; }
+        .v-tooltip span:last-of-type { font-weight: 500; font-size: 14px; color: rgba(0,0,0,0.6); padding-left: 12px; border-left: 1.5px solid rgba(0,0,0,0.1); }
 
-        .st-spec-pill { background: #FFFFFF; padding: 16px 20px; border-radius: 22px; font-size: 14px; font-weight: 700; margin-bottom: 12px; color: ${tokens.text}; border: 1px solid rgba(0,0,0,0.05); display: flex; align-items: center; gap: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.02); }
-        .st-pill-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--cat-color); }
-
-        .st-bottom-nav-wrapper { position: fixed; bottom: 30px; left: 0; right: 0; display: flex; justify-content: center; z-index: 9999; pointer-events: none; }
-        .st-bottom-nav { display: flex; gap: 30px; background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(20px); padding: 12px 40px; border-radius: 40px; box-shadow: 0 15px 35px rgba(0,0,0,0.15); pointer-events: auto; border: 1px solid rgba(255,255,255,0.5); }
-        .st-nav-item { background: none; border: none; font-size: 24px; cursor: pointer; opacity: 0.3; transition: 0.3s; }
-        .st-nav-item.active { opacity: 1; transform: scale(1.1); }
+        .st-spec-pill { 
+            background: rgba(255, 255, 255, 0.05); 
+            padding: 16px 20px; 
+            border-radius: 22px; 
+            font-size: 14px; 
+            font-weight: 700; 
+            margin-bottom: 12px; 
+            color: #FFF; 
+            border: 1px solid rgba(255,255,255,0.1); 
+            display: flex; 
+            align-items: center; 
+            gap: 12px; 
+        }
+        .st-pill-dot { flex-shrink: 0; width: 8px; height: 8px; border-radius: 50%; background: var(--cat-color); }
       `}</style>
 
-      <button onClick={handleShare} style={{ position: 'absolute', top: '24px', right: '24px', background: 'white', padding: '10px 16px', borderRadius: '14px', border: 'none', fontSize: '10px', fontWeight: '900', zIndex: 100, boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}>PARTILHAR 📤</button>
+      <button onClick={handleShare} style={{ position: 'absolute', top: '24px', right: '24px', background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(10px)', color: '#FFF', padding: '12px 20px', borderRadius: '100px', border: '1px solid rgba(255,255,255,0.2)', fontSize: '10px', fontWeight: '900', zIndex: 110 }}>PARTILHAR 📤</button>
 
       <header className="st-header">
-        <h1>DUAL SETUP</h1>
-        <p style={{ fontWeight: 600, marginTop: '8px', opacity: 0.6 }}>Hugo Barros // Battlestation</p>
-        <div className="st-nav-pills">
-          <button className={`st-pill ${setupMode === 'principal' ? 'active' : ''}`} onClick={() => setSetupMode('principal')}>MAIN SETUP</button>
-          <button className={`st-pill ${setupMode === 'extra' ? 'active' : ''}`} onClick={() => setSetupMode('extra')}>SECOND SETUP</button>
+        <div className="header-capsule-main">
+            <h1>DUAL SETUP</h1>
+            <p style={{ fontWeight: 700, marginTop: '8px', opacity: 0.6, fontSize: '12px', color: '#FFF', letterSpacing: '1px' }}>HUGO BARROS // BATTLESTATION</p>
+            <div className="st-nav-pills">
+                <button className={`st-pill ${setupMode === 'principal' ? 'active' : ''}`} onClick={() => setSetupMode('principal')}>SETUP PRINCIPAL</button>
+                <button className={`st-pill ${setupMode === 'extra' ? 'active' : ''}`} onClick={() => setSetupMode('extra')}>SETUP SECUNDÁRIO</button>
+            </div>
         </div>
       </header>
 
@@ -189,9 +382,9 @@ const SetupComponent = () => {
         {rawItems.map(item => (
           <div key={item.id} className="st-item" style={{ '--item-color': tokens.accent[item.cat] } as any} onClick={() => setSelectedPart(item)}>
             <div className="st-card-icon">{item.icon}</div>
-            <div style={{ flex: 1 }}>
-              <div style={{ fontSize: '10px', color: tokens.accent[item.cat], fontWeight: '800', textTransform: 'uppercase', letterSpacing: '1px' }}>{item.brand}</div>
-              <div style={{ fontSize: '18px', fontWeight: '800' }}>{item.name}</div>
+            <div className="st-item-text">
+              <span className="st-label-main">{item.name}</span>
+              <span className="st-label-sub">{item.brand}</span>
             </div>
           </div>
         ))}
@@ -207,9 +400,8 @@ const SetupComponent = () => {
                   <div className="st-vault-dot"></div>
                   {vaultSelectedId === hs.id && (
                     <div className="v-tooltip">
-                      <div className="v-close-x">✕</div>
-                      <div style={{ fontSize: '10px', fontWeight: '900', color: tokens.accent[selectedPart.cat], textTransform: 'uppercase' }}>{hs.label}</div>
-                      <div style={{ fontSize: '12px', fontWeight: '700' }}>{hs.sub}</div>
+                      <span style={{ color: tokens.accent[selectedPart.cat] }}>{hs.label}</span>
+                      <span>{hs.sub}</span>
                     </div>
                   )}
                 </div>
@@ -221,24 +413,17 @@ const SetupComponent = () => {
               {selectedPart.specs.split('|').map((s, i) => (
                 <div key={i} className="st-spec-pill">
                   <div className="st-pill-dot" style={{ '--cat-color': tokens.accent[selectedPart.cat] } as any}></div>
-                  {s.trim()}
+                  <span style={{ flex: 1 }}>{s.trim()}</span>
                 </div>
               ))}
-              <button onClick={() => setSelectedPart(null)} style={{ width: '100%', marginTop: '30px', padding: '24px', borderRadius: '24px', background: tokens.text, color: 'white', fontWeight: '800', border: 'none', fontSize: '16px', cursor: 'pointer' }}>FECHAR JANELA</button>
+              <button onClick={() => setSelectedPart(null)} style={{ width: '100%', marginTop: '30px', padding: '24px', borderRadius: '24px', background: '#FFF', color: '#000', fontWeight: '800', border: 'none', fontSize: '16px', cursor: 'pointer' }}>FECHAR JANELA</button>
             </div>
           </>
         )}
       </div>
 
-      <div className="st-bottom-nav-wrapper">
-        <nav className="st-bottom-nav">
-          <button className={`st-nav-item ${activeTab === 'pokemon' ? 'active' : ''}`} onClick={() => setActiveTab('pokemon')}>⚪</button>
-          <button className={`st-nav-item ${activeTab === 'setup' ? 'active' : ''}`} onClick={() => setActiveTab('setup')}>🖥️</button>
-        </nav>
-      </div>
-
       {showToast && (
-        <div style={{ position: 'fixed', bottom: '110px', left: '50%', transform: 'translateX(-50%)', background: '#1A1B1E', color: 'white', padding: '12px 24px', borderRadius: '20px', fontWeight: '800', zIndex: 9999, boxShadow: '0 10px 30px rgba(0,0,0,0.2)' }}>LINK COPIADO ✨</div>
+        <div style={{ position: 'fixed', bottom: '40px', left: '50%', transform: 'translateX(-50%)', background: '#1A1B1E', color: 'white', padding: '12px 24px', borderRadius: '100px', fontWeight: '800', zIndex: 9999, boxShadow: '0 10px 30px rgba(0,0,0,0.5)' }}>LINK COPIADO ✨</div>
       )}
     </div>
   );
