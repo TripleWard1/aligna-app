@@ -64,8 +64,7 @@ const ACC_ICONS = ['👛', '🏦', '🐖', '💳', '💎', '📊', '💰'];
 
 
 export default function App() {
-  // --- LÓGICA DE ROTEAMENTO PARA STACKBLITZ ---
-  // Se o URL terminar em /share, ignora tudo e mostra a página de partilha
+  // 1. Lógica de Roteamento Simples
   if (window.location.pathname === '/share') {
     return <Share />;
   }
@@ -120,21 +119,19 @@ useEffect(() => {
     };
   
     const handleShare = async () => {
-      // Agora o link aponta para a rota /share que criámos
       const shareUrl = `${window.location.origin}/share`;
     
       const shareData = {
         title: 'Meu Setup - Aligna',
-        text: 'Vê o meu setup interativo sem precisar de login!',
+        text: 'Vê os detalhes do meu hardware e periféricos no meu setup interativo!',
         url: shareUrl, 
       };
-  
+    
       try {
         if (navigator.share) {
-          // O erro de 'await' desaparece porque a função agora é 'async'
+          // Agora o await é permitido
           await navigator.share(shareData);
         } else {
-          // Fallback: Copia o link do setup para o clipboard
           await navigator.clipboard.writeText(shareUrl);
           alert('Link do Setup copiado! ✨');
         }
