@@ -245,21 +245,24 @@ const SetupComponent = () => {
         .st-sheet-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); backdrop-filter: blur(4px); z-index: 1999; display: none; }
         .st-sheet-overlay.show { display: block; }
 
-        /* --- CORREÇÃO DEFINITIVA DO CORTE DE IMAGEM --- */
+        /* --- CORREÇÃO DEFINITIVA DO CORTE --- */
         .vault-hero-frame { 
           position: relative; 
-          border-radius: 24px; 
-          overflow: visible; /* Importante para não cortar hotspots nas bordas */
-          background: #F1F3F7; 
-          margin: 10px 0 30px 0;
           width: 100%;
+          height: auto;
+          min-height: 200px;
+          margin: 10px 0 30px 0;
+          display: block;
+          overflow: visible; /* Hotspots podem sair um pouco da borda */
         }
+        
         .vault-hero-frame img { 
-          width: 100%; 
-          height: auto; /* Deixa a imagem definir a sua própria altura */
+          width: 100%;
+          height: auto !important; /* Força a altura natural do ficheiro */
+          max-height: none !important; /* Remove qualquer limite herdado */
           display: block; 
           border-radius: 24px;
-          object-fit: contain; /* Garante que a imagem inteira seja visível */
+          object-fit: contain; /* Garante que 100% da imagem é renderizada */
         }
         
         .st-vault-hotspot { position: absolute; transform: translate(-50%, -50%); z-index: 10; }
