@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 
 const SetupComponent = () => {
+  const [hasEntered, setHasEntered] = useState(false);
   const [setupMode, setSetupMode] = useState('principal');
   const [selectedPart, setSelectedPart] = useState(null);
   const [activeTab, setActiveTab] = useState('setup');
@@ -207,13 +208,32 @@ const SetupComponent = () => {
 
   const rawItems = setupMode === 'principal' ? setupData.principal : setupData.extra;
 
+  if (!hasEntered) {
+    return (
+      <div onClick={() => setHasEntered(true)} style={{
+        height: '100vh', background: '#000', display: 'flex', flexDirection: 'column', 
+        alignItems: 'center', justifyContent: 'center', color: '#fff', textAlign: 'center',
+        padding: '40px', cursor: 'pointer', fontFamily: 'Outfit, sans-serif'
+      }}>
+        <style>{`
+          @import url('https://fonts.googleapis.com/css2?family=Syncopate:wght@700&family=Outfit:wght@300;400;600;800&display=swap');
+          .pulse { animation: pulse 2s infinite; font-family: 'Syncopate'; font-size: 14px; letter-spacing: 4px; opacity: 0.6; }
+          @keyframes pulse { 0% { opacity: 0.3; } 50% { opacity: 0.8; } 100% { opacity: 0.3; } }
+        `}</style>
+        <div style={{ fontSize: '40px', marginBottom: '20px' }}>🖥️</div>
+        <h1 style={{ fontFamily: 'Syncopate', fontSize: '20px', letter-spacing: '6px', marginBottom: '10px' }}>HUGO BARROS</h1>
+        <p style={{ fontSize: '14px', color: '#7C7E8B', marginBottom: '60px' }}>BATTLESTATION // 2025</p>
+        <div className="pulse">CLICK TO EXPLORE</div>
+      </div>
+    );
+  }
+
   return (
     <div className="setup-mobile-pro" style={{ 
         '--zoom-x': selectedPart ? selectedPart.pos.left : '50%',
         '--zoom-y': selectedPart ? selectedPart.pos.top : '50%'
     } as any}>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Syncopate:wght@700&family=Outfit:wght@300;400;600;800&display=swap');
         .setup-mobile-pro { background: ${tokens.bg}; color: ${tokens.text}; min-height: 100vh; font-family: 'Outfit', sans-serif; padding-bottom: 140px; position: relative; overflow-x: hidden; }
         
         .st-header { padding: 80px 24px 20px; text-align: center; }
@@ -236,10 +256,7 @@ const SetupComponent = () => {
 
         .st-sheet { 
           position: fixed; 
-          top: 0; 
-          left: 0; 
-          right: 0; 
-          bottom: 0;
+          top: 0; left: 0; right: 0; bottom: 0;
           background: #FFFFFF; 
           z-index: 2000; 
           padding: 0; 
@@ -247,55 +264,28 @@ const SetupComponent = () => {
           transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
           overflow-y: auto; 
           overscroll-behavior: contain; 
-          -webkit-overflow-scrolling: touch; 
         }
         .st-sheet.open { transform: translateY(0); }
         .st-sheet-content { padding: 20px 24px 160px; }
 
         .vault-hero-frame { 
           position: relative; 
-          width: calc(100% - 48px); /* Margem igual à do menu principal */
-          margin: 20px auto 30px; /* Margem no topo e centralizado */
+          width: calc(100% - 48px);
+          margin: 20px auto 30px;
           line-height: 0;
-          border-radius: 36px; /* Cantos arredondados iguais à foto principal */
-          overflow: hidden; /* Garante que a imagem respeite os cantos */
+          border-radius: 36px;
+          overflow: hidden;
           background: #000; 
         }
-        
-        .vault-hero-frame img { 
-          width: 100%;
-          height: auto; 
-          display: block; 
-          object-fit: contain; 
-        }
+        .vault-hero-frame img { width: 100%; height: auto; display: block; object-fit: contain; }
         
         .st-vault-hotspot { position: absolute; transform: translate(-50%, -50%); z-index: 10; }
         .st-vault-dot { width: 20px; height: 20px; border: 4px solid var(--vault-color); border-radius: 50%; background: white; box-shadow: 0 0 10px rgba(0,0,0,0.2); }
-        
         .v-tooltip { position: absolute; background: white; border-radius: 18px; padding: 12px; width: 140px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); z-index: 110; bottom: 30px; left: 50%; transform: translateX(-50%); text-align: center; line-height: 1.2; }
-        
         .st-spec-pill { background: #F8F9FD; padding: 16px; border-radius: 18px; font-size: 14px; font-weight: 600; margin-bottom: 10px; color: ${tokens.text}; }
 
-        .st-bottom-nav-wrapper {
-          position: fixed;
-          bottom: 30px;
-          left: 0;
-          right: 0;
-          display: flex;
-          justify-content: center;
-          z-index: 9999;
-          pointer-events: none;
-        }
-        .st-bottom-nav { 
-          display: flex; 
-          gap: 30px; 
-          background: rgba(255, 255, 255, 0.9); 
-          backdrop-filter: blur(20px); 
-          padding: 12px 40px; 
-          border-radius: 40px; 
-          box-shadow: 0 15px 35px rgba(0,0,0,0.15); 
-          pointer-events: auto;
-        }
+        .st-bottom-nav-wrapper { position: fixed; bottom: 30px; left: 0; right: 0; display: flex; justify-content: center; z-index: 9999; pointer-events: none; }
+        .st-bottom-nav { display: flex; gap: 30px; background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(20px); padding: 12px 40px; border-radius: 40px; box-shadow: 0 15px 35px rgba(0,0,0,0.15); pointer-events: auto; }
         .st-nav-item { background: none; border: none; font-size: 24px; cursor: pointer; opacity: 0.3; transition: 0.3s; }
         .st-nav-item.active { opacity: 1; transform: scale(1.1); }
       `}</style>
