@@ -71,6 +71,8 @@ export default function App() {
   const [setupSearch, setSetupSearch] = useState('');
   const [setupFilter, setSetupFilter] = useState('ALL');
   const [vaultSelectedId, setVaultSelectedId] = useState(null);
+
+  
   
   const renderSetupTab = () => {
     const tokens = {
@@ -90,6 +92,22 @@ export default function App() {
       }
     };
   
+    const handleShare = async () => {
+      const shareData = {
+        title: 'Meu Setup - Aligna',
+        text: 'Vê os detalhes do meu hardware e periféricos no meu setup interativo!',
+        url: window.location.href,
+      };
+      try {
+        if (navigator.share) {
+          await navigator.share(shareData);
+        } else {
+          navigator.clipboard.writeText(window.location.href);
+          alert('Link copiado!');
+        }
+      } catch (err) { console.log(err); }
+    };
+
     const setupData = {
       principal: [
         { 
@@ -345,6 +363,18 @@ export default function App() {
           
           .st-vault-hotspot.active .st-vault-dot { transform: scale(1.3); box-shadow: 0 0 15px var(--vault-color); }
         `}</style>
+
+<button 
+            onClick={handleShare}
+            style={{
+              position: 'absolute', top: '40px', right: '24px',
+              background: 'white', padding: '10px 16px', borderRadius: '14px',
+              border: '1px solid rgba(0,0,0,0.05)', fontSize: '10px', fontWeight: '900',
+              boxShadow: '0 4px 12px rgba(0,0,0,0.05)', display: 'flex', gap: '8px', zIndex: 100
+            }}
+          >
+            PARTILHAR 📤
+          </button>
   
         <header className="st-header">
           <h1>GEAR COLLECT</h1>
@@ -464,6 +494,7 @@ export default function App() {
                   </div>
                 ))}
               </div>
+              
   
               <button onClick={() => { setSelectedPart(null); setVaultSelectedId(null); }} style={{ width: '100%', marginTop: '40px', padding: '24px', borderRadius: '28px', border: 'none', background: tokens.text, color: '#FFF', fontWeight: '800', fontSize: '15px' }}>
                 FECHAR JANELA
