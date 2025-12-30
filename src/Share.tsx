@@ -200,10 +200,7 @@ const SharePage = () => {
         )}
       </div>
 
-      <nav className="public-nav">
-        <button onClick={() => setActiveTab('pokemon')} style={{ border: 'none', background: 'none', fontSize: '24px', opacity: activeTab === 'pokemon' ? 1 : 0.3 }}>🔴</button>
-        <button onClick={() => setActiveTab('setup')} style={{ border: 'none', background: 'none', fontSize: '24px', opacity: activeTab === 'setup' ? 1 : 0.3 }}>🖥️</button>
-      </nav>
+      
     </div>
   );
 };
