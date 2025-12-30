@@ -245,28 +245,27 @@ const SetupComponent = () => {
         .st-sheet-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); backdrop-filter: blur(4px); z-index: 1999; display: none; }
         .st-sheet-overlay.show { display: block; }
 
-        /* CORREÇÃO DO CORTA DA IMAGEM */
+        /* --- CORREÇÃO DEFINITIVA DO CORTE DE IMAGEM --- */
         .vault-hero-frame { 
           position: relative; 
-          border-radius: 30px; 
-          overflow: hidden; 
+          border-radius: 24px; 
+          overflow: visible; /* Importante para não cortar hotspots nas bordas */
           background: #F1F3F7; 
-          margin-bottom: 30px; 
-          margin-top: 10px;
+          margin: 10px 0 30px 0;
           width: 100%;
-          display: block;
         }
         .vault-hero-frame img { 
           width: 100%; 
-          height: auto; 
+          height: auto; /* Deixa a imagem definir a sua própria altura */
           display: block; 
-          object-fit: initial; /* Remove restrições de contenção */
+          border-radius: 24px;
+          object-fit: contain; /* Garante que a imagem inteira seja visível */
         }
         
-        .st-vault-hotspot { position: absolute; transform: translate(-50%, -50%); }
-        .st-vault-dot { width: 18px; height: 18px; border: 4px solid var(--vault-color); border-radius: 50%; background: white; }
+        .st-vault-hotspot { position: absolute; transform: translate(-50%, -50%); z-index: 10; }
+        .st-vault-dot { width: 20px; height: 20px; border: 4px solid var(--vault-color); border-radius: 50%; background: white; box-shadow: 0 0 10px rgba(0,0,0,0.2); }
         
-        .v-tooltip { position: absolute; background: white; border-radius: 18px; padding: 12px; width: 140px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); z-index: 110; top: -50px; left: 50%; transform: translateX(-50%); text-align: center; }
+        .v-tooltip { position: absolute; background: white; border-radius: 18px; padding: 12px; width: 140px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); z-index: 110; bottom: 30px; left: 50%; transform: translateX(-50%); text-align: center; }
         
         .st-spec-pill { background: #F8F9FD; padding: 16px; border-radius: 18px; font-size: 14px; font-weight: 600; margin-bottom: 10px; }
 
