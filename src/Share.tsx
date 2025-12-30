@@ -103,23 +103,44 @@ const SetupComponent = () => {
   return (
     <div className="setup-mobile-pro" style={{ '--zoom-x': selectedPart ? selectedPart.pos.left : '50%', '--zoom-y': selectedPart ? selectedPart.pos.top : '50%' } as any}>
       <style>{`
-        .setup-mobile-pro { background: ${tokens.bg}; color: ${tokens.text}; min-height: 100vh; font-family: 'Outfit', sans-serif; padding-bottom: 140px; position: relative; overflow-x: hidden; }
-        .st-header { padding: 80px 24px 20px; text-align: center; }
-        .st-header h1 { font-family: 'Syncopate'; font-size: 16px; letter-spacing: 4px; margin: 0; background: linear-gradient(90deg, #1A1B1E, #7C7E8B); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        .st-nav-pills { display: flex; background: #E9ECF5; padding: 6px; border-radius: 24px; margin: 25px auto 0; width: fit-content; }
+        .setup-mobile-pro { 
+          background: ${tokens.bg}; 
+          color: ${tokens.text}; 
+          min-height: 100vh; 
+          font-family: 'Outfit', sans-serif; 
+          padding-bottom: 140px; 
+          position: relative; 
+          overflow-x: hidden; 
+          background-image: radial-gradient(#d1d5db 0.8px, transparent 0.8px);
+          background-size: 24px 24px;
+        }
+        .st-header { 
+          padding: 80px 24px 40px; 
+          text-align: center; 
+          background: linear-gradient(180deg, rgba(255,255,255,1) 0%, rgba(255,255,255,0) 100%);
+        }
+        .st-header h1 { 
+          font-family: 'Syncopate'; 
+          font-size: 16px; 
+          letter-spacing: 4px; 
+          margin: 0; 
+          background: linear-gradient(90deg, #1A1B1E, #7C7E8B); 
+          -webkit-background-clip: text; 
+          -webkit-text-fill-color: transparent; 
+        }
+        .st-nav-pills { display: flex; background: rgba(0,0,0,0.05); padding: 6px; border-radius: 24px; margin: 25px auto 0; width: fit-content; backdrop-filter: blur(10px); }
         .st-pill { border: none; background: transparent; color: ${tokens.muted}; padding: 14px 24px; border-radius: 20px; font-size: 12px; font-weight: 800; cursor: pointer; }
         .st-pill.active { background: #FFFFFF; color: ${tokens.text}; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
 
-        .st-photo-container { position: relative; margin: 0 auto; width: calc(100% - 48px); max-width: 600px; border-radius: 36px; overflow: hidden; background: #000; box-shadow: 0 20px 40px rgba(0,0,0,0.1); }
+        .st-photo-container { position: relative; margin: 0 auto; width: calc(100% - 48px); max-width: 600px; border-radius: 36px; overflow: hidden; background: #000; box-shadow: 0 20px 40px rgba(0,0,0,0.1); border: 4px solid white; }
         .st-main-img { width: 100%; display: block; transition: 0.8s; transform-origin: var(--zoom-x) var(--zoom-y); }
         .st-main-img.zoom-active { transform: scale(1.8); filter: brightness(0.6); }
         
         .st-hotspot { position: absolute; width: 32px; height: 32px; transform: translate(-50%, -50%); display: flex; align-items: center; justify-content: center; z-index: 15; cursor: pointer; }
-        .st-hotspot-inner { width: 24px; height: 24px; border-radius: 50%; border: 3px solid var(--color); display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.1); }
+        .st-hotspot-inner { width: 24px; height: 24px; border-radius: 50%; border: 3px solid var(--color); display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.1); box-shadow: 0 0 15px var(--color); }
 
-        /* LISTA COM DETALHES VISUAIS */
         .st-list { padding: 40px 24px; display: grid; gap: 20px; max-width: 600px; margin: 0 auto; }
-        .st-item { background: #FFFFFF; padding: 22px; border-radius: 30px; display: flex; align-items: center; gap: 20px; border-left: 6px solid var(--item-color); cursor: pointer; transition: 0.3s; box-shadow: 0 4px 15px rgba(0,0,0,0.02); }
+        .st-item { background: #FFFFFF; padding: 22px; border-radius: 30px; display: flex; align-items: center; gap: 20px; border-left: 6px solid var(--item-color); cursor: pointer; transition: 0.3s; box-shadow: 0 8px 20px rgba(0,0,0,0.04); }
         .st-item:active { transform: scale(0.98); background: #fdfdfd; }
         .st-card-icon { width: 65px; height: 65px; background: #F8F9FD; border-radius: 22px; display: flex; align-items: center; justify-content: center; font-size: 28px; }
 
@@ -135,7 +156,6 @@ const SetupComponent = () => {
         .v-tooltip { position: absolute; background: white; border-radius: 18px; padding: 12px; width: 140px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); z-index: 110; bottom: 30px; left: 50%; transform: translateX(-50%); text-align: center; line-height: 1.2; }
         .v-close-x { position: absolute; top: -8px; right: -8px; width: 20px; height: 20px; background: #000; color: #fff; border-radius: 50%; font-size: 10px; display: flex; align-items: center; justify-content: center; border: 2px solid #fff; }
 
-        /* CAPSULAS COM DETALHES */
         .st-spec-pill { background: #FFFFFF; padding: 16px 20px; border-radius: 22px; font-size: 14px; font-weight: 700; margin-bottom: 12px; color: ${tokens.text}; border: 1px solid rgba(0,0,0,0.05); display: flex; align-items: center; gap: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.02); }
         .st-pill-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--cat-color); }
 
