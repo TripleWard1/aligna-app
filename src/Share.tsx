@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 
 const SetupComponent = () => {
   const [hasEntered, setHasEntered] = useState(false);
+  const [isExiting, setIsExiting] = useState(false); // Estado para a transição
   const [setupMode, setSetupMode] = useState('principal');
   const [selectedPart, setSelectedPart] = useState(null);
   const [activeTab, setActiveTab] = useState('setup');
@@ -52,6 +53,13 @@ const SetupComponent = () => {
     } catch (err) {
       console.error('Erro ao copiar link:', err);
     }
+  };
+
+  const handleEnter = () => {
+    setIsExiting(true);
+    setTimeout(() => {
+      setHasEntered(true);
+    }, 800); // Duração da animação de saída
   };
 
   const setupData = {
@@ -211,10 +219,14 @@ const SetupComponent = () => {
 
   if (!hasEntered) {
     return (
-      <div onClick={() => setHasEntered(true)} style={{
+      <div onClick={handleEnter} style={{
         height: '100vh', background: '#000', display: 'flex', flexDirection: 'column', 
         alignItems: 'center', justifyContent: 'center', color: '#fff', textAlign: 'center',
-        padding: '40px', cursor: 'pointer', fontFamily: 'Outfit, sans-serif'
+        padding: '40px', cursor: 'pointer', fontFamily: 'Outfit, sans-serif',
+        transition: 'all 0.8s cubic-bezier(0.4, 0, 0.2, 1)',
+        opacity: isExiting ? 0 : 1,
+        transform: isExiting ? 'scale(1.1)' : 'scale(1)',
+        overflow: 'hidden'
       }}>
         <style>{`
           @import url('https://fonts.googleapis.com/css2?family=Syncopate:wght@700&family=Outfit:wght@300;400;600;800&display=swap');
@@ -232,9 +244,15 @@ const SetupComponent = () => {
   return (
     <div className="setup-mobile-pro" style={{ 
         '--zoom-x': selectedPart ? selectedPart.pos.left : '50%',
-        '--zoom-y': selectedPart ? selectedPart.pos.top : '50%'
+        '--zoom-y': selectedPart ? selectedPart.pos.top : '50%',
+        animation: 'fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards'
     } as any}>
       <style>{`
+        @keyframes fadeInUp {
+          from { opacity: 0; transform: translateY(20px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+
         .setup-mobile-pro { background: ${tokens.bg}; color: ${tokens.text}; min-height: 100vh; font-family: 'Outfit', sans-serif; padding-bottom: 140px; position: relative; overflow-x: hidden; }
         
         .st-header { padding: 80px 24px 20px; text-align: center; }
