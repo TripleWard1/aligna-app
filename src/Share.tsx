@@ -7,7 +7,8 @@ const SetupComponent = () => {
   const [setupFilter, setSetupFilter] = useState('ALL');
   const [vaultSelectedId, setVaultSelectedId] = useState(null);
   const [showToast, setShowToast] = useState(false);
-  const [activeTab, setActiveTab] = useState('setup'); // Para a futura integração Pokémon
+  // Mantemos o activeTab por segurança de lógica, mas removemos a navegação física
+  const [activeTab, setActiveTab] = useState('setup'); 
 
   const renderSetupTab = () => {
     const tokens = {
@@ -31,7 +32,6 @@ const SetupComponent = () => {
       const shareUrl = `${window.location.origin}/share`;
       try {
         await navigator.clipboard.writeText(shareUrl);
-        // triggerHaptic('medium'); // Ativa se tiveres a função global
         setShowToast(true);
         setTimeout(() => setShowToast(false), 2500);
       } catch (err) {
@@ -197,12 +197,12 @@ const SetupComponent = () => {
   
     return (
       <div className="setup-mobile-pro" style={{ 
-        '--zoom-x': selectedPart ? selectedPart.pos.left : '50%',
-        '--zoom-y': selectedPart ? selectedPart.pos.top : '50%'
+         '--zoom-x': selectedPart ? selectedPart.pos.left : '50%',
+         '--zoom-y': selectedPart ? selectedPart.pos.top : '50%'
       } as any}>
         <style>{`
           @import url('https://fonts.googleapis.com/css2?family=Syncopate:wght@700&family=Outfit:wght@300;400;600;800&display=swap');
-          .setup-mobile-pro { background: ${tokens.bg}; color: ${tokens.text}; min-height: 100vh; font-family: 'Outfit', sans-serif; padding-bottom: 140px; position: relative; overflow-x: hidden; }
+          .setup-mobile-pro { background: ${tokens.bg}; color: ${tokens.text}; min-height: 100vh; font-family: 'Outfit', sans-serif; padding-bottom: 60px; position: relative; overflow-x: hidden; }
           .st-header { padding: 40px 24px 20px; position: relative; z-index: 10; }
           .st-header h1 { font-family: 'Syncopate'; font-size: 16px; letter-spacing: 4px; margin: 0; background: linear-gradient(90deg, #1A1B1E, #7C7E8B); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
           .st-header p { font-size: 11px; font-weight: 600; color: ${tokens.muted}; text-transform: uppercase; letter-spacing: 1px; margin-top: 4px; }
@@ -255,7 +255,7 @@ const SetupComponent = () => {
   
         <div className="st-photo-container">
           <img 
-            src={setupMode === 'principal' ? "/Foto Principal Setup.jpg" : "/Foto Extra.jpg"} 
+            src="/Foto Principal Setup.jpg" 
             className={`st-main-img ${selectedPart ? 'zoom-active' : ''}`} 
             alt="Setup" 
           />
@@ -312,32 +312,14 @@ const SetupComponent = () => {
           )}
         </div>
 
-        {/* DOCK INFERIOR - INTEGRAÇÃO POKÉBOLA [cite: 2025-12-21] */}
-        <nav style={{ position: 'fixed', bottom: '30px', left: '50%', transform: 'translateX(-50%)', background: 'white', padding: '12px 25px', borderRadius: '35px', display: 'flex', gap: '30px', boxShadow: '0 10px 30px rgba(0,0,0,0.1)', zIndex: 2000 }}>
-          <button onClick={() => setActiveTab('pokemon')} style={{ background: 'none', border: 'none', opacity: activeTab === 'pokemon' ? 1 : 0.3, cursor: 'pointer' }}>
-            <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Pok%C3%A9_Ball_icon.svg" style={{ width: '24px' }} alt="Pokémon Tab" />
-          </button>
-          <button onClick={() => setActiveTab('setup')} style={{ background: 'none', border: 'none', fontSize: '24px', opacity: activeTab === 'setup' ? 1 : 0.3, cursor: 'pointer' }}>🖥️</button>
-        </nav>
-
         {showToast && (
-          <div style={{ position: 'fixed', bottom: '110px', left: '50%', transform: 'translateX(-50%)', background: '#1A1B1E', color: 'white', padding: '12px 24px', borderRadius: '20px', fontWeight: '800', fontSize: '12px', zIndex: 9999 }}>LINK COPIADO ✨</div>
+          <div style={{ position: 'fixed', bottom: '40px', left: '50%', transform: 'translateX(-50%)', background: '#1A1B1E', color: 'white', padding: '12px 24px', borderRadius: '20px', fontWeight: '800', fontSize: '12px', zIndex: 9999 }}>LINK COPIADO ✨</div>
         )}
       </div>
     );
   };
 
-  return (
-    <>
-      {activeTab === 'setup' ? renderSetupTab() : (
-        <div style={{ padding: '100px 20px', textAlign: 'center', background: '#F8F9FD', minHeight: '100vh' }}>
-          <h1 style={{ fontFamily: 'Syncopate', fontSize: '18px' }}>THE VAULT</h1>
-          <p style={{ fontWeight: '600', color: '#7C7E8B' }}>Coleção Pokémon Brevemente...</p>
-          <button onClick={() => setActiveTab('setup')} style={{ marginTop: '20px', padding: '15px 30px', borderRadius: '20px', border: 'none', background: '#1A1B1E', color: 'white', fontWeight: '800' }}>VOLTAR AO SETUP</button>
-        </div>
-      )}
-    </>
-  );
+  return renderSetupTab();
 };
 
 export default SetupComponent;
