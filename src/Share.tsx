@@ -250,7 +250,25 @@ const SetupComponent = () => {
           
           .st-spec-pill { background: #F8F9FD; padding: 18px; border-radius: 20px; border: 1px solid rgba(0,0,0,0.02); display: flex; align-items: center; gap: 15px; font-size: 14px; font-weight: 600; transition: 0.3s; cursor: pointer; }
           
-          .st-bottom-nav { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); display: flex; gap: 15px; background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(20px); padding: 12px 25px; border-radius: 30px; box-shadow: 0 15px 35px rgba(0,0,0,0.1); z-index: 1000; border: 1px solid rgba(255,255,255,0.5); width: fit-content; }
+          .st-bottom-nav { 
+            position: fixed; 
+            bottom: 20px; /* Ajustado para ficar mais perto da base */
+            left: 50%; 
+            transform: translateX(-50%); 
+            display: flex; 
+            align-items: center;
+            justify-content: center;
+            gap: 20px; 
+            background: rgba(255, 255, 255, 0.85); 
+            backdrop-filter: blur(20px); 
+            padding: 12px 30px; 
+            border-radius: 35px; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15); 
+            z-index: 9999; /* Máxima prioridade para ficar sobre tudo */
+            border: 1px solid rgba(255,255,255,0.5); 
+            width: fit-content;
+            min-width: 160px; /* Garante consistência visual */
+          }
           .st-nav-item { background: none; border: none; font-size: 22px; cursor: pointer; padding: 10px; border-radius: 15px; transition: 0.3s; opacity: 0.4; }
           .st-nav-item.active { opacity: 1; background: #F0F2F5; }
         `}</style>
