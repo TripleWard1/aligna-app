@@ -7,7 +7,6 @@ const SetupComponent = () => {
   const [setupFilter, setSetupFilter] = useState('ALL');
   const [vaultSelectedId, setVaultSelectedId] = useState(null);
   const [showToast, setShowToast] = useState(false);
-  // Mantemos o activeTab por segurança de lógica, mas removemos a navegação física
   const [activeTab, setActiveTab] = useState('setup'); 
 
   // --- BLOQUEIO DE SCROLL NO FUNDO ---
@@ -206,12 +205,12 @@ const SetupComponent = () => {
   
     return (
       <div className="setup-mobile-pro" style={{ 
-         '--zoom-x': selectedPart ? selectedPart.pos.left : '50%',
-         '--zoom-y': selectedPart ? selectedPart.pos.top : '50%'
+          '--zoom-x': selectedPart ? selectedPart.pos.left : '50%',
+          '--zoom-y': selectedPart ? selectedPart.pos.top : '50%'
       } as any}>
         <style>{`
           @import url('https://fonts.googleapis.com/css2?family=Syncopate:wght@700&family=Outfit:wght@300;400;600;800&display=swap');
-          .setup-mobile-pro { background: ${tokens.bg}; color: ${tokens.text}; min-height: 100vh; font-family: 'Outfit', sans-serif; padding-bottom: 60px; position: relative; overflow-x: hidden; }
+          .setup-mobile-pro { background: ${tokens.bg}; color: ${tokens.text}; min-height: 100vh; font-family: 'Outfit', sans-serif; padding-bottom: 120px; position: relative; overflow-x: hidden; }
           .st-header { padding: 80px 24px 20px; position: relative; z-index: 10; text-align: center; }
           .st-header h1 { font-family: 'Syncopate'; font-size: 16px; letter-spacing: 4px; margin: 0; background: linear-gradient(90deg, #1A1B1E, #7C7E8B); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
           .st-header p { font-size: 11px; font-weight: 600; color: ${tokens.muted}; text-transform: uppercase; letter-spacing: 1px; margin-top: 4px; }
@@ -247,7 +246,13 @@ const SetupComponent = () => {
           .v-tooltip { position: absolute; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border-radius: 18px; padding: 12px; width: 150px; box-shadow: 0 12px 30px rgba(0,0,0,0.15); z-index: 110; display: flex; flex-direction: column; align-items: center; text-align: center; }
           .v-tooltip.pos-right { left: 25px; top: -20px; }
           .v-tooltip.pos-left { right: 25px; top: -20px; }
+          .v-close-tooltip { position: absolute; top: 6px; right: 8px; font-size: 10px; font-weight: 900; color: #CCC; cursor: pointer; }
+          
           .st-spec-pill { background: #F8F9FD; padding: 18px; border-radius: 20px; border: 1px solid rgba(0,0,0,0.02); display: flex; align-items: center; gap: 15px; font-size: 14px; font-weight: 600; transition: 0.3s; cursor: pointer; }
+          
+          .st-bottom-nav { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); display: flex; gap: 15px; background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(20px); padding: 12px 25px; border-radius: 30px; box-shadow: 0 15px 35px rgba(0,0,0,0.1); z-index: 1000; border: 1px solid rgba(255,255,255,0.5); width: fit-content; }
+          .st-nav-item { background: none; border: none; font-size: 22px; cursor: pointer; padding: 10px; border-radius: 15px; transition: 0.3s; opacity: 0.4; }
+          .st-nav-item.active { opacity: 1; background: #F0F2F5; }
         `}</style>
 
         <button onClick={handleShare} style={{ position: 'absolute', top: '24px', right: '24px', background: 'white', padding: '10px 16px', borderRadius: '14px', border: '1px solid rgba(0,0,0,0.05)', fontSize: '10px', fontWeight: '900', boxShadow: '0 4px 12px rgba(0,0,0,0.05)', zIndex: 100, cursor: 'pointer' }}>
@@ -303,6 +308,7 @@ const SetupComponent = () => {
                     <div className="st-vault-dot"></div>
                     {vaultSelectedId === hs.id && (
                       <div className={`v-tooltip ${parseFloat(hs.left) > 50 ? 'pos-left' : 'pos-right'}`}>
+                        <div className="v-close-tooltip" onClick={(e) => { e.stopPropagation(); setVaultSelectedId(null); }}>✕</div>
                         <div style={{ fontSize: '9px', fontWeight: '900', color: tokens.accent[selectedPart.cat as keyof typeof tokens.accent], textTransform: 'uppercase' }}>{hs.label}</div>
                         <div style={{ fontSize: '13px', fontWeight: '700', color: tokens.text }}>{hs.sub}</div>
                       </div>
@@ -323,6 +329,12 @@ const SetupComponent = () => {
             </div>
           )}
         </div>
+
+        {/* --- TAB BAR CENTRALIZADA --- */}
+        <nav className="st-bottom-nav">
+          <button className="st-nav-item" onClick={() => setActiveTab('pokemon')}>⚪</button>
+          <button className={`st-nav-item ${activeTab === 'setup' ? 'active' : ''}`} onClick={() => setActiveTab('setup')}>🖥️</button>
+        </nav>
 
         {showToast && (
           <div style={{ position: 'fixed', bottom: '40px', left: '50%', transform: 'translateX(-50%)', background: '#1A1B1E', color: 'white', padding: '12px 24px', borderRadius: '20px', fontWeight: '800', fontSize: '12px', zIndex: 9999 }}>LINK COPIADO ✨</div>
