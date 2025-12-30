@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 
 const SetupComponent = () => {
   const [hasEntered, setHasEntered] = useState(false);
+  const [isExiting, setIsExiting] = useState(false); // Adicionado para transição
   const [setupMode, setSetupMode] = useState('principal');
   const [selectedPart, setSelectedPart] = useState(null);
   const [activeTab, setActiveTab] = useState('setup');
@@ -52,6 +53,12 @@ const SetupComponent = () => {
     } catch (err) {
       console.error('Erro ao copiar link:', err);
     }
+  };
+
+  // Função para saída suave da Landing Page
+  const handleEnter = () => {
+    setIsExiting(true);
+    setTimeout(() => setHasEntered(true), 600);
   };
 
   const setupData = {
@@ -211,10 +218,13 @@ const SetupComponent = () => {
 
   if (!hasEntered) {
     return (
-      <div onClick={() => setHasEntered(true)} style={{
+      <div onClick={handleEnter} style={{
         height: '100vh', background: '#000', display: 'flex', flexDirection: 'column', 
         alignItems: 'center', justifyContent: 'center', color: '#fff', textAlign: 'center',
-        padding: '40px', cursor: 'pointer', fontFamily: 'Outfit, sans-serif'
+        padding: '40px', cursor: 'pointer', fontFamily: 'Outfit, sans-serif',
+        transition: 'all 0.6s ease',
+        opacity: isExiting ? 0 : 1,
+        transform: isExiting ? 'scale(1.1)' : 'scale(1)'
       }}>
         <style>{`
           @import url('https://fonts.googleapis.com/css2?family=Syncopate:wght@700&family=Outfit:wght@300;400;600;800&display=swap');
@@ -248,8 +258,8 @@ const SetupComponent = () => {
         .st-main-img { width: 100%; display: block; transition: 0.8s; transform-origin: var(--zoom-x) var(--zoom-y); }
         .st-main-img.zoom-active { transform: scale(1.8); filter: brightness(0.6); }
         
-        .st-hotspot { position: absolute; width: 40px; height: 40px; transform: translate(-50%, -50%); display: flex; align-items: center; justify-content: center; z-index: 15; cursor: pointer; }
-        .st-hotspot-inner { width: 32px; height: 32px; border-radius: 50%; border: 3px solid var(--color); display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.1); backdrop-filter: blur(2px); }
+        .st-hotspot { position: absolute; width: 32px; height: 32px; transform: translate(-50%, -50%); display: flex; align-items: center; justify-content: center; z-index: 15; cursor: pointer; }
+        .st-hotspot-inner { width: 24px; height: 24px; border-radius: 50%; border: 3px solid var(--color); display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.1); }
 
         .st-list { padding: 40px 24px; display: grid; gap: 20px; max-width: 600px; margin: 0 auto; }
         .st-item { background: #FFFFFF; padding: 22px; border-radius: 30px; display: flex; align-items: center; gap: 20px; border: 1px solid rgba(0,0,0,0.03); cursor: pointer; transition: 0.3s; }
@@ -277,15 +287,17 @@ const SetupComponent = () => {
           line-height: 0;
           border-radius: 36px;
           overflow: hidden;
-          background: #f0f0f0;
+          background: #000;
           box-shadow: 0 10px 30px rgba(0,0,0,0.05);
         }
-        .vault-hero-frame img { width: 100%; height: auto; display: block; object-fit: cover; }
+        /* CORREÇÃO DA IMAGEM PARA NÃO DEFORMAR */
+        .vault-hero-frame img { width: 100%; height: auto; display: block; }
         
         .st-vault-hotspot { position: absolute; transform: translate(-50%, -50%); z-index: 10; cursor: pointer; }
         .st-vault-dot { width: 20px; height: 20px; border: 4px solid var(--vault-color); border-radius: 50%; background: white; box-shadow: 0 0 10px rgba(0,0,0,0.2); }
         .v-tooltip { position: absolute; background: white; border-radius: 18px; padding: 12px; width: 140px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); z-index: 110; bottom: 30px; left: 50%; transform: translateX(-50%); text-align: center; line-height: 1.2; }
-        
+        .v-close-x { position: absolute; top: -8px; right: -8px; width: 20px; height: 20px; background: #000; color: #fff; border-radius: 50%; font-size: 10px; display: flex; align-items: center; justify-content: center; border: 2px solid #fff; }
+
         .st-spec-pill { background: #F8F9FD; padding: 16px; border-radius: 18px; font-size: 14px; font-weight: 600; margin-bottom: 10px; color: ${tokens.text}; border: 1px solid rgba(0,0,0,0.02); }
 
         .st-bottom-nav-wrapper { position: fixed; bottom: 30px; left: 0; right: 0; display: flex; justify-content: center; z-index: 9999; pointer-events: none; }
@@ -343,6 +355,7 @@ const SetupComponent = () => {
                   <div className="st-vault-dot"></div>
                   {vaultSelectedId === hs.id && (
                     <div className="v-tooltip">
+                      <div className="v-close-x">✕</div>
                       <div style={{ fontSize: '10px', fontWeight: '900', color: tokens.accent[selectedPart.cat], textTransform: 'uppercase' }}>{hs.label}</div>
                       <div style={{ fontSize: '12px', fontWeight: '700' }}>{hs.sub}</div>
                     </div>
