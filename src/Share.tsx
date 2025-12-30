@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 const SetupComponent = () => {
   const [setupMode, setSetupMode] = useState('principal');
@@ -9,6 +9,15 @@ const SetupComponent = () => {
   const [showToast, setShowToast] = useState(false);
   // Mantemos o activeTab por segurança de lógica, mas removemos a navegação física
   const [activeTab, setActiveTab] = useState('setup'); 
+
+  // --- BLOQUEIO DE SCROLL NO FUNDO ---
+  useEffect(() => {
+    if (selectedPart) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+  }, [selectedPart]);
 
   const renderSetupTab = () => {
     const tokens = {
@@ -208,11 +217,11 @@ const SetupComponent = () => {
           .st-header p { font-size: 11px; font-weight: 600; color: ${tokens.muted}; text-transform: uppercase; letter-spacing: 1px; margin-top: 4px; }
           
           .st-nav-container { display: flex; justify-content: center; width: 100%; margin-top: 25px; }
-          .st-nav-pills { display: flex; background: #E9ECF5; padding: 6px; border-radius: 24px; box-shadow: inset 0 2px 6px rgba(0,0,0,0.05); width: fit-content; }
-          .st-pill { border: none; background: transparent; color: ${tokens.muted}; padding: 14px 24px; border-radius: 20px; font-size: 12px; font-weight: 800; transition: 0.4s; cursor: pointer; }
+          .st-nav-pills { display: flex; background: #E9ECF5; padding: 6px; border-radius: 24px; box-shadow: inset 0 2px 6px rgba(0,0,0,0.05); width: fit-content; max-width: 90%; }
+          .st-pill { border: none; background: transparent; color: ${tokens.muted}; padding: 14px 24px; border-radius: 20px; font-size: 12px; font-weight: 800; transition: 0.4s; cursor: pointer; white-space: nowrap; }
           .st-pill.active { background: #FFFFFF; color: ${tokens.text}; box-shadow: 0 8px 20px rgba(0,0,0,0.08); transform: translateY(-1px); }
   
-          .st-photo-container { position: relative; margin: 0 24px; border-radius: 36px; border: 1px solid rgba(255,255,255,0.8); box-shadow: 0 30px 60px -20px rgba(0,0,0,0.15), 0 0 0 10px rgba(255,255,255,0.5); z-index: 10; overflow: hidden; background: #000; }
+          .st-photo-container { position: relative; margin: 0 auto; width: calc(100% - 48px); max-width: 600px; border-radius: 36px; border: 1px solid rgba(255,255,255,0.8); box-shadow: 0 30px 60px -20px rgba(0,0,0,0.15), 0 0 0 10px rgba(255,255,255,0.5); z-index: 10; overflow: hidden; background: #000; }
           .st-main-img { width: 100%; display: block; transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1), filter 0.8s ease; transform-origin: var(--zoom-x) var(--zoom-y); }
           .st-main-img.zoom-active { transform: scale(1.8); filter: brightness(0.7) contrast(1.1); }
           
@@ -220,7 +229,7 @@ const SetupComponent = () => {
           .st-hotspot-inner { width: 32px; height: 32px; background: transparent; border-radius: 50%; border: 3px solid var(--color); display: flex; align-items: center; justify-content: center; box-shadow: 0 10px 20px rgba(0,0,0,0.2); transition: 0.3s; }
           .st-hotspot.hidden { opacity: 0; pointer-events: none; }
   
-          .st-list { padding: 40px 24px; display: grid; gap: 20px; position: relative; z-index: 10; }
+          .st-list { padding: 40px 24px; display: grid; gap: 20px; position: relative; z-index: 10; max-width: 600px; margin: 0 auto; }
           .st-item { background: #FFFFFF; padding: 22px; border-radius: 30px; display: flex; align-items: center; gap: 20px; position: relative; border: 1px solid rgba(0,0,0,0.03); box-shadow: 0 10px 25px -5px rgba(0,0,0,0.04); transition: 0.3s; cursor: pointer; }
           .st-item::before { content: ''; position: absolute; left: 0; top: 25%; width: 4px; height: 50%; background: var(--accent); border-radius: 0 4px 4px 0; }
           .st-card-icon { width: 65px; height: 65px; background: #F8F9FD; border-radius: 22px; display: flex; align-items: center; justify-content: center; font-size: 28px; border: 1px solid rgba(0,0,0,0.04); }
